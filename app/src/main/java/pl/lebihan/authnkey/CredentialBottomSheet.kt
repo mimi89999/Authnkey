@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -225,6 +226,13 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
                 pinInputLayout.error = null
                 pinEditText.requestFocus()
                 setState(State.PIN)
+                pinEditText.post {
+                    val imm = requireContext().getSystemService(InputMethodManager::class.java)
+                    imm?.showSoftInput(pinEditText, InputMethodManager.SHOW_IMPLICIT)
+                }
+            } else {
+                val imm = requireContext().getSystemService(InputMethodManager::class.java)
+                imm?.hideSoftInputFromWindow(pinEditText.windowToken, 0)
             }
         } else {
             pendingShowPinInput = show
