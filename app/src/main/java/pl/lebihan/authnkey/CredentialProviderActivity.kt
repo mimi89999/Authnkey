@@ -673,14 +673,13 @@ class CredentialProviderActivity : AppCompatActivity() {
                     put(transport.transportType.webauthnName)
                 })
             })
-            // Add clientExtensionResults if credProps was requested
-            if (credPropsRequested) {
-                put("clientExtensionResults", JSONObject().apply {
+            put("clientExtensionResults", JSONObject().apply {
+                if (credPropsRequested) {
                     put("credProps", JSONObject().apply {
                         put("rk", isDiscoverable)
                     })
-                })
-            }
+                }
+            })
         }
 
         returnCreateResult(responseJson.toString())
@@ -801,6 +800,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     ))
                 }
             })
+            put("clientExtensionResults", JSONObject())
         }
 
         returnGetResult(responseJson.toString())
