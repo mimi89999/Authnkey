@@ -1,0 +1,2 @@
+- Fix keyboard staying visible after PIN entry
+- Add support for Iceraven, Cromite, IronFox and Fennec F-Droid browsers
