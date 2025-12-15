@@ -1050,7 +1050,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             if (allowlist != null) {
                 val origin = appInfo.getOrigin(allowlist)
                 if (origin != null) {
-                    return origin
+                    return origin.removeSuffix("/")
                 }
             }
         } catch (e: Exception) {
