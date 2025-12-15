@@ -1,0 +1,1 @@
+- Fix passkey login in Chrome and Chromium-based browsers
