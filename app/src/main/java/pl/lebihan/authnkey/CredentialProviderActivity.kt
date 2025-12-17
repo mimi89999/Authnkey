@@ -637,8 +637,8 @@ class CredentialProviderActivity : AppCompatActivity() {
         // Build attestation object (CBOR encoded)
         val attestationObject = buildAttestationObject(
             makeCredResult.fmt,
-            makeCredResult.authData,
-            makeCredResult.attStmt
+            makeCredResult.attStmt,
+            makeCredResult.authData
         )
 
         // Extract credential ID from authData
@@ -836,8 +836,8 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private fun buildAttestationObject(
         fmt: String,
-        authData: ByteArray,
-        attStmt: Map<*, *>
+        attStmt: Map<*, *>,
+        authData: ByteArray
     ): ByteArray {
         // Re-encode as CBOR
         val output = mutableListOf<Byte>()
@@ -855,6 +855,15 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
         output.addAll(fmtBytes.toList())
 
+        // "attStmt"
+        output.add(0x67) // text string of 7 chars
+        output.addAll("attStmt".toByteArray().toList())
+        if (attStmt.isEmpty()) {
+            output.add(0xA0.toByte()) // empty map
+        } else {
+            output.addAll(encodeAttStmt(attStmt))
+        }
+
         // "authData"
         output.add(0x68) // text string of 8 chars
         output.addAll("authData".toByteArray().toList())
@@ -869,15 +878,6 @@ class CredentialProviderActivity : AppCompatActivity() {
             output.add((authData.size and 0xFF).toByte())
         }
         output.addAll(authData.toList())
-
-        // "attStmt"
-        output.add(0x67) // text string of 7 chars
-        output.addAll("attStmt".toByteArray().toList())
-        if (attStmt.isEmpty()) {
-            output.add(0xA0.toByte()) // empty map
-        } else {
-            output.addAll(encodeAttStmt(attStmt))
-        }
 
         return output.toByteArray()
     }
