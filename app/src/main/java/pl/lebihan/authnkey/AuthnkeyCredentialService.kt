@@ -74,31 +74,6 @@ class AuthnkeyCredentialService : CredentialProviderService() {
                 }
             }
 
-            if (credentialEntries.isEmpty()) {
-                // Still show an option to use security key
-                val intent = Intent(this, CredentialProviderActivity::class.java).apply {
-                    action = ACTION_GET_PASSKEY
-                }
-                val pendingIntent = PendingIntent.getActivity(
-                    this,
-                    0,
-                    intent,
-                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-
-                val entry = PublicKeyCredentialEntry.Builder(
-                    this,
-                    getString(R.string.credential_entry_use),
-                    pendingIntent,
-                    request.beginGetCredentialOptions.first() as BeginGetPublicKeyCredentialOption
-                )
-                    .setDisplayName(getString(R.string.credential_entry_tap))
-                    .setIcon(Icon.createWithResource(this, R.drawable.security_key_gray_24))
-                    .build()
-
-                credentialEntries.add(entry)
-            }
-
             val response = BeginGetCredentialResponse.Builder()
                 .setCredentialEntries(credentialEntries)
                 .build()
