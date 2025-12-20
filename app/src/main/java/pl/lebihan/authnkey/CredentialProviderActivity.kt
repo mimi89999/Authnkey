@@ -105,6 +105,27 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
+    private val usbAttachReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
+                val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+                }
+
+                if (device != null && UsbTransport.isFidoDevice(device) && currentTransport == null) {
+                    if (usbManager.hasPermission(device)) {
+                        connectToUsbDevice(device)
+                    } else {
+                        requestUsbPermission(device)
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -263,6 +284,13 @@ class CredentialProviderActivity : AppCompatActivity() {
             adapter.enableForegroundDispatch(this, pendingIntent, filters, techLists)
         }
 
+        val usbAttachFilter = IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbAttachReceiver, usbAttachFilter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(usbAttachReceiver, usbAttachFilter)
+        }
+
         if (currentTransport == null) {
             checkForUsbDevice()
         }
@@ -271,12 +299,22 @@ class CredentialProviderActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         nfcAdapter?.disableForegroundDispatch(this)
+        try {
+            unregisterReceiver(usbAttachReceiver)
+        } catch (e: Exception) {
+            // Ignore
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         try {
             unregisterReceiver(usbPermissionReceiver)
+        } catch (e: Exception) {
+            // Ignore
+        }
+        try {
+            unregisterReceiver(usbAttachReceiver)
         } catch (e: Exception) {
             // Ignore
         }
