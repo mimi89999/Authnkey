@@ -20,7 +20,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-
+import android.widget.CheckBox
+import android.text.InputType
 class CredentialBottomSheet : BottomSheetDialogFragment() {
 
     enum class State {
@@ -87,6 +88,18 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         btnContinue = view.findViewById(R.id.btnContinue)
         pinInputLayout = view.findViewById(R.id.pinInputLayout)
         pinEditText = view.findViewById(R.id.pinEditText)
+        val numericCheckbox = view.findViewById<CheckBox>(R.id.numericCheckbox)
+        val sharedPref = requireContext().getSharedPreferences("pin_preferences", 0)
+        // Restore saved state
+        val isNumericEnabled = sharedPref.getBoolean("numeric_only", false)
+        numericCheckbox.isChecked = isNumericEnabled
+        // Apply the saved setting to pinEditText
+        if (isNumericEnabled) {
+            pinEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
+        } else {
+            pinEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+
         iconStatus = view.findViewById(R.id.iconStatus)
         iconBackground = view.findViewById(R.id.iconBackground)
         accountList = view.findViewById(R.id.accountList)
@@ -110,6 +123,19 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
 
         btnContinue.setOnClickListener {
             submitPin()
+        }
+
+        // Listen for changes and save them
+        numericCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            // Save to SharedPreferences
+            sharedPref.edit().putBoolean("numeric_only", isChecked).apply()
+
+            // Update input type
+            if (isChecked) {
+                pinEditText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            } else {
+                pinEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
         }
 
         pinEditText.setOnEditorActionListener { _, actionId, _ ->
