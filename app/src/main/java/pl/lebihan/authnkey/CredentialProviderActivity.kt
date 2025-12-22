@@ -10,6 +10,7 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.nfc.TagLostException
 import android.nfc.tech.IsoDep
 import android.os.Build
 import android.os.Bundle
@@ -369,11 +370,11 @@ class CredentialProviderActivity : AppCompatActivity() {
                 bottomSheet?.getCurrentPinIfValid()?.let { pendingPin = it }
                 bottomSheet?.showPinInput(false)
 
-                val isoDep = IsoDep.get(tag) ?: throw Exception("Not an ISO-DEP tag")
+                val isoDep = IsoDep.get(tag) ?: throw AuthnkeyError.NotIsoDepTag()
                 val transport = NfcTransport(isoDep)
 
                 if (!transport.selectFidoApplet()) {
-                    throw Exception("Failed to select FIDO applet")
+                    throw AuthnkeyError.FidoAppletNotFound()
                 }
 
                 currentTransport = transport
@@ -387,7 +388,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "NFC error", e)
-                setInstruction(getString(R.string.error_retry_format, e.message ?: "Unknown error"))
+                setInstruction(getString(R.string.error_retry_format, e.toUserMessage(this@CredentialProviderActivity)))
                 setState(CredentialBottomSheet.State.ERROR)
                 showProgress(false)
             }
@@ -408,7 +409,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
                 val transport = withContext(Dispatchers.IO) {
                     UsbTransport.create(usbManager, device)
-                } ?: throw Exception("Failed to initialize USB connection")
+                } ?: throw AuthnkeyError.ConnectionFailed()
 
                 currentTransport = transport
                 pinProtocol = PinProtocol(transport)
@@ -420,7 +421,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "USB error", e)
-                setInstruction(getString(R.string.error_retry_format, e.message ?: "Unknown error"))
+                setInstruction(getString(R.string.error_retry_format, e.toUserMessage(this@CredentialProviderActivity)))
                 setState(CredentialBottomSheet.State.ERROR)
                 showProgress(false)
             }
@@ -431,8 +432,8 @@ class CredentialProviderActivity : AppCompatActivity() {
         scope.launch {
             try {
                 val json = JSONObject(requestJson!!)
-                val transport = currentTransport ?: throw Exception("No transport")
-                val protocol = pinProtocol ?: throw Exception("No PIN protocol")
+                val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 // Get device info to check PIN requirements and CTAP version
                 val infoResponse = withContext(Dispatchers.IO) {
@@ -452,7 +453,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     }
                     // UV required but device has no PIN - fail
                     userVerification == UserVerification.REQUIRED && !deviceHasPin -> {
-                        throw Exception(getString(R.string.error_uv_required_no_pin))
+                        throw AuthnkeyError.UserVerificationRequiredNoPin()
                     }
                     // UV required/preferred and device has PIN - need to get PIN
                     userVerification != UserVerification.DISCOURAGED && deviceHasPin -> {
@@ -486,7 +487,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 if (e.error == CTAP.Error.PIN_REQUIRED ||
                     e.error == CTAP.Error.PIN_AUTH_INVALID) {
                     Log.d(TAG, "Authenticator requires PIN despite UV=discouraged")
-                    val protocol = pinProtocol ?: throw Exception("No PIN protocol")
+                    val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
                     val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
                     showPinDialog(retries, json)
                 } else {
@@ -509,12 +510,12 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun authenticateAndExecute(pin: String, requestJson: JSONObject) {
         scope.launch {
             try {
-                val protocol = pinProtocol ?: throw Exception("PIN protocol not initialized")
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 setInstruction(getString(R.string.instruction_initializing))
                 val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
                 if (!initialized) {
-                    throw Exception("Failed to initialize PIN protocol")
+                    throw AuthnkeyError.PinProtocolInitFailed()
                 }
 
                 // Determine permissions and rpId based on operation type
@@ -539,12 +540,12 @@ class CredentialProviderActivity : AppCompatActivity() {
                         if (retries > 0) {
                             runOnUiThread {
                                 showProgress(false)
-                                setInstruction(getString(R.string.pin_invalid_retries, retries))
+                                setInstruction(getString(R.string.pin_incorrect_retries, retries))
                                 setState(CredentialBottomSheet.State.PIN)
                                 bottomSheet?.showPinInput(true)
                             }
                         } else {
-                            throw Exception(getString(R.string.error_pin_blocked))
+                            throw AuthnkeyError.PinBlocked()
                         }
                     } else {
                         throw e
@@ -563,7 +564,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private suspend fun executeRequest(requestJson: JSONObject, pinProtocol: PinProtocol?) {
         try {
-            val transport = currentTransport ?: throw Exception("No transport")
+            val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
 
             if (isCreateRequest) {
                 executeCreateCredential(transport, requestJson, pinProtocol)
@@ -1074,7 +1075,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun handleError(e: Exception) {
         runOnUiThread {
             showProgress(false)
-            setInstruction(getString(R.string.error_format, e.message ?: "Unknown error"))
+            setInstruction(getString(R.string.error_format, e.toUserMessage(this)))
             setState(CredentialBottomSheet.State.ERROR)
         }
     }

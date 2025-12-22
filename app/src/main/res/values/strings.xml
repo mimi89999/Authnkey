@@ -35,19 +35,43 @@
     <string name="pin_continue">Continue</string>
     <string name="pin_too_short">PIN must be at least 4 characters</string>
     <string name="pin_retries_remaining">Enter PIN (%1$d retries remaining)</string>
-    <string name="pin_invalid_retries">Invalid PIN. %1$d retries remaining</string>
+    <string name="pin_incorrect_retries">Incorrect PIN. %1$d retries remaining</string>
 
     <!-- Errors -->
-    <string name="error_format">Error: %1$s\n\nTry again or cancel</string>
-    <string name="error_retry_format">Error: %1$s\n\nTry again</string>
+    <string name="error_format">%1$s\n\nTry again or cancel</string>
+    <string name="error_retry_format">%1$s\n\nTry again</string>
     <string name="error_user_cancelled">User cancelled</string>
     <string name="error_no_request">No valid request found</string>
     <string name="error_generic">Error: %1$s</string>
     <string name="error_generic_with_trace">Error: %1$s\n\n%2$s</string>
     <string name="error_metadata">Error getting metadata: %1$s</string>
-    <string name="error_could_not_get_pin_status">Error: Could not get PIN status</string>
-    <string name="error_pins_dont_match">Error: New PINs don\'t match</string>
-    <string name="error_uv_required_no_pin">User verification required but no PIN is set on your security key</string>
+    <string name="error_could_not_get_pin_status">Could not get PIN status</string>
+    <string name="error_pins_dont_match">New PINs don\'t match</string>
+    <string name="error_uv_required_no_pin">Verification required but no PIN is set on your security key</string>
+
+    <!-- User-friendly error messages (used by ErrorMapping) -->
+    <string name="error_tag_lost">Lost contact with the security key</string>
+    <string name="error_not_supported_tag">This NFC tag is not a security key</string>
+    <string name="error_not_security_key">Security key not recognized</string>
+    <string name="error_connection_failed">Could not connect to the security key</string>
+    <string name="error_not_connected">No security key connected</string>
+    <string name="error_key_disconnected">The security key disconnected</string>
+    <string name="error_communication_failed">Could not communicate with the security key</string>
+    <string name="error_no_credentials">No passkeys found on this security key</string>
+    <string name="error_pin_incorrect">Incorrect PIN</string>
+    <string name="error_pin_blocked">PIN is blocked</string>
+    <string name="error_pin_not_set">No PIN configured on this security key</string>
+    <string name="error_pin_auth_invalid">PIN authentication failed</string>
+    <string name="error_pin_auth_blocked">Too many failed PIN attempts</string>
+    <string name="error_credential_excluded">This passkey already exists</string>
+    <string name="error_operation_denied">Operation denied by security key</string>
+    <string name="error_operation_cancelled">Operation cancelled</string>
+    <string name="error_user_action_timeout">Touch was not detected in time</string>
+    <string name="error_timeout">Operation timed out</string>
+    <string name="error_key_store_full">Security key storage is full</string>
+    <string name="error_unsupported_algorithm">Unsupported security algorithm</string>
+    <string name="error_ctap_unknown">Security key error: %1$s</string>
+    <string name="error_unknown">An unexpected error occurred</string>
 
     <!-- Content descriptions -->
     <string name="security_key_icon_desc">Security Key</string>
@@ -75,16 +99,14 @@
     <string name="operation_cancelled">Operation cancelled</string>
     <string name="reading_device_info">Reading device info…</string>
     <string name="checking_cred_mgmt">Checking credential management support…</string>
-    <string name="error_parse_device_info">Error: Could not parse device info</string>
-    <string name="error_pin_blocked">Error: PIN is blocked. Device needs to be reset.</string>
+    <string name="error_parse_device_info">Could not parse device info</string>
     <string name="error_pin_status">Could not get PIN status</string>
     <string name="pin_required_title">PIN Required</string>
     <string name="pin_required_message">Enter your PIN to list credentials.\n\nRetries remaining: %1$d</string>
-    <string name="error_pin_min_length">Error: PIN must be at least 4 characters</string>
+    <string name="error_pin_min_length">PIN must be at least 4 characters</string>
     <string name="authenticating">Authenticating…</string>
-    <string name="error_init_pin_protocol">Error: Failed to initialize PIN protocol</string>
+    <string name="error_init_pin_protocol">Could not establish secure connection</string>
     <string name="verifying_pin">Verifying PIN…</string>
-    <string name="error_invalid_pin">Error: Invalid PIN</string>
     <string name="getting_metadata">Getting credential metadata…</string>
     <string name="enumerating_rps">Enumerating relying parties…</string>
     <string name="loading_credentials_for">Loading credentials for %1$s…</string>

@@ -11,6 +11,7 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.nfc.TagLostException
 import android.nfc.tech.IsoDep
 import android.os.Build
 import android.os.Bundle
@@ -185,11 +186,11 @@ class MainActivity : AppCompatActivity() {
                 currentTransport?.close()
                 currentTransport = null
 
-                val isoDep = IsoDep.get(tag) ?: throw Exception("Not an ISO-DEP tag")
+                val isoDep = IsoDep.get(tag) ?: throw AuthnkeyError.NotIsoDepTag()
                 val transport = NfcTransport(isoDep)
 
                 if (!transport.selectFidoApplet()) {
-                    throw Exception("Failed to select FIDO applet")
+                    throw AuthnkeyError.FidoAppletNotFound()
                 }
 
                 currentTransport = transport
@@ -216,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
-                statusText.text = getString(R.string.nfc_error, e.message ?: "")
+                statusText.text = getString(R.string.nfc_error, e.toUserMessage(this@MainActivity))
                 updateConnectionStatus()
             }
         }
@@ -299,7 +300,7 @@ class MainActivity : AppCompatActivity() {
 
                 val transport = withContext(Dispatchers.IO) {
                     UsbTransport.create(usbManager, device)
-                } ?: throw Exception("Failed to initialize FIDO communication")
+                } ?: throw AuthnkeyError.ConnectionFailed()
 
                 currentTransport = transport
                 pinProtocol = PinProtocol(transport)
@@ -309,7 +310,7 @@ class MainActivity : AppCompatActivity() {
                 statusText.text = getString(R.string.usb_connected)
 
             } catch (e: Exception) {
-                statusText.text = getString(R.string.usb_error, e.message ?: "")
+                statusText.text = getString(R.string.usb_error, e.toUserMessage(this@MainActivity))
                 updateConnectionStatus()
             }
         }
@@ -362,7 +363,7 @@ class MainActivity : AppCompatActivity() {
 
         scope.launch {
             try {
-                val transport = currentTransport ?: throw Exception("No key connected")
+                val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
 
                 resultText.text = getString(R.string.reading_device_info)
 
@@ -389,7 +390,7 @@ class MainActivity : AppCompatActivity() {
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
-                    resultText.text = getString(R.string.error_generic, e.message ?: "")
+                    resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                     handleDisconnect()
                 }
@@ -402,7 +403,7 @@ class MainActivity : AppCompatActivity() {
 
         scope.launch {
             try {
-                val transport = currentTransport ?: throw Exception("No key connected")
+                val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
 
                 resultText.text = getString(R.string.checking_cred_mgmt)
 
@@ -426,7 +427,7 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                val protocol = pinProtocol ?: throw Exception("PIN protocol not initialized")
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
                 val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrElse { e ->
                     if (e is java.io.IOException) throw e
                     resultText.text = getString(R.string.error_could_not_get_pin_status)
@@ -448,7 +449,7 @@ class MainActivity : AppCompatActivity() {
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
-                    resultText.text = getString(R.string.error_generic, e.message ?: "")
+                    resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                     handleDisconnect()
                 }
@@ -486,8 +487,8 @@ class MainActivity : AppCompatActivity() {
 
         scope.launch {
             try {
-                val transport = currentTransport ?: throw Exception("No key connected")
-                val protocol = pinProtocol ?: throw Exception("PIN protocol not initialized")
+                val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 resultText.text = getString(R.string.authenticating)
 
@@ -507,18 +508,8 @@ class MainActivity : AppCompatActivity() {
                     if (usePreviewCommand) protocol.requestPinToken(pin)
                     else protocol.requestPinToken(pin, PinProtocol.PERMISSION_CM)
                 }.onFailure { e ->
-                    when {
-                        e is java.io.IOException -> throw e
-                        e is CTAP.Exception && e.error == CTAP.Error.PIN_INVALID -> {
-                            resultText.text = getString(R.string.error_invalid_pin)
-                        }
-                        e is CTAP.Exception && e.error == CTAP.Error.PIN_BLOCKED -> {
-                            resultText.text = getString(R.string.error_pin_blocked)
-                        }
-                        else -> {
-                            resultText.text = getString(R.string.error_generic, e.message ?: "")
-                        }
-                    }
+                    if (e is java.io.IOException) throw e
+                    resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                     return@launch
                 }
@@ -533,7 +524,7 @@ class MainActivity : AppCompatActivity() {
                     if (isNfcDisconnected()) {
                         showNfcReconnectDialog()
                     } else {
-                        resultText.text = getString(R.string.error_metadata, it.message ?: "")
+                        resultText.text = getString(R.string.error_metadata, it.toUserMessage(this@MainActivity))
                         pendingAction = null
                     }
                     return@launch
@@ -555,7 +546,7 @@ class MainActivity : AppCompatActivity() {
                     if (isNfcDisconnected()) {
                         showNfcReconnectDialog()
                     } else {
-                        resultText.text = outputFormatter.formatEnumerateRpsError(metadata, it.message ?: "")
+                        resultText.text = outputFormatter.formatEnumerateRpsError(metadata, it.toUserMessage(this@MainActivity))
                         pendingAction = null
                     }
                     return@launch
@@ -586,7 +577,7 @@ class MainActivity : AppCompatActivity() {
                             OutputFormatter.RelyingPartyWithCredentials(
                                 relyingParty = rp,
                                 credentials = null,
-                                error = credsResult.exceptionOrNull()?.message
+                                error = credsResult.exceptionOrNull()?.toUserMessage(this@MainActivity)
                             )
                         )
                     } else {
@@ -614,7 +605,7 @@ class MainActivity : AppCompatActivity() {
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
-                    resultText.text = getString(R.string.error_generic_with_trace, e.message ?: "", e.stackTraceToString())
+                    resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                     handleDisconnect()
                 }
@@ -627,7 +618,7 @@ class MainActivity : AppCompatActivity() {
 
         scope.launch {
             try {
-                val protocol = pinProtocol ?: throw Exception("PIN protocol not initialized")
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 resultText.text = getString(R.string.checking_pin_status)
 
@@ -639,9 +630,9 @@ class MainActivity : AppCompatActivity() {
                 val confirmPinEdit = dialogView.findViewById<EditText>(R.id.confirmPin)
 
                 val message = if (retries != null) {
-                    "PIN retries remaining: $retries"
+                    getString(R.string.pin_retries_status, retries)
                 } else {
-                    "Could not get PIN status"
+                    getString(R.string.error_pin_status)
                 }
 
                 pendingAction = null
@@ -676,7 +667,7 @@ class MainActivity : AppCompatActivity() {
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
-                    resultText.text = getString(R.string.error_generic, e.message ?: "")
+                    resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                     handleDisconnect()
                 }
@@ -689,7 +680,7 @@ class MainActivity : AppCompatActivity() {
 
         scope.launch {
             try {
-                val protocol = pinProtocol ?: throw Exception("PIN protocol not initialized")
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 resultText.text = getString(R.string.initializing_pin_protocol)
 
@@ -730,7 +721,7 @@ class MainActivity : AppCompatActivity() {
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
-                    resultText.text = getString(R.string.error_generic, e.message ?: "")
+                    resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                 }
             }

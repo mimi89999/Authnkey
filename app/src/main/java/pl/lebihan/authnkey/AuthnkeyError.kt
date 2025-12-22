@@ -1,0 +1,17 @@
+package pl.lebihan.authnkey
+
+sealed class AuthnkeyError(message: String) : Exception(message) {
+    // Connection errors
+    class NotIsoDepTag : AuthnkeyError("Not an ISO-DEP tag")
+    class FidoAppletNotFound : AuthnkeyError("FIDO applet not found")
+    class ConnectionFailed : AuthnkeyError("Connection failed")
+    class NotConnected : AuthnkeyError("Not connected")
+
+    // PIN protocol errors
+    class PinProtocolNotInitialized : AuthnkeyError("PIN protocol not initialized")
+    class PinProtocolInitFailed : AuthnkeyError("PIN protocol initialization failed")
+
+    // Authentication errors
+    class UserVerificationRequiredNoPin : AuthnkeyError("User verification required but no PIN set")
+    class PinBlocked : AuthnkeyError("PIN is blocked")
+}
