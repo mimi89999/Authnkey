@@ -9,15 +9,17 @@ android {
     namespace = "pl.lebihan.authnkey"
 
     compileSdk {
-        version = release(36)
+        version = release(
+            libs.versions.compileSdk.get().toInt()
+        )
     }
 
     defaultConfig {
         applicationId = "pl.lebihan.authnkey"
-        minSdk = 34
-        targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3"
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,13 +35,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     kotlin {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
+            jvmTarget = JvmTarget.JVM_21
         }
     }
 }
