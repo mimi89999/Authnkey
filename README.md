@@ -33,6 +33,14 @@ Additionally, Android's FIDO2 support depends on Google Play Services. Authnkey 
 2. Enable Authnkey in Settings → Passwords & accounts → Passwords, passkeys, and data services
 3. When a site or app requests a passkey, select "Security Key" from the credential provider options
 
+## Translation
+
+Please help to translate on [Weblate](https://toolate.othing.xyz/projects/authnkey/).
+
+<a href="https://toolate.othing.xyz/projects/authnkey/">
+<img src="https://toolate.othing.xyz/widget/authnkey/multi-auto.svg" alt="Translation status" />
+</a>
+
 ## Building
 
 ```
