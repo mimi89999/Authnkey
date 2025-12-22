@@ -130,4 +130,5 @@
     <string name="provider_enabled">✓ Поставщик паролей Passkey включён</string>
     <string name="provider_not_enabled">Поставщик паролей Passkey не включён</string>
     <string name="unknown_device">Неизвестное устройство</string>
+    <string name="toggle_keyboard_type"></string>
 </resources>
