@@ -7,4 +7,7 @@
     <!-- Provider status - not enabled (dark theme) -->
     <color name="provider_not_enabled_background">#BF360C</color>
     <color name="provider_not_enabled_text">#FFCC80</color>
+    
+    <!-- Tag lost warning state -->
+    <color name="warning_container">#7C2D12</color>
 </resources>

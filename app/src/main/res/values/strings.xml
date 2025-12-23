@@ -27,6 +27,7 @@
     <string name="instruction_initializing">Initializing…</string>
     <string name="instruction_verifying">Verifying…</string>
     <string name="instruction_verifying_pin">Verifying PIN…</string>
+    <string name="instruction_tag_lost">Lost contact with the security key\n\nReposition and hold until completion</string>
 
     <!-- PIN Dialog -->
     <string name="pin_dialog_title">Security Key PIN</string>

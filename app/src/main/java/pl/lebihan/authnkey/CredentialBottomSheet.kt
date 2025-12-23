@@ -3,6 +3,7 @@ package pl.lebihan.authnkey
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.DialogInterface
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -14,6 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -33,6 +35,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         PIN,
         ACCOUNT_SELECT,
         SUCCESS,
+        TAG_LOST,
         ERROR
     }
 
@@ -221,20 +224,28 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
             State.PIN -> R.drawable.lock_24
             State.ACCOUNT_SELECT -> R.drawable.account_circle_24
             State.SUCCESS -> R.drawable.check_circle_24
+            State.TAG_LOST -> R.drawable.sensors_24
             State.ERROR -> R.drawable.error_24
         }
 
         iconStatus.setImageResource(iconRes)
+        iconBackground.backgroundTintList = null
 
         when (state) {
             State.WAITING, State.TOUCH -> startPulse()
+            State.TAG_LOST -> {
+                iconBackground.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(requireContext(), R.color.warning_container)
+                )
+                startPulse(750)
+            }
             else -> {}
         }
     }
 
-    private fun startPulse() {
+    private fun startPulse(durationMs: Long = 1000) {
         pulseAnimator = ObjectAnimator.ofFloat(iconBackground, View.ALPHA, 1f, 0.3f).apply {
-            duration = 1000
+            duration = durationMs
             repeatCount = ObjectAnimator.INFINITE
             repeatMode = ObjectAnimator.REVERSE
             interpolator = AccelerateDecelerateInterpolator()

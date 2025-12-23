@@ -387,9 +387,14 @@ class CredentialProviderActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "NFC error", e)
-                setInstruction(getString(R.string.error_retry_format, e.toUserMessage(this@CredentialProviderActivity)))
-                setState(CredentialBottomSheet.State.ERROR)
                 showProgress(false)
+                if (e is android.nfc.TagLostException) {
+                    setInstruction(getString(R.string.instruction_tag_lost))
+                    setState(CredentialBottomSheet.State.TAG_LOST)
+                } else {
+                    setInstruction(getString(R.string.error_retry_format, e.toUserMessage(this@CredentialProviderActivity)))
+                    setState(CredentialBottomSheet.State.ERROR)
+                }
             }
         }
     }
@@ -1074,8 +1079,13 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun handleError(e: Exception) {
         runOnUiThread {
             showProgress(false)
-            setInstruction(getString(R.string.error_format, e.toUserMessage(this)))
-            setState(CredentialBottomSheet.State.ERROR)
+            if (e is android.nfc.TagLostException) {
+                setInstruction(getString(R.string.instruction_tag_lost))
+                setState(CredentialBottomSheet.State.TAG_LOST)
+            } else {
+                setInstruction(getString(R.string.error_format, e.toUserMessage(this)))
+                setState(CredentialBottomSheet.State.ERROR)
+            }
         }
     }
 
