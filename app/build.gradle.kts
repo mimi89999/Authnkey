@@ -9,17 +9,15 @@ android {
     namespace = "pl.lebihan.authnkey"
 
     compileSdk {
-        version = release(
-            libs.versions.compileSdk.get().toInt()
-        )
+        version = release(36)
     }
 
     defaultConfig {
         applicationId = "pl.lebihan.authnkey"
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = libs.versions.versionCode.get().toInt()
-        versionName = libs.versions.versionName.get()
+        minSdk = 34
+        targetSdk = 36
+        versionCode = 4
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
