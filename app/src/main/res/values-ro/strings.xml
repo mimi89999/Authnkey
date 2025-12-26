@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Authnkey</string>
-    <string name="credential_provider_subtitle">Furnizor de date de autentificare Passkey pentru chei de securitate hardware</string>
+    <string name="credential_provider_subtitle">Chei Passkey pentru chei de securitate hardware</string>
     <string name="credential_entry_title">Cheie de securitate</string>
     <string name="credential_create_description">Creați o cheie de acces passkey pe cheia de securitate pentru %1$s</string>
     <string name="credential_get_description">Utilizați cheia voastră de securitate pentru %1$s</string>
@@ -93,7 +93,7 @@
     <string name="error_init_pin_protocol">Nu s-a putut stabili o conexiune sigură</string>
     <string name="verifying_pin">Verificarea codului PIN…</string>
     <string name="getting_metadata">Obținerea metadatelor de autentificare…</string>
-    <string name="enumerating_rps">Enumerarea entităților dependente…</string>
+    <string name="enumerating_rps">Enumerarea entităților…</string>
     <string name="loading_credentials_for">Se încarcă datele de autentificare pentru %1$s…</string>
     <string name="checking_pin_status">Verificarea stării codului PIN…</string>
     <string name="pin_retries_status">Număr de încercări PIN rămase: %1$d</string>
@@ -119,7 +119,7 @@
     <string name="credential_remaining_slots">Sloturi rămase: %1$d</string>
     <string name="credential_no_credentials">Nu există date de autentificare stocate pe acest dispozitiv.</string>
     <string name="credential_no_rps">Nu s-au găsit entități de referință.</string>
-    <string name="credential_found_rps">S-au găsit %1$d entități de referință:</string>
+    <string name="credential_found_rps">S-au găsit%1$d entități de referință:</string>
     <string name="credential_rp_name">Denumire: %1$s</string>
     <string name="credential_rp_header">Entități %1$d: %2$s</string>
     <string name="credential_number">Date de autentificare %1$d:</string>
@@ -148,8 +148,8 @@
     <string name="device_info_firmware">Versiune Firmware: %1$d</string>
     <string name="choose_account">Alegeți un cont</string>
     <string name="unknown_account">Cont necunoscut</string>
-    <string name="provider_enabled">✓ Cheia de acces Passkey a fost activată</string>
-    <string name="provider_not_enabled">Cheia de acces Passkey nu a fost activată</string>
+    <string name="provider_enabled">✓ Cheia Passkey a fost activată</string>
+    <string name="provider_not_enabled">Cheia Passkey nu a fost activată</string>
     <string name="unknown_device">Dispozitiv necunoscut</string>
     <string name="device_info_format">VID: %1$s, PID: %2$s</string>
     <string name="pin_hint_current">PIN actual (lăsați necompletat dacă nu este setat)</string>
