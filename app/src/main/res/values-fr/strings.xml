@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Authnkey</string>
+
+    <!-- Credential Provider Service -->
+    <string name="credential_provider_subtitle">Clés d'accès sur clés de sécurité matérielle</string>
+    <string name="credential_entry_title">Clé de sécurité</string>
+    <string name="credential_create_description">Créer une clé d'accès sur votre clé de sécurité pour %1$s</string>
+    <string name="credential_get_description">Utiliser votre clé de sécurité pour %1$s</string>
+
+    <!-- Bottom Sheet -->
+    <string name="security_key">Clé de sécurité</string>
+    <string name="create_passkey">Créer une clé d'accès</string>
+    <string name="sign_in">Se connecter</string>
+    <string name="cancel">Annuler</string>
+    <string name="close">Fermer</string>
+
+    <!-- Instructions -->
+    <string name="instruction_connect_key">Tenez votre clé de sécurité contre l'arrière de votre téléphone, ou branchez-la via USB</string>
+    <string name="instruction_touch_key">Touchez votre clé de sécurité pour confirmer…</string>
+    <string name="instruction_signing_in">Connexion en cours…</string>
+    <string name="instruction_creating">Création de la clé d'accès…</string>
+    <string name="instruction_enter_pin">Entrez le code PIN de votre clé de sécurité</string>
+    <string name="instruction_usb_permission_denied">Permission USB refusée. Réessayez ou utilisez NFC.</string>
+    <string name="instruction_key_connected">Clé de sécurité connectée</string>
+    <string name="instruction_connecting_usb">Connexion au périphérique USB…</string>
+    <string name="instruction_authenticating">Authentification en cours…</string>
+    <string name="instruction_initializing">Initialisation en cours…</string>
+    <string name="instruction_verifying">Vérification en cours…</string>
+    <string name="instruction_verifying_pin">Vérification du code PIN…</string>
+    <string name="instruction_tag_lost">Perte de contact avec la clé de sécurité\n\nRepositionnez et tenez jusqu'à la fin</string>
+
+    <!-- PIN Dialog -->
+    <string name="pin_dialog_title">Code PIN de la clé de sécurité</string>
+    <string name="pin_dialog_message">Entrez le code PIN de votre clé de sécurité</string>
+    <string name="pin_hint">Entrez le code PIN</string>
+    <string name="pin_hint_current">Code PIN actuel (laissez vide s'il n'est pas défini)</string>
+    <string name="pin_hint_new">Nouveau code PIN</string>
+    <string name="pin_hint_confirm">Confirmez le nouveau code PIN</string>
+    <string name="pin_continue">Continuer</string>
+    <string name="pin_too_short">Le code PIN doit contenir au moins 4 caractères</string>
+    <string name="pin_retries_remaining">Entrez le code PIN (%1$d tentatives restantes)</string>
+    <string name="pin_incorrect_retries">Code PIN incorrect. %1$d tentatives restantes</string>
+
+    <!-- Errors -->
+    <string name="error_format">%1$s\n\nRéessayez ou annulez</string>
+    <string name="error_retry_format">%1$s\n\nRéessayez</string>
+    <string name="error_user_cancelled">Annulé par l'utilisateur</string>
+    <string name="error_no_request">Aucune demande valide trouvée</string>
+    <string name="error_generic">Erreur : %1$s</string>
+    <string name="error_generic_with_trace">Erreur : %1$s\n\n%2$s</string>
+    <string name="error_metadata">Erreur lors de la récupération des métadonnées : %1$s</string>
+    <string name="error_could_not_get_pin_status">Impossible d'obtenir l'état du code PIN</string>
+    <string name="error_pins_dont_match">Les nouveaux codes PIN ne correspondent pas</string>
+    <string name="error_uv_required_no_pin">Vérification requise mais aucun code PIN n'est défini sur votre clé de sécurité</string>
+
+    <!-- User-friendly error messages (used by ErrorMapping) -->
+    <string name="error_tag_lost">Perte de contact avec la clé de sécurité</string>
+    <string name="error_not_supported_tag">Cette étiquette NFC n'est pas une clé de sécurité</string>
+    <string name="error_not_security_key">Clé de sécurité non reconnue</string>
+    <string name="error_connection_failed">Impossible de se connecter à la clé de sécurité</string>
+    <string name="error_not_connected">Aucune clé de sécurité connectée</string>
+    <string name="error_key_disconnected">La clé de sécurité s'est déconnectée</string>
+    <string name="error_communication_failed">Impossible de communiquer avec la clé de sécurité</string>
+    <string name="error_no_credentials">Aucune clé d'accès trouvée sur cette clé de sécurité</string>
+    <string name="error_pin_incorrect">Code PIN incorrect</string>
+    <string name="error_pin_blocked">Le code PIN est bloqué</string>
+    <string name="error_pin_not_set">Aucun code PIN configuré sur cette clé de sécurité</string>
+    <string name="error_pin_auth_invalid">L'authentification par code PIN a échoué</string>
+    <string name="error_pin_auth_blocked">Trop de tentatives de code PIN échouées</string>
+    <string name="error_credential_excluded">Cette clé d'accès existe déjà</string>
+    <string name="error_operation_denied">Opération refusée par la clé de sécurité</string>
+    <string name="error_operation_cancelled">Opération annulée</string>
+    <string name="error_user_action_timeout">Le toucher n'a pas été détecté à temps</string>
+    <string name="error_timeout">L'opération a expiré</string>
+    <string name="error_key_store_full">Le stockage de la clé de sécurité est plein</string>
+    <string name="error_unsupported_algorithm">Algorithme de sécurité non pris en charge</string>
+    <string name="error_ctap_unknown">Erreur de clé de sécurité : %1$s</string>
+    <string name="error_unknown">Une erreur inattendue s'est produite</string>
+
+    <!-- Content descriptions -->
+    <string name="security_key_icon_desc">Clé de sécurité</string>
+    <string name="drag_handle_desc">Poignée de glissement</string>
+    <string name="toggle_keyboard_type">Basculer le type de clavier</string>
+
+    <!-- MainActivity (Debug) -->
+    <string name="usb_permission_denied">Permission USB refusée</string>
+    <string name="nfc_connected">Clé de sécurité connectée via NFC !</string>
+    <string name="usb_connected">Clé de sécurité connectée via USB !</string>
+    <string name="nfc_error">Erreur NFC : %1$s</string>
+    <string name="usb_error">Erreur USB : %1$s</string>
+    <string name="no_devices_title">Aucun périphérique trouvé</string>
+    <string name="no_devices_message">Aucune clé de sécurité FIDO détectée.\n\nAssurez-vous que votre clé de sécurité est branchée.</string>
+    <string name="ok">OK</string>
+    <string name="select_security_key">Sélectionner une clé de sécurité</string>
+    <string name="connecting_usb">Connexion au périphérique USB…</string>
+    <string name="connected_via">Connecté via %1$s</string>
+    <string name="not_connected">Non connecté</string>
+    <string name="waiting_for_key">Tenez votre clé de sécurité contre l'arrière de votre téléphone, ou branchez-la via USB</string>
+    <string name="connection_lost">Connexion perdue</string>
+    <string name="waiting_reconnection">En attente de reconnexion…</string>
+    <string name="connection_lost_title">Connexion perdue</string>
+    <string name="connection_lost_message">Tenez votre clé de sécurité contre l'arrière de votre téléphone pour continuer.</string>
+    <string name="operation_cancelled">Opération annulée</string>
+    <string name="reading_device_info">Lecture des informations du périphérique…</string>
+    <string name="checking_cred_mgmt">Vérification du support de la gestion des identifiants…</string>
+    <string name="error_parse_device_info">Impossible d'analyser les informations du périphérique</string>
+    <string name="error_pin_status">Impossible d'obtenir l'état du code PIN</string>
+    <string name="pin_required_title">Code PIN requis</string>
+    <string name="pin_required_message">Entrez votre code PIN pour lister les identifiants.\n\nTentatives restantes : %1$d</string>
+    <string name="error_pin_min_length">Le code PIN doit contenir au moins 4 caractères</string>
+    <string name="authenticating">Authentification en cours…</string>
+    <string name="error_init_pin_protocol">Impossible d'établir une connexion sécurisée</string>
+    <string name="verifying_pin">Vérification du code PIN…</string>
+    <string name="getting_metadata">Obtention des métadonnées d'identifiants…</string>
+    <string name="enumerating_rps">Énumération des tiers de confiance…</string>
+    <string name="loading_credentials_for">Chargement des identifiants pour %1$s…</string>
+    <string name="checking_pin_status">Vérification de l'état du code PIN…</string>
+    <string name="pin_retries_status">Tentatives de code PIN restantes : %1$d</string>
+    <string name="change_pin_title">Modifier le code PIN</string>
+    <string name="change">Modifier</string>
+    <string name="initializing_pin_protocol">Initialisation du protocole PIN…</string>
+    <string name="changing_pin">Modification du code PIN…</string>
+    
+    <!-- PIN Change Status Messages -->
+    <string name="pin_change_success_title">Code PIN modifié avec succès</string>
+    <string name="pin_change_success_message">Le code PIN de votre authentificateur a été modifié.\nUtilisez le nouveau code PIN pour les opérations futures.</string>
+    
+    <string name="pin_invalid_title">Code PIN invalide</string>
+    <string name="pin_invalid_message">Le code PIN actuel que vous avez entré est incorrect.\n\nVeuillez vérifier votre code PIN actuel et réessayer.</string>
+    
+    <string name="pin_blocked_title">Code PIN bloqué</string>
+    <string name="pin_blocked_message">Le code PIN de votre authentificateur est bloqué en raison de trop de tentatives incorrectes.\n\nVous devrez réinitialiser votre authentificateur.</string>
+    
+    <string name="pin_policy_violation_title">Violation de la politique de code PIN</string>
+    <string name="pin_policy_violation_message">Le nouveau code PIN ne respecte pas les exigences de votre authentificateur.\n\nLes codes PIN doivent contenir au moins 4 caractères (ou plus, selon l'authentificateur) et au maximum 63 octets.</string>
+    
+    <string name="pin_not_set_title">Aucun code PIN défini</string>
+    <string name="pin_not_set_message">Votre authentificateur n'a pas de code PIN défini.\n\nUtilisez « Définir le code PIN » au lieu de « Modifier le code PIN ».</string>
+    
+    <string name="pin_change_failed_title">Impossible de modifier le code PIN</string>
+    <string name="pin_change_failed_message">Erreur : %1$s\n\nVeuillez réessayer ou consulter la documentation de votre authentificateur.</string>
+    
+    <!-- Credential Management -->
+    <string name="credential_management_title">Gestion des identifiants</string>
+    <string name="credential_management_not_supported">Cet authentificateur ne prend pas en charge la gestion des identifiants.</string>
+    <string name="credential_stored_count">Identifiants stockés : %1$d</string>
+    <string name="credential_remaining_slots">Emplacements restants : %1$d</string>
+    <string name="credential_no_credentials">Aucun identifiant stocké sur ce périphérique.</string>
+    <string name="credential_no_rps">Aucun tiers de confiance trouvé.</string>
+    <string name="credential_found_rps">%1$d tiers de confiance trouvé(s) :</string>
+    <string name="credential_rp_name">Nom : %1$s</string>
+    <string name="credential_rp_header">Tiers de confiance %1$d : %2$s</string>
+    <string name="credential_number">Identifiant %1$d :</string>
+    <string name="credential_username">Nom d'utilisateur : %1$s</string>
+    <string name="credential_display_name">Nom d'affichage : %1$s</string>
+    <string name="credential_user_id">ID utilisateur : %1$s</string>
+    <string name="credential_id">ID d'identifiant : %1$s…</string>
+    <string name="credential_protection">Protection : %1$s</string>
+    <string name="credential_error_enumerate_rps">Erreur lors de l'énumération des tiers de confiance : %1$s</string>
+    <string name="credential_error_loading">Erreur : %1$s</string>
+    
+    <!-- Device Info -->
+    <string name="device_info_title">Informations sur le périphérique</string>
+    <string name="device_info_error">Erreur : %1$s</string>
+    <string name="device_info_versions">Versions : %1$s</string>
+    <string name="device_info_extensions">Extensions : %1$s</string>
+    <string name="device_info_aaguid">AAGUID : %1$s</string>
+    <string name="device_info_options">Options :</string>
+    <string name="device_info_option_item">  %1$s : %2$s</string>
+    <string name="device_info_max_msg_size">Taille maximale du message : %1$d</string>
+    <string name="device_info_pin_protocols">Protocoles d'authentification PIN/UV : %1$s</string>
+    <string name="device_info_max_creds_in_list">Nombre maximal d'identifiants dans la liste : %1$d</string>
+    <string name="device_info_max_cred_id_length">Longueur maximale de l'ID d'identifiant : %1$d</string>
+    <string name="device_info_transports">Transports : %1$s</string>
+    <string name="device_info_algorithms">Algorithmes pris en charge :</string>
+    <string name="device_info_algorithm_item">  Type : %1$s, Algorithme : %2$s</string>
+    <string name="device_info_min_pin_length">Longueur minimale du code PIN : %1$d</string>
+    <string name="device_info_firmware">Version du micrologiciel : %1$d</string>
+    
+    <string name="choose_account">Choisir un compte</string>
+    <string name="unknown_account">Compte inconnu</string>
+    
+    <string name="provider_enabled">✓ Fournisseur de clé d'accès activé</string>
+    <string name="provider_not_enabled">Fournisseur de clé d'accès non activé</string>
+    <string name="btn_enable">Activer</string>
+    
+    <!-- Main Screen Buttons -->
+    <string name="btn_show_device_status">Afficher l'état du périphérique</string>
+    <string name="btn_list_credentials">Lister les identifiants enregistrés</string>
+    <string name="btn_change_pin">Modifier le code PIN</string>
+    <string name="unknown_device">Périphérique inconnu</string>
+    <string name="device_info_format">VID : %1$s, PID : %2$s</string>
+    
+    <!-- Credentials Dialog -->
+    <string name="credentials_dialog_title">Identifiants stockés</string>
+    <string name="credentials_stats">%1$d identifiants • %2$d emplacements restants</string>
+    <string name="credential_detail_display_name">Nom d'affichage</string>
+    <string name="credential_detail_username">Nom d'utilisateur</string>
+    <string name="credential_detail_user_id">ID utilisateur</string>
+    <string name="credential_detail_credential_id">ID d'identifiant</string>
+    <string name="credential_detail_protection">Protection</string>
+    <string name="credential_delete">Supprimer l'identifiant</string>
+    <string name="credential_delete_confirm_title">Supprimer l'identifiant ?</string>
+    <string name="credential_delete_confirm_message">Cela supprimera définitivement la clé d'accès pour %1$s. Vous ne pourrez plus vous connecter à ce site avec cette clé de sécurité.</string>
+    <string name="credential_deleted">Identifiant supprimé</string>
+    <string name="credential_delete_error">Impossible de supprimer : %1$s</string>
+    <string name="delete">Supprimer</string>
+</resources>
