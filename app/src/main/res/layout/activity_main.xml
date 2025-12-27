@@ -25,7 +25,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Passkey provider: Enabled"
+            android:text="@string/provider_enabled"
             android:textSize="14sp"
             android:textColor="?android:attr/textColorPrimary" />
 
@@ -33,7 +33,7 @@
             android:id="@+id/btnEnableProvider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Enable"
+            android:text="@string/btn_enable"
             android:visibility="gone"
             style="?android:attr/buttonBarButtonStyle" />
     </LinearLayout>
@@ -42,7 +42,7 @@
         android:id="@+id/statusText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hold your security key against the back of your phone, or plug it in via USB"
+        android:text="@string/waiting_for_key"
         android:textSize="16sp"
         android:gravity="center"
         android:padding="16dp"
@@ -52,7 +52,7 @@
         android:id="@+id/connectionType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Not connected"
+        android:text="@string/not_connected"
         android:textSize="12sp"
         android:gravity="center"
         android:textColor="?android:attr/textColorSecondary" />
@@ -74,7 +74,7 @@
         android:id="@+id/btnDeviceInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1. Show Device Status"
+        android:text="@string/btn_show_device_status"
         android:enabled="false" />
 
     <Button
@@ -82,7 +82,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="2. List Saved Credentials"
+        android:text="@string/btn_list_credentials"
         android:enabled="false" />
 
     <Button
@@ -90,7 +90,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="3. Change PIN"
+        android:text="@string/btn_change_pin"
         android:enabled="false" />
 
     <ScrollView

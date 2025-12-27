@@ -182,6 +182,12 @@
     
     <string name="provider_enabled">✓ Passkey provider enabled</string>
     <string name="provider_not_enabled">Passkey provider not enabled</string>
+    <string name="btn_enable">Enable</string>
+    
+    <!-- Main Screen Buttons -->
+    <string name="btn_show_device_status">Show Device Status</string>
+    <string name="btn_list_credentials">List Saved Credentials</string>
+    <string name="btn_change_pin">Change PIN</string>
     <string name="unknown_device">Unknown Device</string>
     <string name="device_info_format">VID: %1$s, PID: %2$s</string>
     
