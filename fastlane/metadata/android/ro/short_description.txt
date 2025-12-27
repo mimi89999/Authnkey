@@ -1,0 +1,1 @@
+Furnizor de credențiale (Passkey) pentru chei de securitate hardware
