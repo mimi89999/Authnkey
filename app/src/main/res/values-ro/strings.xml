@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Authnkey</string>
-    <string name="credential_provider_subtitle">Chei Passkey pentru chei de securitate hardware</string>
+    <string name="credential_provider_subtitle">Cheie de acces Passkey pe tokenul de securitate hardware</string>
     <string name="credential_entry_title">Cheie de securitate</string>
     <string name="credential_create_description">Creați o cheie de acces passkey pe cheia de securitate pentru %1$s</string>
     <string name="credential_get_description">Utilizați cheia voastră de securitate pentru %1$s</string>
@@ -22,7 +22,7 @@
     <string name="instruction_verifying">Verificare…</string>
     <string name="instruction_verifying_pin">Verificarea codului PIN…</string>
     <string name="instruction_tag_lost">Pierderea contactului cu cheia de securitate\n\nRepoziționați și mențineți până la finalizare</string>
-    <string name="pin_dialog_title">Cod PIN cheie de securitate</string>
+    <string name="pin_dialog_title">Codul PIN al cheii de securitate</string>
     <string name="pin_dialog_message">Introduceți codul PIN de la cheia voastră de securitate</string>
     <string name="pin_hint">Introduceți codul PIN</string>
     <string name="pin_continue">Continuați</string>
@@ -93,7 +93,7 @@
     <string name="error_init_pin_protocol">Nu s-a putut stabili o conexiune sigură</string>
     <string name="verifying_pin">Verificarea codului PIN…</string>
     <string name="getting_metadata">Obținerea metadatelor de autentificare…</string>
-    <string name="enumerating_rps">Enumerarea entităților…</string>
+    <string name="enumerating_rps">Enumerarea părților bazate pe încredere…</string>
     <string name="loading_credentials_for">Se încarcă datele de autentificare pentru %1$s…</string>
     <string name="checking_pin_status">Verificarea stării codului PIN…</string>
     <string name="pin_retries_status">Număr de încercări PIN rămase: %1$d</string>
@@ -118,17 +118,17 @@
     <string name="credential_stored_count">Date de autentificare stocate: %1$d</string>
     <string name="credential_remaining_slots">Sloturi rămase: %1$d</string>
     <string name="credential_no_credentials">Nu există date de autentificare stocate pe acest dispozitiv.</string>
-    <string name="credential_no_rps">Nu s-au găsit entități de referință.</string>
-    <string name="credential_found_rps">S-au găsit%1$d entități de referință:</string>
+    <string name="credential_no_rps">Nu au fost găsite părți bazate pe încredere.</string>
+    <string name="credential_found_rps">S-au găsit%1$d părți bazate pe încredere:</string>
     <string name="credential_rp_name">Denumire: %1$s</string>
-    <string name="credential_rp_header">Entități %1$d: %2$s</string>
+    <string name="credential_rp_header">Parte bazată pe încredere %1$d: %2$s</string>
     <string name="credential_number">Date de autentificare %1$d:</string>
     <string name="credential_username">Nume utilizator: %1$s</string>
     <string name="credential_display_name">Nume afișat: %1$s</string>
     <string name="credential_user_id">ID utilizator: %1$s</string>
     <string name="credential_id">ID de autentificare: %1$s...</string>
     <string name="credential_protection">Protecție: %1$s</string>
-    <string name="credential_error_enumerate_rps">Eroare la enumerarea Entităților: %1$s</string>
+    <string name="credential_error_enumerate_rps">Eroare la enumerarea părților bazate pe încredere:%1$s</string>
     <string name="credential_error_loading">Eroare: %1$s</string>
     <string name="device_info_title">Informații despre dispozitiv</string>
     <string name="device_info_error">Eroare: %1$s</string>
@@ -148,11 +148,24 @@
     <string name="device_info_firmware">Versiune Firmware: %1$d</string>
     <string name="choose_account">Alegeți un cont</string>
     <string name="unknown_account">Cont necunoscut</string>
-    <string name="provider_enabled">✓ Cheia Passkey a fost activată</string>
-    <string name="provider_not_enabled">Cheia Passkey nu a fost activată</string>
+    <string name="provider_enabled">✓ Passkey activat</string>
+    <string name="provider_not_enabled">Passkey-ul nu a fost activat</string>
     <string name="unknown_device">Dispozitiv necunoscut</string>
     <string name="device_info_format">VID: %1$s, PID: %2$s</string>
     <string name="pin_hint_current">PIN actual (lăsați necompletat dacă nu este setat)</string>
     <string name="pin_hint_new">PIN Nou</string>
     <string name="pin_hint_confirm">Confirmă noul cod PIN</string>
+    <string name="credentials_dialog_title">Credențiale stocate</string>
+    <string name="credentials_stats">%1$d credențiale • %2$d sloturi rămase</string>
+    <string name="credential_detail_display_name">Numele afișat</string>
+    <string name="credential_detail_username">Nume de utilizator</string>
+    <string name="credential_detail_user_id">ID utilizator</string>
+    <string name="credential_detail_credential_id">ID credențial</string>
+    <string name="credential_detail_protection">Protecție</string>
+    <string name="credential_delete">Ștergeți datele de autentificare</string>
+    <string name="credential_delete_confirm_title">Ștergeți datele de autentificare?</string>
+    <string name="credential_delete_confirm_message">Această acțiune va șterge definitiv cheia passkey pentru %1$s. Nu vă veți mai putea conecta la acest site folosind această cheie de securitate.</string>
+    <string name="credential_deleted">Datele de autentificare au fost șterse</string>
+    <string name="credential_delete_error">Nu s-a putut șterge: %1$s</string>
+    <string name="delete">Șterge</string>
 </resources>
