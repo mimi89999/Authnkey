@@ -19,7 +19,7 @@
 
     <!-- Instructions -->
     <string name="instruction_connect_key">Hold your security key against the back of your phone, or plug it in via USB</string>
-    <string name="instruction_touch_key">Touch your security key to confirm…</string>
+    <string name="instruction_touch_key">Touch if using USB. If using NFC, hold your device near the NFC antenna and wait…</string>
     <string name="instruction_signing_in">Signing in…</string>
     <string name="instruction_creating">Creating passkey…</string>
     <string name="instruction_enter_pin">Enter your security key PIN</string>
