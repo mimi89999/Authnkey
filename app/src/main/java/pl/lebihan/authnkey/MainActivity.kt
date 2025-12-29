@@ -758,15 +758,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 val deviceInfo = CTAP.parseGetInfoStructured(infoResponse)
                 val isPinSet = deviceInfo?.clientPinSet == true
+                val minPinLength = deviceInfo?.minPinLength ?: 4
 
                 val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrNull()
 
                 pendingAction = null
 
                 if (isPinSet) {
-                    showChangePinDialogInternal(retries)
+                    showChangePinDialogInternal(minPinLength, retries)
                 } else {
-                    showSetPinDialogInternal()
+                    showSetPinDialogInternal(minPinLength)
                 }
 
             } catch (e: Exception) {
@@ -781,7 +782,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showSetPinDialogInternal() {
+    private fun showSetPinDialogInternal(minPinLength: Int) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_pin_set, null)
         val newPinField = dialogView.findViewById<PinInputField>(R.id.newPin)
         val confirmPinField = dialogView.findViewById<PinInputField>(R.id.confirmPin)
@@ -789,6 +790,7 @@ class MainActivity : AppCompatActivity() {
         val useNumeric = getKeyboardPreference()
         listOf(newPinField, confirmPinField).forEach { field ->
             field.useNumericKeyboard = useNumeric
+            field.minPinLength = minPinLength
         }
 
         val dialog = MaterialAlertDialogBuilder(this@MainActivity)
@@ -829,7 +831,7 @@ class MainActivity : AppCompatActivity() {
         resultText.text = ""
     }
 
-    private fun showChangePinDialogInternal(retries: Int?) {
+    private fun showChangePinDialogInternal(minPinLength: Int, retries: Int?) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_pin_change, null)
         val currentPinField = dialogView.findViewById<PinInputField>(R.id.currentPin)
         val newPinField = dialogView.findViewById<PinInputField>(R.id.newPin)
@@ -838,6 +840,9 @@ class MainActivity : AppCompatActivity() {
         val useNumeric = getKeyboardPreference()
         listOf(currentPinField, newPinField, confirmPinField).forEach { field ->
             field.useNumericKeyboard = useNumeric
+        }
+        listOf(newPinField, confirmPinField).forEach { field ->
+            field.minPinLength = minPinLength
         }
 
         val message = if (retries != null) {
