@@ -594,6 +594,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         dialog.show()
+        resultText.text = ""
     }
 
     private fun authenticateAndListCredentials(pin: String, usePreviewCommand: Boolean) {
