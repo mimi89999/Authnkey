@@ -235,6 +235,7 @@
     
     <string name="provider_enabled">✓ Passkey provider enabled</string>
     <string name="provider_not_enabled">Passkey provider not enabled</string>
+    <string name="provider_not_supported">Credential Manager is not supported on this device</string>
     <string name="btn_enable">Enable</string>
     
     <!-- Main Screen Buttons -->

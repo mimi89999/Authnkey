@@ -1072,36 +1072,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkProviderStatus() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            // Check if credentials feature is supported
-            if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CREDENTIALS)) {
-                providerStatusContainer.visibility = View.GONE
-                return
+        providerStatusContainer.visibility = View.VISIBLE
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            !packageManager.hasSystemFeature(PackageManager.FEATURE_CREDENTIALS)) {
+            providerStatusContainer.backgroundTintList = ColorStateList.valueOf(getColor(R.color.provider_not_supported_background))
+            providerStatusText.setTextColor(getColor(R.color.provider_not_supported_text))
+            providerStatusText.text = getString(R.string.provider_not_supported)
+            btnEnableProvider.visibility = View.GONE
+            return
+        }
+
+        try {
+            val credentialManager = getSystemService(android.credentials.CredentialManager::class.java)
+            val componentName = ComponentName(this, AuthnkeyCredentialService::class.java)
+            val isEnabled = credentialManager?.isEnabledCredentialProviderService(componentName) ?: false
+
+            if (isEnabled) {
+                providerStatusContainer.backgroundTintList = ColorStateList.valueOf(getColor(R.color.provider_enabled_background))
+                providerStatusText.setTextColor(getColor(R.color.provider_enabled_text))
+                providerStatusText.text = getString(R.string.provider_enabled)
+                btnEnableProvider.visibility = View.GONE
+            } else {
+                providerStatusContainer.backgroundTintList = ColorStateList.valueOf(getColor(R.color.provider_not_enabled_background))
+                providerStatusText.setTextColor(getColor(R.color.provider_not_enabled_text))
+                providerStatusText.text = getString(R.string.provider_not_enabled)
+                btnEnableProvider.visibility = View.VISIBLE
             }
-
-            providerStatusContainer.visibility = View.VISIBLE
-
-            try {
-                val credentialManager = getSystemService(android.credentials.CredentialManager::class.java)
-                val componentName = ComponentName(this, AuthnkeyCredentialService::class.java)
-                val isEnabled = credentialManager?.isEnabledCredentialProviderService(componentName) ?: false
-
-                if (isEnabled) {
-                    providerStatusContainer.setBackgroundColor(getColor(R.color.provider_enabled_background))
-                    providerStatusText.setTextColor(getColor(R.color.provider_enabled_text))
-                    providerStatusText.text = getString(R.string.provider_enabled)
-                    btnEnableProvider.visibility = View.GONE
-                } else {
-                    providerStatusContainer.setBackgroundColor(getColor(R.color.provider_not_enabled_background))
-                    providerStatusText.setTextColor(getColor(R.color.provider_not_enabled_text))
-                    providerStatusText.text = getString(R.string.provider_not_enabled)
-                    btnEnableProvider.visibility = View.VISIBLE
-                }
-            } catch (e: Exception) {
-                providerStatusContainer.visibility = View.GONE
-            }
-        } else {
+        } catch (e: Exception) {
             providerStatusContainer.visibility = View.GONE
+            resultText.text = e.message
         }
     }
 

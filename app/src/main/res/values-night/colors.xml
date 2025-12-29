@@ -7,6 +7,11 @@
     <!-- Provider status - not enabled (dark theme) -->
     <color name="provider_not_enabled_background">#BF360C</color>
     <color name="provider_not_enabled_text">#FFCC80</color>
+    <color name="provider_button_outline">#60D0BCFF</color>
+    
+    <!-- Provider status - not supported (dark theme) -->
+    <color name="provider_not_supported_background">#B71C1C</color>
+    <color name="provider_not_supported_text">#FFCDD2</color>
     
     <!-- Tag lost warning state -->
     <color name="warning_container">#7C2D12</color>

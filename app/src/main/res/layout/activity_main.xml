@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -17,7 +18,7 @@
         android:gravity="center_vertical"
         android:padding="12dp"
         android:layout_marginBottom="8dp"
-        android:background="?android:attr/colorBackground"
+        android:background="@drawable/bg_provider_status"
         android:visibility="gone">
 
         <TextView
@@ -29,13 +30,14 @@
             android:textSize="14sp"
             android:textColor="?android:attr/textColorPrimary" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEnableProvider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/btn_enable"
             android:visibility="gone"
-            style="?android:attr/buttonBarButtonStyle" />
+            app:strokeColor="@color/provider_button_outline"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
     </LinearLayout>
 
     <TextView
