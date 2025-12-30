@@ -36,11 +36,11 @@
     <string name="pin_dialog_title">Code PIN de la clé de sécurité</string>
     <string name="pin_dialog_message">Entrez le code PIN de votre clé de sécurité</string>
     <string name="pin_hint">Entrez le code PIN</string>
-    <string name="pin_hint_current">Code PIN actuel (laissez vide s\'il n\'est pas défini)</string>
+    <string name="pin_hint_current">Code PIN actuel</string>
     <string name="pin_hint_new">Nouveau code PIN</string>
     <string name="pin_hint_confirm">Confirmez le nouveau code PIN</string>
     <string name="pin_continue">Continuer</string>
-    <string name="pin_too_short">Le code PIN doit contenir au moins 4 caractères</string>
+    <string name="pin_too_short">Le code PIN doit contenir au moins %1$d caractères</string>
     <string name="pin_retries_remaining">Entrez le code PIN (%1$d tentatives restantes)</string>
     <string name="pin_incorrect_retries">Code PIN incorrect. %1$d tentatives restantes</string>
 
@@ -52,7 +52,6 @@
     <string name="error_generic">Erreur : %1$s</string>
     <string name="error_generic_with_trace">Erreur : %1$s\n\n%2$s</string>
     <string name="error_metadata">Erreur lors de la récupération des métadonnées : %1$s</string>
-    <string name="error_could_not_get_pin_status">Impossible d\'obtenir l\'état du code PIN</string>
     <string name="error_pins_dont_match">Les nouveaux codes PIN ne correspondent pas</string>
     <string name="error_uv_required_no_pin">Vérification requise mais aucun code PIN n\'est défini sur votre clé de sécurité</string>
 
@@ -235,6 +234,7 @@
 
     <string name="provider_enabled">✓ Fournisseur de clé d\'accès activé</string>
     <string name="provider_not_enabled">Fournisseur de clé d\'accès non activé</string>
+    <string name="provider_not_supported">Le gestionnaire d\'identifiants n\'est pas pris en charge sur cet appareil</string>
     <string name="btn_enable">Activer</string>
 
     <!-- Main Screen Buttons -->
