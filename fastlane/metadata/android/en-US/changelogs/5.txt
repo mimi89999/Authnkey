@@ -1,0 +1,15 @@
+- Add keyboard type toggle to switch between numeric and alphanumeric PIN input
+- Add support for setting a PIN when none is configured
+- Enforce device minimum PIN length in PIN set and change dialogs
+- Add credential management UI for viewing and deleting passkeys
+- Detect USB security keys automatically in main activity
+- Show dedicated instructions when NFC connection is lost
+- Report unsupported device state in provider status banner
+- Fix repeated USB permission prompts
+- Material Design dialogs and other UI improvements in main activity
+
+New translations:
+- Chinese by Poesty Li
+- French by Token2
+- Romanian by Vuzzy
+- Russian by Bob, Yurt Page
