@@ -215,4 +215,5 @@
     <string name="device_info_section_algorithms">Поддерживаемые Алгоритмы</string>
     <string name="error_unknown">Произошла непредвиденная ошибка</string>
     <string name="error_pin_auth_invalid">Аутентификация по ПИН не удалась</string>
+    <string name="provider_not_supported"></string>
 </resources>
