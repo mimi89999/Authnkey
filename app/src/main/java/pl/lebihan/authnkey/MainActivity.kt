@@ -589,7 +589,7 @@ class MainActivity : AppCompatActivity() {
         dialog.setOnShowListener {
             pinInputField.requestFocus()
             dialog.window?.let { window ->
-                WindowCompat.getInsetsController(window, pinInputField)?.show(WindowInsetsCompat.Type.ime())
+                WindowCompat.getInsetsController(window, pinInputField).show(WindowInsetsCompat.Type.ime())
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 pinInputField.validateAndGetPin()?.let { pin ->
@@ -804,7 +804,7 @@ class MainActivity : AppCompatActivity() {
         dialog.setOnShowListener {
             newPinField.requestFocus()
             dialog.window?.let { window ->
-                WindowCompat.getInsetsController(window, newPinField)?.show(WindowInsetsCompat.Type.ime())
+                WindowCompat.getInsetsController(window, newPinField).show(WindowInsetsCompat.Type.ime())
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val newPin = newPinField.pin ?: ""
@@ -862,7 +862,7 @@ class MainActivity : AppCompatActivity() {
         dialog.setOnShowListener {
             currentPinField.requestFocus()
             dialog.window?.let { window ->
-                WindowCompat.getInsetsController(window, currentPinField)?.show(WindowInsetsCompat.Type.ime())
+                WindowCompat.getInsetsController(window, currentPinField).show(WindowInsetsCompat.Type.ime())
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val currentPin = currentPinField.pin ?: ""
