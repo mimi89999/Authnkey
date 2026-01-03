@@ -475,7 +475,7 @@ class MainActivity : AppCompatActivity() {
                 awaitingNfcReconnect = false
                 pendingAction = null
                 resultText.text = getString(R.string.operation_cancelled)
-                updateConnectionStatus()
+                handleDisconnect()
             }
             .setOnDismissListener { pulseAnimator.cancel() }
             .create()
