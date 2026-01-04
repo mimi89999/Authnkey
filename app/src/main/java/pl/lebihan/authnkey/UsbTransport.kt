@@ -262,6 +262,7 @@ class UsbTransport(
                 0x1209,  // Generic (SoloKey, etc)
                 0x2C97,  // Ledger
                 0x18D1,  // Google (Titan)
+                0x349E,  // Token2 Sarl
             )
 
             return fidoVendors.contains(device.vendorId) || findFidoInterface(device) != null
