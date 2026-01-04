@@ -232,4 +232,7 @@
     <string name="credential_deleted">Identifiant supprimé</string>
     <string name="credential_delete_error">Impossible de supprimer : %1$s</string>
     <string name="delete">Supprimer</string>
+    <string name="security_key_detected">Clé de sécurité détectée</string>
+    <string name="using_nfc">Utilisation du NFC</string>
+    <string name="using_usb">Utilisation de l\'USB</string>
 </resources>
