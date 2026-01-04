@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                     intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
                 }
 
-                if (device != null && UsbTransport.isFidoDevice(device) && currentTransport == null) {
+                if (device != null && UsbTransport.isFidoDevice(device)) {
                     if (usbManager.hasPermission(device)) {
                         connectToUsbDevice(device)
                     } else {
@@ -409,6 +409,15 @@ class MainActivity : AppCompatActivity() {
                 currentTransport = transport
                 pinProtocol = PinProtocol(transport)
                 credentialManagement = null
+
+                // Dismiss NFC reconnect dialog if open
+                if (awaitingNfcReconnect) {
+                    reconnectDialog?.dismiss()
+                    reconnectDialog = null
+                    awaitingNfcReconnect = false
+                    pendingAction = null
+                    resultText.text = ""
+                }
 
                 updateConnectionStatus()
                 statusText.text = getString(R.string.security_key_detected)

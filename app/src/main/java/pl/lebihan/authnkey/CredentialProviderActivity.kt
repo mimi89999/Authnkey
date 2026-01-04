@@ -119,7 +119,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
                 }
 
-                if (device != null && UsbTransport.isFidoDevice(device) && currentTransport == null) {
+                if (device != null && UsbTransport.isFidoDevice(device)) {
                     if (usbManager.hasPermission(device)) {
                         connectToUsbDevice(device)
                     } else {
