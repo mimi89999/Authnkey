@@ -246,25 +246,57 @@ class UsbTransport(
         }
 
         /**
-         * Check if a device might be a FIDO device
-         * Note: Can't check HID usage page on Android, so we check known vendors
-         * or just try any HID device
+         * Check if a device has a HID interface
+         */
+        fun isHidDevice(device: UsbDevice): Boolean {
+            for (i in 0 until device.interfaceCount) {
+                if (device.getInterface(i).interfaceClass == UsbConstants.USB_CLASS_HID) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        /**
+         * Check if a device might be a FIDO device based on known vendor IDs
+         * or device name.
+         *
+         * Vendor list from https://github.com/Yubico/libfido2/blob/main/udev/fidodevs
+         * with own additions.
          */
         fun isFidoDevice(device: UsbDevice): Boolean {
-            // Known FIDO device vendors (partial list)
             val fidoVendors = setOf(
+                0x0483,  // STMicroelectronics
+                0x058b,  // Infineon
+                0x06cb,  // Synaptics
+                0x096e,  // Feitian
                 0x1050,  // Yubico
-                0x096E,  // Feitian
-                0x20A0,  // Ledger
-                0x2581,  // Ledger
-                0x0483,  // STMicroelectronics (some FIDO keys)
-                0x10C4,  // Silicon Labs (SoloKey)
-                0x1209,  // Generic (SoloKey, etc)
-                0x2C97,  // Ledger
-                0x18D1,  // Google (Titan)
+                0x10c4,  // Silicon Labs
+                0x1209,  // pid.codes
+                0x18d1,  // Google
+                0x1a44,  // VASCO
+                0x1d50,  // OpenMoko
+                0x1e0d,  // NEOWAVE
+                0x1ea8,  // Excelsecu
+                0x1fc9,  // NXP
+                0x20a0,  // Clay Logic
+                0x24dc,  // Aladdin
+                0x2581,  // Plug-up
+                0x2abe,  // Bluink
+                0x2c97,  // Ledger
+                0x2ccf,  // Hypersecu
+                0x311f,  // eWBM
+                0x32a3,  // GoTrustID
+                0x349e,  // Token2
+                0x4c4d,  // Unknown
+                0x534c,  // SatoshiLabs
             )
 
-            return fidoVendors.contains(device.vendorId) || findFidoInterface(device) != null
+            val nameMatch = device.productName?.let {
+                it.contains("FIDO", ignoreCase = true) || it.contains("U2F", ignoreCase = true)
+            } ?: false
+
+            return (fidoVendors.contains(device.vendorId) || nameMatch) && isHidDevice(device)
         }
 
         /**
