@@ -25,7 +25,7 @@
     <string name="pin_dialog_message">Введите ПИН-код вашего ключа безопасности</string>
     <string name="pin_hint">Введите ПИН-код</string>
     <string name="pin_continue">Продолжить</string>
-    <string name="pin_too_short">ПИН-код должен быть не менее 4 символов</string>
+    <string name="pin_too_short">ПИН-код должен быть не менее %1$d символов</string>
     <string name="pin_retries_remaining">Введите ПИН-код (осталось %1$d попыток)</string>
     <string name="error_format">%1$s\n\nПовторите попытку или отмените</string>
     <string name="error_retry_format">%1$s\n\nПопробуй ещё раз</string>
@@ -215,4 +215,5 @@
     <string name="device_info_section_algorithms">Поддерживаемые Алгоритмы</string>
     <string name="error_unknown">Произошла непредвиденная ошибка</string>
     <string name="error_pin_auth_invalid">Аутентификация по ПИН не удалась</string>
+    <string name="provider_not_supported">Менеджер учётных данных не поддерживается на данном устройстве</string>
 </resources>
