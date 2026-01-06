@@ -22,6 +22,10 @@ Additionally, Android's FIDO2 support depends on Google Play Services. Authnkey 
 - Multiple account selection
 - No Google Play Services required
 
+## What does not work
+
+- Cross-platform authentication (Scanning a QR code from another device)
+
 ## Requirements
 
 - Android 14+ (API 34)
