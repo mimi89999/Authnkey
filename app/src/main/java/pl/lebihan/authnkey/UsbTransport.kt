@@ -293,7 +293,9 @@ class UsbTransport(
             )
 
             val nameMatch = device.productName?.let {
-                it.contains("FIDO", ignoreCase = true) || it.contains("U2F", ignoreCase = true)
+                it.contains("FIDO", ignoreCase = true) ||
+                it.contains("U2F", ignoreCase = true) ||
+                it.contains("Pico Key", ignoreCase = true)
             } ?: false
 
             return (fidoVendors.contains(device.vendorId) || nameMatch) && isHidDevice(device)
