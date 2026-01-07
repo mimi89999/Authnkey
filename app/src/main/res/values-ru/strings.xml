@@ -25,7 +25,7 @@
     <string name="pin_dialog_message">Введите ПИН-код вашего ключа безопасности</string>
     <string name="pin_hint">Введите ПИН-код</string>
     <string name="pin_continue">Продолжить</string>
-    <string name="pin_too_short">ПИН-код должен быть не менее 4 символов</string>
+    <string name="pin_too_short">ПИН-код должен быть не менее %1$d символов</string>
     <string name="pin_retries_remaining">Введите ПИН-код (осталось %1$d попыток)</string>
     <string name="error_format">%1$s\n\nПовторите попытку или отмените</string>
     <string name="error_retry_format">%1$s\n\nПопробуй ещё раз</string>
@@ -38,20 +38,13 @@
     <string name="error_uv_required_no_pin">Требуется подтверждение, но на вашем ключе безопасности не установлен ПИН-код</string>
     <string name="security_key_icon_desc">Ключ безопасности</string>
     <string name="usb_permission_denied">В разрешении на USB отказано</string>
-    <string name="nfc_connected">Ключ безопасности подключен через NFC!</string>
-    <string name="device_info_format">VID: %1$s, PID: %2$s</string>
     <string name="choose_account">Выберите учётную запись</string>
     <string name="unknown_account">Неизвестная учётная запись</string>
     <string name="drag_handle_desc">Перетащите ручку</string>
-    <string name="usb_connected">Ключ безопасности подключён через USB!</string>
     <string name="nfc_error">Ошибка NFC: %1$s</string>
     <string name="usb_error">Ошибка USB: %1$s</string>
-    <string name="no_devices_title">Устройства не найдены</string>
-    <string name="no_devices_message">Ключи безопасности FIDO не обнаружены.\n\nУбедитесь, что ваш ключ безопасности подключён.</string>
     <string name="ok">Хорошо</string>
-    <string name="select_security_key">Выберите ключ безопасности</string>
     <string name="connecting_usb">Подключение к USB-устройству…</string>
-    <string name="connected_via">Подключено через %1$s</string>
     <string name="not_connected">Не подключено</string>
     <string name="waiting_for_key">Приложите ключ безопасности к задней панели телефона или подключите его через USB</string>
     <string name="connection_lost">Соединение потеряно</string>
@@ -126,7 +119,6 @@
     <string name="device_info_firmware">Версия прошивки: %1$d</string>
     <string name="provider_enabled">✓ Поставщик паролей Passkey включён</string>
     <string name="provider_not_enabled">Поставщик паролей Passkey не включён</string>
-    <string name="unknown_device">Неизвестное устройство</string>
     <string name="device_info_option_ep">Корпоративная аттестация</string>
     <string name="device_info_limit_max_cred_id_length">Макс. длина ИД учётных данных</string>
     <string name="btn_show_device_status">Показать состояние устройства</string>
@@ -215,4 +207,8 @@
     <string name="device_info_section_algorithms">Поддерживаемые Алгоритмы</string>
     <string name="error_unknown">Произошла непредвиденная ошибка</string>
     <string name="error_pin_auth_invalid">Аутентификация по ПИН не удалась</string>
+    <string name="provider_not_supported">Менеджер учётных данных не поддерживается на данном устройстве</string>
+    <string name="security_key_detected">Обнаружен ключ безопасности</string>
+    <string name="using_nfc">Используя NFC</string>
+    <string name="using_usb">Используя USB</string>
 </resources>
