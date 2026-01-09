@@ -36,6 +36,8 @@ import java.security.MessageDigest
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 class CredentialProviderActivity : AppCompatActivity() {
 
+    private data class ClientData(val json: String?, val hash: ByteArray)
+
     private var nfcAdapter: NfcAdapter? = null
     private lateinit var usbManager: UsbManager
 
@@ -49,6 +51,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     private var getRequest: ProviderGetCredentialRequest? = null
     private var callingAppInfo: CallingAppInfo? = null
     private var requestJson: String? = null
+    private var providedClientDataHash: ByteArray? = null
     private var isCreateRequest: Boolean = false
     private var pendingPin: String? = null  // PIN entered before key connection
     private var userVerification: UserVerification = UserVerification.PREFERRED
@@ -155,6 +158,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 callingAppInfo = createRequest!!.callingAppInfo
                 val publicKeyRequest = createRequest!!.callingRequest as? CreatePublicKeyCredentialRequest
                 requestJson = publicKeyRequest?.requestJson
+                providedClientDataHash = publicKeyRequest?.clientDataHash
                 showBottomSheet(getString(R.string.create_passkey), getString(R.string.instruction_connect_key))
             }
             getRequest != null -> {
@@ -163,6 +167,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 val options = getRequest!!.credentialOptions
                 val publicKeyOption = options.firstOrNull { it is GetPublicKeyCredentialOption } as? GetPublicKeyCredentialOption
                 requestJson = publicKeyOption?.requestJson
+                providedClientDataHash = publicKeyOption?.clientDataHash
                 showBottomSheet(getString(R.string.sign_in), getString(R.string.instruction_connect_key))
             }
             else -> {
@@ -640,25 +645,29 @@ class CredentialProviderActivity : AppCompatActivity() {
 
         // Build clientDataJSON with proper origin
         val origin = computeOrigin()
-
-        val clientDataJson = JSONObject().apply {
-            put("type", "webauthn.create")
-            put("challenge", requestJson.getString("challenge"))
-            put("origin", origin)
-            put("crossOrigin", false)
-        }.toString().replace("\\/", "/") // Android JSONObject escapes slashes
-
-        val clientDataHash = FidoCommands.hashClientData(clientDataJson)
+        val clientData = providedClientDataHash.let { hash ->
+            if (hash != null && origin.startsWith("https://")) {
+                ClientData(null, hash)
+            } else {
+                val json = JSONObject().apply {
+                    put("type", "webauthn.create")
+                    put("challenge", requestJson.getString("challenge"))
+                    put("origin", origin)
+                    put("crossOrigin", false)
+                }.toString().replace("\\/", "/") // Android JSONObject escapes slashes
+                ClientData(json, FidoCommands.hashClientData(json))
+            }
+        }
 
         // Compute pinUvAuthParam if needed
         var pinUvAuthParam: ByteArray? = null
         if (pinProtocol != null) {
-            pinUvAuthParam = pinProtocol.computeAuthParam(clientDataHash)
+            pinUvAuthParam = pinProtocol.computeAuthParam(clientData.hash)
         }
 
         // Build and send command
         val command = FidoCommands.buildMakeCredential(
-            clientDataHash = clientDataHash,
+            clientDataHash = clientData.hash,
             rpId = rpId,
             rpName = rpName,
             userId = userId,
@@ -713,10 +722,12 @@ class CredentialProviderActivity : AppCompatActivity() {
             put("type", "public-key")
             put("authenticatorAttachment", "cross-platform")
             put("response", JSONObject().apply {
-                put("clientDataJSON", Base64.encodeToString(
-                    clientDataJson.toByteArray(),
-                    Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
-                ))
+                clientData.json?.let {
+                    put("clientDataJSON", Base64.encodeToString(
+                        it.toByteArray(),
+                        Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
+                    ))
+                }
                 put("attestationObject", Base64.encodeToString(
                     attestationObject,
                     Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
@@ -780,25 +791,30 @@ class CredentialProviderActivity : AppCompatActivity() {
 
         // Build clientDataJSON with proper origin
         val origin = computeOrigin()
-        val clientDataJson = JSONObject().apply {
-            put("type", "webauthn.get")
-            put("challenge", requestJson.getString("challenge"))
-            put("origin", origin)
-            put("crossOrigin", false)
-        }.toString().replace("\\/", "/") // Android JSONObject escapes slashes
-
-        val clientDataHash = FidoCommands.hashClientData(clientDataJson)
+        val clientData = providedClientDataHash.let { hash ->
+            if (hash != null && origin.startsWith("https://")) {
+                ClientData(null, hash)
+            } else {
+                val json = JSONObject().apply {
+                    put("type", "webauthn.get")
+                    put("challenge", requestJson.getString("challenge"))
+                    put("origin", origin)
+                    put("crossOrigin", false)
+                }.toString().replace("\\/", "/") // Android JSONObject escapes slashes
+                ClientData(json, FidoCommands.hashClientData(json))
+            }
+        }
 
         // Compute pinUvAuthParam if needed
         var pinUvAuthParam: ByteArray? = null
         if (pinProtocol != null) {
-            pinUvAuthParam = pinProtocol.computeAuthParam(clientDataHash)
+            pinUvAuthParam = pinProtocol.computeAuthParam(clientData.hash)
         }
 
         // Build and send command
         val command = FidoCommands.buildGetAssertion(
             rpId = rpId,
-            clientDataHash = clientDataHash,
+            clientDataHash = clientData.hash,
             allowList = if (allowList.isNotEmpty()) allowList else null,
             requireUserVerification = false, // UV is provided by pinUvAuthParam
             pinUvAuthParam = pinUvAuthParam,
@@ -849,10 +865,12 @@ class CredentialProviderActivity : AppCompatActivity() {
             put("type", "public-key")
             put("authenticatorAttachment", "cross-platform")
             put("response", JSONObject().apply {
-                put("clientDataJSON", Base64.encodeToString(
-                    clientDataJson.toByteArray(),
-                    Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
-                ))
+                clientData.json?.let {
+                    put("clientDataJSON", Base64.encodeToString(
+                        it.toByteArray(),
+                        Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
+                    ))
+                }
                 put("authenticatorData", Base64.encodeToString(
                     selectedAssertion.authData,
                     Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
