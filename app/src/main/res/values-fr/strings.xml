@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Authnkey</string>
-
     <!-- Credential Provider Service -->
     <string name="credential_provider_subtitle">Clés d\'accès sur clés de sécurité matérielle</string>
     <string name="credential_entry_title">Clé de sécurité</string>
     <string name="credential_create_description">Créer une clé d\'accès sur votre clé de sécurité pour %1$s</string>
     <string name="credential_get_description">Utiliser votre clé de sécurité pour %1$s</string>
-
     <!-- Bottom Sheet -->
     <string name="security_key">Clé de sécurité</string>
     <string name="create_passkey">Créer une clé d\'accès</string>
@@ -16,7 +14,6 @@
     <string name="close">Fermer</string>
     <string name="yes">Oui</string>
     <string name="no">Non</string>
-
     <!-- Instructions -->
     <string name="instruction_connect_key">Tenez votre clé de sécurité contre l\'arrière de votre téléphone, ou branchez-la via USB</string>
     <string name="instruction_touch_key">Touchez votre clé de sécurité pour confirmer…</string>
@@ -31,7 +28,6 @@
     <string name="instruction_verifying">Vérification en cours…</string>
     <string name="instruction_verifying_pin">Vérification du code PIN…</string>
     <string name="instruction_tag_lost">Perte de contact avec la clé de sécurité\n\nRepositionnez et tenez jusqu\'à la fin</string>
-
     <!-- PIN Dialog -->
     <string name="pin_dialog_title">Code PIN de la clé de sécurité</string>
     <string name="pin_dialog_message">Entrez le code PIN de votre clé de sécurité</string>
@@ -43,7 +39,6 @@
     <string name="pin_too_short">Le code PIN doit contenir au moins %1$d caractères</string>
     <string name="pin_retries_remaining">Entrez le code PIN (%1$d tentatives restantes)</string>
     <string name="pin_incorrect_retries">Code PIN incorrect. %1$d tentatives restantes</string>
-
     <!-- Errors -->
     <string name="error_format">%1$s\n\nRéessayez ou annulez</string>
     <string name="error_retry_format">%1$s\n\nRéessayez</string>
@@ -54,7 +49,6 @@
     <string name="error_metadata">Erreur lors de la récupération des métadonnées : %1$s</string>
     <string name="error_pins_dont_match">Les nouveaux codes PIN ne correspondent pas</string>
     <string name="error_uv_required_no_pin">Vérification requise mais aucun code PIN n\'est défini sur votre clé de sécurité</string>
-
     <!-- User-friendly error messages (used by ErrorMapping) -->
     <string name="error_tag_lost">Perte de contact avec la clé de sécurité</string>
     <string name="error_not_supported_tag">Cette étiquette NFC n\'est pas une clé de sécurité</string>
@@ -78,12 +72,10 @@
     <string name="error_unsupported_algorithm">Algorithme de sécurité non pris en charge</string>
     <string name="error_ctap_unknown">Erreur de clé de sécurité : %1$s</string>
     <string name="error_unknown">Une erreur inattendue s\'est produite</string>
-
     <!-- Content descriptions -->
     <string name="security_key_icon_desc">Clé de sécurité</string>
     <string name="drag_handle_desc">Poignée de glissement</string>
     <string name="toggle_keyboard_type">Basculer le type de clavier</string>
-
     <!-- MainActivity (Debug) -->
     <string name="usb_permission_denied">Permission USB refusée</string>
     <string name="security_key_detected">Clé de sécurité détectée</string>
@@ -123,35 +115,25 @@
     <string name="change">Modifier</string>
     <string name="initializing_pin_protocol">Initialisation du protocole PIN…</string>
     <string name="changing_pin">Modification du code PIN…</string>
-
     <!-- PIN Change Status Messages -->
     <string name="pin_change_success_title">Code PIN modifié avec succès</string>
     <string name="pin_change_success_message">Le code PIN de votre authentificateur a été modifié.\nUtilisez le nouveau code PIN pour les opérations futures.</string>
-
     <string name="pin_invalid_title">Code PIN invalide</string>
     <string name="pin_invalid_message">Le code PIN actuel que vous avez entré est incorrect.\n\nVeuillez vérifier votre code PIN actuel et réessayer.</string>
-
     <string name="pin_blocked_title">Code PIN bloqué</string>
     <string name="pin_blocked_message">Le code PIN de votre authentificateur est bloqué en raison de trop de tentatives incorrectes.\n\nVous devrez réinitialiser votre authentificateur.</string>
-
     <string name="pin_policy_violation_title">Violation de la politique de code PIN</string>
     <string name="pin_policy_violation_message">Le nouveau code PIN ne respecte pas les exigences de votre authentificateur.\n\nLes codes PIN doivent contenir au moins 4 caractères (ou plus, selon l\'authentificateur) et au maximum 63 octets.</string>
-
     <string name="pin_not_set_title">Aucun code PIN défini</string>
     <string name="pin_not_set_message">Votre authentificateur n\'a pas de code PIN défini.\n\nUtilisez « Définir le code PIN » au lieu de « Modifier le code PIN ».</string>
-
     <string name="pin_set_success_title">Code PIN défini avec succès</string>
     <string name="pin_set_success_message">Le code PIN de votre authentificateur a été défini.\nVeuillez utiliser ce code PIN pour les opérations futures.</string>
-
     <string name="pin_already_set_title">Code PIN déjà défini</string>
     <string name="pin_already_set_message">Un code PIN est déjà configuré sur cet authentificateur.</string>
-
     <string name="pin_set_failed_title">Échec de la définition du code PIN</string>
     <string name="pin_set_failed_message">Erreur : %1$s\n\nVeuillez réessayer ou consulter la documentation de votre authentificateur.</string>
-
     <string name="pin_change_failed_title">Impossible de modifier le code PIN</string>
     <string name="pin_change_failed_message">Erreur : %1$s\n\nVeuillez réessayer ou consulter la documentation de votre authentificateur.</string>
-
     <!-- Credential Management -->
     <string name="credential_management_title">Gestion des identifiants</string>
     <string name="credential_management_not_supported">Cet authentificateur ne prend pas en charge la gestion des identifiants.</string>
@@ -170,7 +152,6 @@
     <string name="credential_protection">Protection : %1$s</string>
     <string name="credential_error_enumerate_rps">Erreur lors de l\'énumération des tiers de confiance : %1$s</string>
     <string name="credential_error_loading">Erreur : %1$s</string>
-
     <!-- Device Info -->
     <string name="device_info_title">Informations sur le périphérique</string>
     <string name="device_info_error">Erreur : %1$s</string>
@@ -188,7 +169,6 @@
     <string name="device_info_algorithm_item">  Type : %1$s, Algorithme : %2$s</string>
     <string name="device_info_min_pin_length">Longueur minimale du code PIN : %1$d</string>
     <string name="device_info_firmware">Version du micrologiciel : %1$d</string>
-
     <!-- Device Info Dialog Sections -->
     <string name="device_info_section_versions">Versions</string>
     <string name="device_info_section_extensions">Extensions</string>
@@ -198,7 +178,6 @@
     <string name="device_info_section_algorithms">Algorithmes pris en charge</string>
     <string name="device_info_section_limits">Limites</string>
     <string name="device_info_dialog_title">État du périphérique</string>
-
     <!-- Device Info Option Names -->
     <string name="device_info_option_rk">Clés résidentes</string>
     <string name="device_info_option_up">Présence utilisateur</string>
@@ -217,7 +196,6 @@
     <string name="device_info_option_bioEnroll">Inscription biométrique</string>
     <string name="device_info_option_userVerificationMgmtPreview">Gestion de la vérification utilisateur (Aperçu)</string>
     <string name="device_info_option_noMcGaPermissionsWithClientPin">Pas de permissions MC/GA avec PIN client</string>
-
     <!-- Device Info Limit Labels -->
     <string name="device_info_limit_max_msg_size">Taille maximale du message</string>
     <string name="device_info_limit_max_creds_in_list">Nombre maximal d\'identifiants dans la liste</string>
@@ -225,20 +203,16 @@
     <string name="device_info_limit_min_pin_length">Longueur minimale du code PIN</string>
     <string name="device_info_limit_pin_protocols">Protocoles d\'authentification PIN/UV</string>
     <string name="device_info_limit_firmware">Version du micrologiciel</string>
-
     <string name="choose_account">Choisir un compte</string>
     <string name="unknown_account">Compte inconnu</string>
-
     <string name="provider_enabled">✓ Fournisseur de clé d\'accès activé</string>
     <string name="provider_not_enabled">Fournisseur de clé d\'accès non activé</string>
     <string name="provider_not_supported">Le gestionnaire d\'identifiants n\'est pas pris en charge sur cet appareil</string>
     <string name="btn_enable">Activer</string>
-
     <!-- Main Screen Buttons -->
     <string name="btn_show_device_status">Afficher l\'état du périphérique</string>
     <string name="btn_list_credentials">Lister les identifiants enregistrés</string>
     <string name="btn_change_pin">Modifier le code PIN</string>
-
     <!-- Credentials Dialog -->
     <string name="credentials_dialog_title">Identifiants stockés</string>
     <string name="credentials_stats">%1$d identifiants • %2$d emplacements restants</string>
