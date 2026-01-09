@@ -216,4 +216,7 @@
     <string name="credential_deleted">凭据已删除</string>
     <string name="credential_delete_error">删除失败：%1$s</string>
     <string name="delete">删除</string>
+    <string name="using_nfc">使用 NFC</string>
+    <string name="security_key_detected">检测到安全密钥</string>
+    <string name="using_usb">使用 USB</string>
 </resources>
