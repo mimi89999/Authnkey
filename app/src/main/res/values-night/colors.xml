@@ -16,6 +16,9 @@
     <!-- Tag lost warning state -->
     <color name="warning_container">#7C2D12</color>
     
+    <!-- Delete/destructive action -->
+    <color name="destructive_action">#E57373</color>
+    
     <!-- Letter avatar colors for dark theme (slightly muted backgrounds, lighter text) -->
     <array name="avatar_background_colors">
         <item>#4E342E</item> <!-- Red-brown -->
