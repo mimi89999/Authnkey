@@ -16,6 +16,9 @@
     <!-- Tag lost warning state -->
     <color name="warning_container">#FED7AA</color>
     
+    <!-- Delete/destructive action -->
+    <color name="destructive_action">#C62828</color>
+    
     <!-- Letter avatar colors (background / text pairs) -->
     <array name="avatar_background_colors">
         <item>#FFCDD2</item> <!-- Red -->
