@@ -1,0 +1,6 @@
+- Improve USB FIDO device detection and automatic transport switching
+- Remove USB scan button (no longer needed with auto-detection)
+- Add support for privileged callers providing their own clientDataHash
+- Improve compatibility with CTAP 2.1 PRE authenticators
+- Improve system bar insets handling in main activity
+- Preserve class names in minified builds
