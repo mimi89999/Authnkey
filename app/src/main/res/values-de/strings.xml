@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="credentials_stats">%1$d Zugangsdaten • %2$d Freie Speicherplätze</string>
+    <string name="error_retry_format">%1$s\n\nVersuchs nochmal</string>
+    <string name="error_format">%1$s\n\nErneut versuchen oder abbrechen</string>
+    <string name="pin_already_set_message">Es wurde bereits ein PIN gesetzt.</string>
+    <string name="device_info_option_alwaysUv">UV stets erforderlich</string>
+    <string name="error_unknown">Unerwarteter Fehler</string>
+    <string name="instruction_authenticating">Authentifizierung läuft…</string>
+    <string name="authenticating">Authentifizierung läuft…</string>
+    <string name="device_info_option_authnrCfg">Authentifikator-Konfiguration</string>
+    <string name="app_name">Authnkey</string>
+    <string name="device_info_option_bioEnroll">Biometrische Registrierung</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="change_pin_title">PIN ändern</string>
+    <string name="btn_change_pin">PIN ändern</string>
+    <string name="changing_pin">Ändere PIN…</string>
+    <string name="checking_pin_status">PIN-Status wird überprüft…</string>
+    <string name="choose_account">Bitte eine Account auswählen</string>
+    <string name="close">Schließen</string>
+    <string name="pin_hint_confirm">Neue PIN bestätigen</string>
+    <string name="instruction_connecting_usb">Verbindung zu USB-Gerät wird hergestellt…</string>
+    <string name="connecting_usb">Verbindung zum USB-Gerät wird hergestellt…</string>
+    <string name="connection_lost_title">Verbindung unterbrochen</string>
+    <string name="connection_lost">Verbindung unterbrochen</string>
+</resources>
