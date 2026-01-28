@@ -36,8 +36,8 @@ object FidoCommands {
                 4 to array {
                     for ((type, alg) in pubKeyCredParams) {
                         map {
-                            "type" to type
                             "alg" to alg
+                            "type" to type
                         }
                     }
                 }
