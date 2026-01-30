@@ -1,0 +1,16 @@
+Authnkey è un provider di credenziali che consente di utilizzare chiavi di sicurezza FIDO2 (come YubiKey o SoloKey) per l'autenticazione tramite passkey su Android.
+
+Il supporto WebAuthn integrato di Android presenta una lacuna significativa: non supporta CTAP2 su NFC. Ciò significa che non è possibile utilizzare passkey protette da PIN o credenziali rilevabili con chiavi di sicurezza NFC: si è limitati alla sola all'autenticazione U2F base via NFC). Authnkey colma questa lacuna implementando il protocollo CTAP2 completo.
+
+L'app si registra come provider di credenziali, quindi qualsiasi app o browser che supporti l'API Android Credential Manager offrirà Authnkey come opzione quando vengono richieste passkey.
+
+Questo funziona anche su dispositivi senza Google Play Services, poiché Authnkey implementa direttamente il protocollo CTAP2 anziché affidarsi all'API FIDO2 di Google.
+
+Funzionalità supportate:
+- Creazione e autenticazione attraverso passkey
+- Verifica PIN
+- Discoverable credentials
+- Account multipli per sito
+- Comunicazione con token via NFC e USB
+
+Non è richiesto il rooting.
