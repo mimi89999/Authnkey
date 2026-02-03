@@ -1,1 +1,1 @@
-Passkey hitelesítőadat-szolgáltató hardveres biztonsági kulcsokhoz
+Passkey hitelesítőadat-szolgáltatás hardveres biztonsági kulcsokhoz
