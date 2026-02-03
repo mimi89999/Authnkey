@@ -57,4 +57,13 @@
     <string name="error_pin_not_set">A biztonsági kulcshoz nincs PIN beállítva</string>
     <string name="error_pin_auth_invalid">PIN hitelesítés sikertelen</string>
     <string name="error_pin_auth_blocked">Túl sok hibás PIN‑kísérlet</string>
+    <string name="error_credential_excluded">Ez a Passkey már létezik</string>
+    <string name="error_operation_denied">A biztonsági kulcs megtagadta a műveletet</string>
+    <string name="error_operation_cancelled">Művelet megszakítva</string>
+    <string name="error_user_action_timeout">Az érintés nem volt időben érzékelhető</string>
+    <string name="error_timeout">A művelet időkorlátja lejárt</string>
+    <string name="error_key_store_full">A biztonsági kulcs tárolója megtelt</string>
+    <string name="error_unsupported_algorithm">Nem támogatott biztonsági algoritmus</string>
+    <string name="error_ctap_unknown">Biztonsági kulcs hiba: %1$s</string>
+    <string name="error_unknown">Váratlan hiba történt</string>
 </resources>
