@@ -139,6 +139,36 @@ class PinProtocol(private val transport: FidoTransport) {
         }
     }
 
+    // CTAP2.1 subCommand 0x06: getPinUvAuthTokenUsingUvWithPermissions
+    suspend fun requestUvToken(permissions: Int, rpId: String? = null): Result<Unit> {
+        val secret = sharedSecret
+            ?: return Result.failure(Exception("Shared secret not available"))
+        val pubKey = platformPublicKey
+            ?: return Result.failure(Exception("Platform key not available"))
+
+        return try {
+            val command = buildGetUvTokenCommand(pubKey, permissions, rpId)
+            val response = transport.sendCtapCommand(command)
+
+            if (response.isEmpty()) {
+                return Result.failure(Exception("Empty response"))
+            }
+
+            val error = CTAP.getResponseError(response)
+            if (error != null) {
+                return Result.failure(CTAP.Exception(error))
+            }
+
+            val encryptedToken = parsePinTokenResponse(response)
+                ?: return Result.failure(Exception("Failed to parse UV token"))
+            pinToken = aesDecrypt(secret, encryptedToken)
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getPinRetries(): Result<Int> {
         return try {
             val response = transport.sendCtapCommand(CTAP.buildGetPinRetriesCommand())
@@ -153,6 +183,29 @@ class PinProtocol(private val transport: FidoTransport) {
                 ?: return Result.failure(Exception("Failed to parse response"))
             val retries = parsed.int(3)
                 ?: return Result.failure(Exception("Missing retries field"))
+
+            Result.success(retries)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // CTAP2.1 subCommand 0x07: getUvRetries
+    suspend fun getUvRetries(): Result<Int> {
+        return try {
+            val response = transport.sendCtapCommand(CTAP.buildGetUvRetriesCommand())
+            if (!CTAP.isSuccess(response)) {
+                return Result.failure(CTAP.Exception(
+                    CTAP.getResponseError(response) ?: CTAP.Error.OTHER
+                ))
+            }
+
+            val data = response.drop(1).toByteArray()
+            val parsed = CborMap.decode(data)
+                ?: return Result.failure(Exception("Failed to parse response"))
+            // UV retries are in key 5 per CTAP2.1 spec
+            val retries = parsed.int(5)
+                ?: return Result.failure(Exception("Missing UV retries field"))
 
             Result.success(retries)
         } catch (e: Exception) {
@@ -313,6 +366,25 @@ class PinProtocol(private val transport: FidoTransport) {
                 9 to permissions
                 if (rpId != null) {
                     0x0A to rpId
+                }
+            }
+        }
+    }
+
+    // subCommand 0x06 — no PIN hash, authenticator performs UV internally
+    private fun buildGetUvTokenCommand(
+        platformKey: ECPublicKey,
+        permissions: Int,
+        rpId: String? = null
+    ): ByteArray {
+        return byteArrayOf(CTAP.CMD_CLIENT_PIN.toByte()) + cbor {
+            map {
+                1 to 1  // pinUvAuthProtocol
+                2 to CTAP.PIN_CMD_GET_PIN_UV_TOKEN_USING_UV  // subCommand 0x06
+                3 to encodeCoseKey(platformKey)  // keyAgreement
+                9 to permissions  // permissions
+                if (rpId != null) {
+                    0x0A to rpId  // rpId
                 }
             }
         }

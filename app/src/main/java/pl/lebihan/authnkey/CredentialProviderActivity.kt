@@ -56,6 +56,8 @@ class CredentialProviderActivity : AppCompatActivity() {
     private var pendingPin: String? = null  // PIN entered before key connection
     private var userVerification: UserVerification = UserVerification.PREFERRED
 
+    private var deviceSupportsUv: Boolean = false
+
     private var usbPermissionRequested = false
 
     private enum class UserVerification {
@@ -191,6 +193,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         bottomSheet = CredentialBottomSheet.newInstance(status, instruction).apply {
             onCancelClick = { cancelOperation() }
             onPinEntered = { pin -> handlePinEntered(pin) }
+            onBiometricSelected = { handleBiometricSelected() }
         }
         bottomSheet?.show(supportFragmentManager, CredentialBottomSheet.TAG)
         bottomSheet?.setState(CredentialBottomSheet.State.WAITING)
@@ -209,6 +212,20 @@ class CredentialProviderActivity : AppCompatActivity() {
             setInstruction(getString(R.string.instruction_connect_key))
             setState(CredentialBottomSheet.State.WAITING)
             bottomSheet?.showPinInput(false)
+        }
+    }
+
+    private fun handleBiometricSelected() {
+        if (currentTransport?.isConnected == true) {
+            val json = JSONObject(requestJson!!)
+            bottomSheet?.showBiometricWaiting()
+            setInstruction(getString(R.string.instruction_waiting_biometric))
+            showProgress(true)
+            authenticateWithUvAndExecute(json)
+        } else {
+            // Key not connected yet — show waiting state
+            setInstruction(getString(R.string.instruction_connect_key))
+            setState(CredentialBottomSheet.State.WAITING)
         }
     }
 
@@ -263,6 +280,17 @@ class CredentialProviderActivity : AppCompatActivity() {
         setInstruction(getString(R.string.instruction_enter_pin))
         setState(CredentialBottomSheet.State.PIN)
         bottomSheet?.showPinInput(true)
+    }
+
+    private fun showPinDialogWithBiometric(retries: Int, requestJson: JSONObject) {
+        runOnUiThread {
+            showProgress(false)
+            bottomSheet?.hideAccounts()
+            setInstruction(getString(R.string.pin_retries_remaining, retries))
+            setState(CredentialBottomSheet.State.PIN)
+            bottomSheet?.showPinInput(true)
+            bottomSheet?.showBiometricOption(true)
+        }
     }
 
     override fun onResume() {
@@ -459,6 +487,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 // Check if clientPin is actually set on the device
                 val deviceHasPin = deviceInfo?.clientPinSet == true
                 val alwaysUv = deviceInfo?.options?.get("alwaysUv") == true
+                deviceSupportsUv = deviceInfo?.supportsBuiltInUv == true
 
                 when {
                     // We already have PIN from pre-prompt
@@ -466,23 +495,41 @@ class CredentialProviderActivity : AppCompatActivity() {
                         setInstruction(getString(R.string.instruction_authenticating))
                         authenticateAndExecute(pendingPin!!, json)
                     }
-                    // UV required but device has no PIN - fail
-                    userVerification == UserVerification.REQUIRED && !deviceHasPin -> {
+                    // UV required but device has no PIN and no built-in UV - fail
+                    userVerification == UserVerification.REQUIRED && !deviceHasPin && !deviceSupportsUv -> {
                         throw AuthnkeyError.UserVerificationRequiredNoPin()
+                    }
+                    // UV required/preferred, device supports built-in UV but no PIN set
+                    // -> go directly to biometric
+                    userVerification != UserVerification.DISCOURAGED && deviceSupportsUv && !deviceHasPin -> {
+                        authenticateWithUvAndExecute(json)
+                    }
+                    // UV required/preferred, device has both PIN and built-in UV
+                    // -> show PIN input with biometric option
+                    userVerification != UserVerification.DISCOURAGED && deviceHasPin && deviceSupportsUv -> {
+                        val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
+                        showPinDialogWithBiometric(retries, json)
                     }
                     // alwaysUv but device has no PIN - fail
-                    alwaysUv && !deviceHasPin -> {
+                    alwaysUv && !deviceHasPin && !deviceSupportsUv -> {
                         throw AuthnkeyError.UserVerificationRequiredNoPin()
                     }
-                    // UV required/preferred and device has PIN - need to get PIN
+                    // UV required/preferred and device has PIN only - need to get PIN
                     userVerification != UserVerification.DISCOURAGED && deviceHasPin -> {
                         val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
                         showPinDialog(retries, json)
                     }
-                    // UV discouraged but device has alwaysUv - need PIN anyway
+                    // UV discouraged but device has alwaysUv - need PIN or UV anyway
                     userVerification == UserVerification.DISCOURAGED && alwaysUv -> {
-                        val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
-                        showPinDialog(retries, json)
+                        if (deviceSupportsUv) {
+                            // Use built-in UV silently since UV is discouraged but alwaysUv forces it
+                            authenticateWithUvAndExecute(json)
+                        } else if (deviceHasPin) {
+                            val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
+                            showPinDialog(retries, json)
+                        } else {
+                            throw AuthnkeyError.UserVerificationRequiredNoPin()
+                        }
                     }
                     // UV discouraged or preferred with no PIN - try without
                     else -> {
@@ -508,7 +555,11 @@ class CredentialProviderActivity : AppCompatActivity() {
                     Log.d(TAG, "Authenticator requires PIN despite UV=discouraged")
                     val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
                     val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
-                    showPinDialog(retries, json)
+                    if (deviceSupportsUv) {
+                        showPinDialogWithBiometric(retries, json)
+                    } else {
+                        showPinDialog(retries, json)
+                    }
                 } else {
                     throw e
                 }
@@ -562,6 +613,10 @@ class CredentialProviderActivity : AppCompatActivity() {
                                 setInstruction(getString(R.string.pin_incorrect_retries, retries))
                                 setState(CredentialBottomSheet.State.PIN)
                                 bottomSheet?.showPinInput(true)
+                                // Re-show biometric option if device supports it
+                                if (deviceSupportsUv) {
+                                    bottomSheet?.showBiometricOption(true)
+                                }
                             }
                         } else {
                             throw AuthnkeyError.PinBlocked()
@@ -578,6 +633,121 @@ class CredentialProviderActivity : AppCompatActivity() {
                 Log.e(TAG, "Authentication error", e)
                 handleError(e)
             }
+        }
+    }
+
+    private fun authenticateWithUvAndExecute(requestJson: JSONObject) {
+        scope.launch {
+            try {
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
+
+                runOnUiThread {
+                    bottomSheet?.showBiometricWaiting()
+                    setInstruction(getString(R.string.instruction_waiting_biometric))
+                    showProgress(true)
+                }
+
+                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
+                if (!initialized) {
+                    throw AuthnkeyError.PinProtocolInitFailed()
+                }
+
+                // Determine permissions and rpId
+                val permissions: Int
+                val rpId: String?
+
+                if (isCreateRequest) {
+                    permissions = PinProtocol.PERMISSION_MC
+                    rpId = requestJson.getJSONObject("rp").getString("id")
+                } else {
+                    permissions = PinProtocol.PERMISSION_GA
+                    rpId = requestJson.getString("rpId")
+                }
+
+                withContext(Dispatchers.IO) {
+                    protocol.requestUvToken(permissions, rpId)
+                }.onFailure { e ->
+                    if (e is CTAP.Exception) {
+                        when (e.error) {
+                            CTAP.Error.UV_INVALID -> {
+                                // Biometric didn't match — let user retry or switch to PIN
+                                Log.d(TAG, "UV_INVALID: biometric verification failed")
+                                val uvRetries = withContext(Dispatchers.IO) {
+                                    protocol.getUvRetries()
+                                }.getOrDefault(0)
+
+                                if (uvRetries > 0) {
+                                    runOnUiThread {
+                                        showProgress(false)
+                                        setInstruction(getString(R.string.error_uv_invalid_retries, uvRetries))
+                                        setState(CredentialBottomSheet.State.PIN)
+                                        bottomSheet?.showPinInput(true)
+                                        bottomSheet?.showBiometricOption(true)
+                                    }
+                                } else {
+                                    // UV exhausted, fall back to PIN
+                                    fallbackToPinAfterUvFailure(requestJson)
+                                }
+                                return@launch
+                            }
+                            CTAP.Error.UV_BLOCKED -> {
+                                Log.d(TAG, "UV_BLOCKED: falling back to PIN")
+                                fallbackToPinAfterUvFailure(requestJson)
+                                return@launch
+                            }
+                            CTAP.Error.INVALID_SUBCOMMAND,
+                            CTAP.Error.INVALID_COMMAND,
+                            CTAP.Error.INVALID_PARAMETER -> {
+                                // Authenticator doesn't actually support UV subcommand,
+                                // fall back to PIN silently
+                                Log.d(TAG, "UV subcommand not supported, falling back to PIN")
+                                deviceSupportsUv = false
+                                fallbackToPinAfterUvFailure(requestJson)
+                                return@launch
+                            }
+                            CTAP.Error.OPERATION_DENIED -> {
+                                // User denied on device (e.g. tapped cancel on the key)
+                                runOnUiThread {
+                                    showProgress(false)
+                                    setInstruction(getString(R.string.error_operation_denied))
+                                    setState(CredentialBottomSheet.State.PIN)
+                                    bottomSheet?.showPinInput(true)
+                                    if (deviceSupportsUv) {
+                                        bottomSheet?.showBiometricOption(true)
+                                    }
+                                }
+                                return@launch
+                            }
+                            else -> throw e
+                        }
+                    }
+                    throw e
+                }
+
+                // UV succeeded — proceed with the request
+                executeRequest(requestJson, protocol)
+
+            } catch (e: Exception) {
+                Log.e(TAG, "UV authentication error", e)
+                handleError(e)
+            }
+        }
+    }
+
+    private suspend fun fallbackToPinAfterUvFailure(requestJson: JSONObject) {
+        val deviceHasPin = deviceInfo?.clientPinSet == true
+        if (deviceHasPin) {
+            val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
+            val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
+            runOnUiThread {
+                showProgress(false)
+                setInstruction(getString(R.string.error_uv_blocked))
+                setState(CredentialBottomSheet.State.PIN)
+                bottomSheet?.showPinInput(true)
+                // Don't show biometric option since UV is blocked/unsupported
+            }
+        } else {
+            throw AuthnkeyError.UvBlocked()
         }
     }
 

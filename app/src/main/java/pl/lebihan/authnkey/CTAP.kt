@@ -103,6 +103,9 @@ data class DeviceInfo(
 
     val clientPinSet: Boolean
         get() = options["clientPin"] == true
+
+    val supportsBuiltInUv: Boolean
+        get() = options["uv"] == true
 }
 
 object CTAP {
@@ -124,6 +127,9 @@ object CTAP {
     const val PIN_CMD_SET_PIN = 0x03
     const val PIN_CMD_CHANGE_PIN = 0x04
     const val PIN_CMD_GET_PIN_TOKEN = 0x05
+    const val PIN_CMD_GET_PIN_UV_TOKEN_USING_UV = 0x06
+    const val PIN_CMD_GET_UV_RETRIES = 0x07
+    const val PIN_CMD_GET_PIN_UV_TOKEN_USING_PIN = 0x09
 
     // AuthData flags
     const val AUTH_DATA_FLAG_UP = 0x01  // User present
@@ -285,6 +291,15 @@ object CTAP {
             map {
                 1 to 1
                 2 to 1
+            }
+        }
+    }
+
+    fun buildGetUvRetriesCommand(): ByteArray {
+        return byteArrayOf(CMD_CLIENT_PIN.toByte()) + cbor {
+            map {
+                1 to 1
+                2 to PIN_CMD_GET_UV_RETRIES
             }
         }
     }
