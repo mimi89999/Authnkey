@@ -1,0 +1,16 @@
+Authnkey je poskytovatel přihlašovacích údajů, který umožňuje používat bezpečnostní klíče FIDO2 (jako YubiKey nebo SoloKey) pro autentifikaci pomocí přístupových klíčů v systému Android.
+
+Vestavěná podpora WebAuthn v systému Android má významnou mezeru: nepodporuje CTAP2 přes NFC. To znamená, že nemůžete používat přístupové klíče chráněné kódem PIN ani zjistitelné přihlašovací údaje s bezpečnostními klíči NFC – jste omezeni na základní ověřování U2F. Authnkey tuto mezeru vyplňuje implementací kompletního protokolu CTAP2.
+
+Aplikace se registruje jako poskytovatel přihlašovacích údajů, takže jakákoli aplikace nebo prohlížeč, který podporuje API Android Credential Manager, nabídne Authnkey jako možnost při požadavku na přístupové klíče.
+
+To funguje i na zařízeních bez služeb Google Play, protože Authnkey implementuje protokol CTAP2 přímo, místo aby se spoléhal na API FIDO2 od společnosti Google.
+
+Podporované funkce:
+- Vytváření a ověřování přístupových klíčů
+- Ověřování kódu PIN
+- Objevitelné přihlašovací údaje
+- Více účtů na jeden web
+- Přenosy NFC a USB
+
+Není vyžadován root.
