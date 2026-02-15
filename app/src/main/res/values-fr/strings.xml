@@ -253,4 +253,9 @@
     <string name="credential_deleted">Identifiant supprimé</string>
     <string name="credential_delete_error">Impossible de supprimer : %1$s</string>
     <string name="delete">Supprimer</string>
+    <string name="btn_use_biometric">Utiliser l\'empreinte digitale</string>
+    <string name="error_uv_invalid_retries">Empreinte digitale non reconnue. %1$d tentatives restantes</string>
+    <string name="instruction_waiting_biometric">Touchez le capteur d’empreintes digitales sur votre clé de sécurité…</string>
+    <string name="error_uv_failed">Échec de la vérification biométrique</string>
+    <string name="error_uv_blocked">Vérification biométrique bloquée. Utilisez le code PIN à la place.</string>
 </resources>
