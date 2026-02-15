@@ -20,6 +20,7 @@ import android.provider.Settings
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -31,6 +32,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.*
 
@@ -62,6 +64,11 @@ class MainActivity : AppCompatActivity() {
     // Credentials dialog state
     private var credentialsDialog: AlertDialog? = null
     private var credentialsContent: CredentialsDialogContent? = null
+
+    // On-device UV state for credential listing flow
+    private var credListDeviceSupportsUv: Boolean = false
+    private var credListDeviceHasPin: Boolean = false
+    private var biometricDialog: AlertDialog? = null
 
     private var usbPermissionRequested = false
 
@@ -525,22 +532,51 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
-                val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrElse { e ->
-                    if (e is java.io.IOException) throw e
-                    resultText.text = e.toUserMessage(this@MainActivity)
-                    pendingAction = null
-                    return@launch
-                }
+                val deviceHasPin = deviceInfo.clientPinSet
+                val deviceSupportsUv = deviceInfo.supportsBuiltInUv
 
-                if (retries == 0) {
-                    resultText.text = getString(R.string.error_pin_blocked)
-                    pendingAction = null
-                    return@launch
-                }
+                credListDeviceSupportsUv = deviceSupportsUv
+                credListDeviceHasPin = deviceHasPin
 
-                // Clear pendingAction before showing dialog (will be set again with PIN)
                 pendingAction = null
-                showPinDialogForCredentials(retries, deviceInfo.usePreviewCommand)
+
+                when {
+                    // Device supports UV but no PIN set -> go straight to UV
+                    deviceSupportsUv && !deviceHasPin -> {
+                        authenticateWithUvAndListCredentials(deviceInfo.usePreviewCommand)
+                    }
+                    // Device supports both UV and PIN -> show PIN dialog with biometric option
+                    deviceSupportsUv && deviceHasPin -> {
+                        val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrElse { e ->
+                            if (e is java.io.IOException) throw e
+                            resultText.text = e.toUserMessage(this@MainActivity)
+                            return@launch
+                        }
+                        if (retries == 0) {
+                            // PIN blocked, but UV might still work
+                            authenticateWithUvAndListCredentials(deviceInfo.usePreviewCommand)
+                        } else {
+                            showPinDialogForCredentialsWithBiometric(retries, deviceInfo.usePreviewCommand)
+                        }
+                    }
+                    // PIN only, no built-in UV
+                    deviceHasPin -> {
+                        val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrElse { e ->
+                            if (e is java.io.IOException) throw e
+                            resultText.text = e.toUserMessage(this@MainActivity)
+                            return@launch
+                        }
+                        if (retries == 0) {
+                            resultText.text = getString(R.string.error_pin_blocked)
+                            return@launch
+                        }
+                        showPinDialogForCredentials(retries, deviceInfo.usePreviewCommand)
+                    }
+                    // Neither PIN nor UV available -> fail
+                    else -> {
+                        throw AuthnkeyError.UserVerificationRequiredNoPin()
+                    }
+                }
 
             } catch (e: Exception) {
                 if (isNfcDisconnected()) {
@@ -586,6 +622,56 @@ class MainActivity : AppCompatActivity() {
         resultText.text = ""
     }
 
+    private fun showPinDialogForCredentialsWithBiometric(
+        retries: Int,
+        usePreviewCommand: Boolean,
+        errorMessage: String? = null
+    ) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pin_entry_with_biometric, null)
+        val pinInputField = dialogView.findViewById<PinInputField>(R.id.pinInputField)
+        val btnBiometric = dialogView.findViewById<MaterialButton>(R.id.btnBiometric)
+
+        pinInputField.useNumericKeyboard = getKeyboardPreference()
+        pinInputField.onKeyboardModeChanged = { saveKeyboardPreference(it) }
+
+        val message = buildString {
+            if (errorMessage != null) {
+                append(errorMessage)
+                append("\n\n")
+            }
+            append(getString(R.string.pin_required_message, retries))
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.pin_required_title))
+            .setMessage(message)
+            .setView(dialogView)
+            .setPositiveButton(getString(R.string.ok), null)
+            .setNegativeButton(getString(R.string.cancel), null)
+            .create()
+
+        dialog.setOnShowListener {
+            pinInputField.requestFocus()
+            dialog.window?.let { window ->
+                WindowCompat.getInsetsController(window, pinInputField).show(WindowInsetsCompat.Type.ime())
+            }
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                pinInputField.validateAndGetPin()?.let { pin ->
+                    dialog.dismiss()
+                    authenticateAndListCredentials(pin, usePreviewCommand)
+                }
+            }
+        }
+
+        btnBiometric.setOnClickListener {
+            dialog.dismiss()
+            authenticateWithUvAndListCredentials(usePreviewCommand)
+        }
+
+        dialog.show()
+        resultText.text = ""
+    }
+
     private fun authenticateAndListCredentials(pin: String, usePreviewCommand: Boolean) {
         // Save for potential reconnection
         pendingAction = { authenticateAndListCredentials(pin, usePreviewCommand) }
@@ -619,99 +705,7 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                val credMgmt = CredentialManagement(transport, protocol, usePreviewCommand)
-                credentialManagement = credMgmt
-
-                resultText.text = getString(R.string.getting_metadata)
-                val metadataResult = withContext(Dispatchers.IO) { credMgmt.getCredentialsMetadata() }
-
-                val metadata = metadataResult.getOrElse {
-                    if (isNfcDisconnected()) {
-                        showNfcReconnectDialog()
-                    } else {
-                        resultText.text = getString(R.string.error_metadata, it.toUserMessage(this@MainActivity))
-                        pendingAction = null
-                    }
-                    return@launch
-                }
-
-                // Show metadata while loading
-                resultText.text = outputFormatter.formatMetadataSection(metadata)
-
-                if (metadata.existingResidentCredentialsCount == 0) {
-                    resultText.text = outputFormatter.formatNoCredentials(metadata)
-                    pendingAction = null
-                    return@launch
-                }
-
-                resultText.text = getString(R.string.enumerating_rps)
-                val rpsResult = withContext(Dispatchers.IO) { credMgmt.enumerateRelyingParties() }
-
-                val relyingParties = rpsResult.getOrElse {
-                    if (isNfcDisconnected()) {
-                        showNfcReconnectDialog()
-                    } else {
-                        resultText.text = outputFormatter.formatEnumerateRpsError(metadata, it.toUserMessage(this@MainActivity))
-                        pendingAction = null
-                    }
-                    return@launch
-                }
-
-                if (relyingParties.isEmpty()) {
-                    resultText.text = outputFormatter.formatNoRelyingParties(metadata)
-                    pendingAction = null
-                    return@launch
-                }
-
-                // Collect credentials for each RP
-                val rpsWithCredentials = mutableListOf<OutputFormatter.RelyingPartyWithCredentials>()
-
-                for (rp in relyingParties) {
-                    resultText.text = getString(R.string.loading_credentials_for, rp.rpId ?: "RP")
-
-                    val credsResult = withContext(Dispatchers.IO) {
-                        credMgmt.enumerateCredentials(rp.rpIdHash)
-                    }
-
-                    if (credsResult.isFailure) {
-                        if (isNfcDisconnected()) {
-                            showNfcReconnectDialog()
-                            return@launch
-                        }
-                        rpsWithCredentials.add(
-                            OutputFormatter.RelyingPartyWithCredentials(
-                                relyingParty = rp,
-                                credentials = null,
-                                error = credsResult.exceptionOrNull()?.toUserMessage(this@MainActivity)
-                            )
-                        )
-                    } else {
-                        rpsWithCredentials.add(
-                            OutputFormatter.RelyingPartyWithCredentials(
-                                relyingParty = rp,
-                                credentials = credsResult.getOrThrow(),
-                                error = null
-                            )
-                        )
-                    }
-                }
-
-                // Build flat list of credentials with their RP IDs
-                val credentialItems = rpsWithCredentials.flatMap { rpWithCreds ->
-                    rpWithCreds.credentials?.map { cred ->
-                        CredentialItem(
-                            rpId = rpWithCreds.relyingParty.rpId ?: rpWithCreds.relyingParty.rpIdHash.toHex(),
-                            credential = cred
-                        )
-                    } ?: emptyList()
-                }
-
-                // Show credentials dialog
-                showCredentialsDialog(metadata, credentialItems)
-                resultText.text = ""
-
-                // Clear action after successful operation
-                pendingAction = null
+                enumerateAndShowCredentials(usePreviewCommand)
 
             } catch (e: Exception) {
                 if (isNfcDisconnected()) {
@@ -722,6 +716,275 @@ class MainActivity : AppCompatActivity() {
                     handleDisconnect()
                 }
             }
+        }
+    }
+
+    private suspend fun enumerateAndShowCredentials(usePreviewCommand: Boolean) {
+        val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
+        val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
+
+        val credMgmt = CredentialManagement(transport, protocol, usePreviewCommand)
+        credentialManagement = credMgmt
+
+        resultText.text = getString(R.string.getting_metadata)
+        val metadataResult = withContext(Dispatchers.IO) { credMgmt.getCredentialsMetadata() }
+
+        val metadata = metadataResult.getOrElse {
+            if (isNfcDisconnected()) {
+                showNfcReconnectDialog()
+            } else {
+                resultText.text = getString(R.string.error_metadata, it.toUserMessage(this@MainActivity))
+                pendingAction = null
+            }
+            return
+        }
+
+        resultText.text = outputFormatter.formatMetadataSection(metadata)
+
+        if (metadata.existingResidentCredentialsCount == 0) {
+            resultText.text = outputFormatter.formatNoCredentials(metadata)
+            pendingAction = null
+            return
+        }
+
+        resultText.text = getString(R.string.enumerating_rps)
+        val rpsResult = withContext(Dispatchers.IO) { credMgmt.enumerateRelyingParties() }
+
+        val relyingParties = rpsResult.getOrElse {
+            if (isNfcDisconnected()) {
+                showNfcReconnectDialog()
+            } else {
+                resultText.text = outputFormatter.formatEnumerateRpsError(metadata, it.toUserMessage(this@MainActivity))
+                pendingAction = null
+            }
+            return
+        }
+
+        if (relyingParties.isEmpty()) {
+            resultText.text = outputFormatter.formatNoRelyingParties(metadata)
+            pendingAction = null
+            return
+        }
+
+        val rpsWithCredentials = mutableListOf<OutputFormatter.RelyingPartyWithCredentials>()
+
+        for (rp in relyingParties) {
+            resultText.text = getString(R.string.loading_credentials_for, rp.rpId ?: "RP")
+
+            val credsResult = withContext(Dispatchers.IO) {
+                credMgmt.enumerateCredentials(rp.rpIdHash)
+            }
+
+            if (credsResult.isFailure) {
+                if (isNfcDisconnected()) {
+                    showNfcReconnectDialog()
+                    return
+                }
+                rpsWithCredentials.add(
+                    OutputFormatter.RelyingPartyWithCredentials(
+                        relyingParty = rp,
+                        credentials = null,
+                        error = credsResult.exceptionOrNull()?.toUserMessage(this@MainActivity)
+                    )
+                )
+            } else {
+                rpsWithCredentials.add(
+                    OutputFormatter.RelyingPartyWithCredentials(
+                        relyingParty = rp,
+                        credentials = credsResult.getOrThrow(),
+                        error = null
+                    )
+                )
+            }
+        }
+
+        val credentialItems = rpsWithCredentials.flatMap { rpWithCreds ->
+            rpWithCreds.credentials?.map { cred ->
+                CredentialItem(
+                    rpId = rpWithCreds.relyingParty.rpId ?: rpWithCreds.relyingParty.rpIdHash.toHex(),
+                    credential = cred
+                )
+            } ?: emptyList()
+        }
+
+        showCredentialsDialog(metadata, credentialItems)
+        resultText.text = ""
+        pendingAction = null
+    }
+
+    private fun showBiometricWaitingDialog() {
+        biometricDialog?.dismiss()
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_biometric_waiting, null)
+        val icon = dialogView.findViewById<ImageView>(R.id.fingerprintIcon)
+
+        val pulse = ObjectAnimator.ofFloat(icon, View.ALPHA, 1f, 0.3f).apply {
+            duration = 1000
+            repeatMode = ObjectAnimator.REVERSE
+            repeatCount = ObjectAnimator.INFINITE
+            interpolator = AccelerateDecelerateInterpolator()
+        }
+
+        biometricDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.btn_use_biometric))
+            .setView(dialogView)
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+                pendingAction = null
+            }
+            .setCancelable(false)
+            .create()
+
+        biometricDialog?.setOnShowListener { pulse.start() }
+        biometricDialog?.setOnDismissListener { pulse.cancel() }
+        biometricDialog?.show()
+    }
+
+    private fun dismissBiometricDialog() {
+        biometricDialog?.dismiss()
+        biometricDialog = null
+    }
+
+    private fun authenticateWithUvAndListCredentials(usePreviewCommand: Boolean) {
+        pendingAction = { authenticateWithUvAndListCredentials(usePreviewCommand) }
+
+        showBiometricWaitingDialog()
+
+        scope.launch {
+            try {
+                val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
+
+                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
+                if (!initialized) {
+                    dismissBiometricDialog()
+                    if (isNfcDisconnected()) {
+                        showNfcReconnectDialog()
+                    } else {
+                        resultText.text = getString(R.string.error_init_pin_protocol)
+                        pendingAction = null
+                    }
+                    return@launch
+                }
+
+                withContext(Dispatchers.IO) {
+                    protocol.requestUvToken(PinProtocol.PERMISSION_CM)
+                }.onFailure { e ->
+                    dismissBiometricDialog()
+                    if (e is java.io.IOException) throw e
+                    if (e is CTAP.Exception) {
+                        when (e.error) {
+                            CTAP.Error.UV_INVALID -> {
+                                val uvRetries = withContext(Dispatchers.IO) {
+                                    protocol.getUvRetries()
+                                }.getOrDefault(0)
+
+                                if (uvRetries > 0 && credListDeviceHasPin) {
+                                    showPinDialogForCredentialsFallback(
+                                        usePreviewCommand,
+                                        getString(R.string.error_uv_invalid_retries, uvRetries),
+                                        showBiometric = true
+                                    )
+                                } else if (uvRetries > 0) {
+                                    resultText.text = getString(R.string.error_uv_invalid_retries, uvRetries)
+                                    pendingAction = null
+                                } else {
+                                    fallbackToPinAfterUvFailureForCredentials(usePreviewCommand)
+                                }
+                                return@launch
+                            }
+                            CTAP.Error.UV_BLOCKED -> {
+                                fallbackToPinAfterUvFailureForCredentials(usePreviewCommand)
+                                return@launch
+                            }
+                            CTAP.Error.OPERATION_DENIED -> {
+                                if (credListDeviceHasPin) {
+                                    showPinDialogForCredentialsFallback(
+                                        usePreviewCommand,
+                                        getString(R.string.error_operation_denied),
+                                        showBiometric = credListDeviceSupportsUv
+                                    )
+                                } else {
+                                    resultText.text = getString(R.string.error_operation_denied)
+                                    pendingAction = null
+                                }
+                                return@launch
+                            }
+                            CTAP.Error.INVALID_SUBCOMMAND,
+                            CTAP.Error.INVALID_COMMAND,
+                            CTAP.Error.INVALID_PARAMETER -> {
+                                credListDeviceSupportsUv = false
+                                fallbackToPinAfterUvFailureForCredentials(usePreviewCommand)
+                                return@launch
+                            }
+                            else -> { /* fall through to generic error handling */ }
+                        }
+                    }
+                    resultText.text = e.toUserMessage(this@MainActivity)
+                    pendingAction = null
+                    return@launch
+                }
+
+                dismissBiometricDialog()
+                enumerateAndShowCredentials(usePreviewCommand)
+
+            } catch (e: Exception) {
+                dismissBiometricDialog()
+                if (isNfcDisconnected()) {
+                    showNfcReconnectDialog()
+                } else {
+                    resultText.text = e.toUserMessage(this@MainActivity)
+                    pendingAction = null
+                    handleDisconnect()
+                }
+            }
+        }
+    }
+
+    private fun showPinDialogForCredentialsFallback(
+        usePreviewCommand: Boolean,
+        errorMessage: String,
+        showBiometric: Boolean
+    ) {
+        scope.launch {
+            try {
+                val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
+                val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
+
+                if (retries == 0 && !showBiometric) {
+                    resultText.text = getString(R.string.error_pin_blocked)
+                    pendingAction = null
+                    return@launch
+                }
+
+                if (showBiometric) {
+                    showPinDialogForCredentialsWithBiometric(retries, usePreviewCommand, errorMessage)
+                } else {
+                    showPinDialogForCredentials(retries, usePreviewCommand)
+                }
+            } catch (e: Exception) {
+                resultText.text = e.toUserMessage(this@MainActivity)
+                pendingAction = null
+            }
+        }
+    }
+
+    private suspend fun fallbackToPinAfterUvFailureForCredentials(usePreviewCommand: Boolean) {
+        if (credListDeviceHasPin) {
+            val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
+            val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
+
+            if (retries == 0) {
+                resultText.text = getString(R.string.error_pin_blocked)
+                pendingAction = null
+                return
+            }
+
+            // No biometric option since UV is blocked
+            showPinDialogForCredentials(retries, usePreviewCommand)
+            resultText.text = getString(R.string.error_uv_blocked)
+        } else {
+            resultText.text = getString(R.string.error_uv_blocked)
+            pendingAction = null
         }
     }
 
