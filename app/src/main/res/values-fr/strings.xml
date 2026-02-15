@@ -159,14 +159,14 @@
     <string name="device_info_extensions">Extensions : %1$s</string>
     <string name="device_info_aaguid">AAGUID : %1$s</string>
     <string name="device_info_options">Options :</string>
-    <string name="device_info_option_item">  %1$s : %2$s</string>
+    <string name="device_info_option_item">%1$s : %2$s</string>
     <string name="device_info_max_msg_size">Taille maximale du message : %1$d</string>
     <string name="device_info_pin_protocols">Protocoles d\'authentification PIN/UV : %1$s</string>
     <string name="device_info_max_creds_in_list">Nombre maximal d\'identifiants dans la liste : %1$d</string>
     <string name="device_info_max_cred_id_length">Longueur maximale de l\'ID d\'identifiant : %1$d</string>
     <string name="device_info_transports">Transports : %1$s</string>
     <string name="device_info_algorithms">Algorithmes pris en charge :</string>
-    <string name="device_info_algorithm_item">  Type : %1$s, Algorithme : %2$s</string>
+    <string name="device_info_algorithm_item">Type : %1$s, Algorithme : %2$s</string>
     <string name="device_info_min_pin_length">Longueur minimale du code PIN : %1$d</string>
     <string name="device_info_firmware">Version du micrologiciel : %1$d</string>
     <!-- Device Info Dialog Sections -->
