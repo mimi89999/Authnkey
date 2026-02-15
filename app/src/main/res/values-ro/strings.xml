@@ -211,4 +211,9 @@
     <string name="security_key_detected">Cheie de securitate detectată</string>
     <string name="using_nfc">Prin NFC</string>
     <string name="using_usb">Prin USB</string>
+    <string name="btn_use_biometric"></string>
+    <string name="error_uv_invalid_retries"></string>
+    <string name="instruction_waiting_biometric"></string>
+    <string name="error_uv_failed"></string>
+    <string name="error_uv_blocked"></string>
 </resources>
