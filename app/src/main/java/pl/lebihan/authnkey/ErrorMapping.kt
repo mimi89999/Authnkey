@@ -19,6 +19,7 @@ fun Throwable.toUserMessage(context: Context): String = when (this) {
     is AuthnkeyError.PinProtocolInitFailed -> context.getString(R.string.error_communication_failed)
     is AuthnkeyError.UserVerificationRequiredNoPin -> context.getString(R.string.error_uv_required_no_pin)
     is AuthnkeyError.PinBlocked -> context.getString(R.string.error_pin_blocked)
+    is AuthnkeyError.UvBlocked -> context.getString(R.string.error_uv_blocked)
 
     // Fallback
     else -> this.message ?: context.getString(R.string.error_unknown)
@@ -38,5 +39,7 @@ private fun CTAP.Error.toUserMessage(context: Context): String = when (this) {
     CTAP.Error.KEY_STORE_FULL -> context.getString(R.string.error_key_store_full)
     CTAP.Error.UNSUPPORTED_ALGORITHM -> context.getString(R.string.error_unsupported_algorithm)
     CTAP.Error.KEEPALIVE_CANCEL -> context.getString(R.string.error_operation_cancelled)
+    CTAP.Error.UV_BLOCKED -> context.getString(R.string.error_uv_blocked)
+    CTAP.Error.UV_INVALID -> context.getString(R.string.error_uv_failed)
     else -> context.getString(R.string.error_ctap_unknown, this.name)
 }

@@ -24,7 +24,8 @@ data class AuthenticatorData(
     val rpIdHash: ByteArray,
     val flags: Int,
     val signCount: Long,
-    val attestedCredentialData: AttestedCredentialData?
+    val attestedCredentialData: AttestedCredentialData?,
+    val extensions: CborMap?
 ) {
     val userPresent: Boolean
         get() = (flags and CTAP.AUTH_DATA_FLAG_UP) != 0
@@ -51,6 +52,7 @@ data class AuthenticatorData(
 
             var offset = 37
             val hasAt = (flags and CTAP.AUTH_DATA_FLAG_AT) != 0
+            val hasEd = (flags and CTAP.AUTH_DATA_FLAG_ED) != 0
 
             val attestedCredentialData = if (hasAt) {
                 if (data.size < offset + 18) return null
@@ -66,14 +68,21 @@ data class AuthenticatorData(
                 val credentialId = data.sliceArray(offset until offset + credIdLen)
                 offset += credIdLen
 
-                val credentialPublicKey = CborDecoder.decode(
-                    data.sliceArray(offset until data.size)
-                ) as? Map<*, *> ?: return null
+                val remaining = data.sliceArray(offset until data.size)
+                val credentialPublicKey = CborDecoder.decode(remaining) as? Map<*, *> ?: return null
+                // Advance offset past the COSE key
+                val consumed = CborDecoder.measureFirstValue(remaining)
+                offset += consumed
 
                 AttestedCredentialData(aaguid, credentialId, credentialPublicKey)
             } else null
 
-            return AuthenticatorData(rpIdHash, flags, signCount, attestedCredentialData)
+            val extensions = if (hasEd && offset < data.size) {
+                val remaining = data.sliceArray(offset until data.size)
+                CborMap.decode(remaining)
+            } else null
+
+            return AuthenticatorData(rpIdHash, flags, signCount, attestedCredentialData, extensions)
         }
     }
 }
@@ -103,6 +112,9 @@ data class DeviceInfo(
 
     val clientPinSet: Boolean
         get() = options["clientPin"] == true
+
+    val supportsBuiltInUv: Boolean
+        get() = options["uv"] == true
 }
 
 object CTAP {
@@ -124,6 +136,9 @@ object CTAP {
     const val PIN_CMD_SET_PIN = 0x03
     const val PIN_CMD_CHANGE_PIN = 0x04
     const val PIN_CMD_GET_PIN_TOKEN = 0x05
+    const val PIN_CMD_GET_PIN_UV_TOKEN_USING_UV = 0x06
+    const val PIN_CMD_GET_UV_RETRIES = 0x07
+    const val PIN_CMD_GET_PIN_UV_TOKEN_USING_PIN = 0x09
 
     // AuthData flags
     const val AUTH_DATA_FLAG_UP = 0x01  // User present
@@ -285,6 +300,15 @@ object CTAP {
             map {
                 1 to 1
                 2 to 1
+            }
+        }
+    }
+
+    fun buildGetUvRetriesCommand(): ByteArray {
+        return byteArrayOf(CMD_CLIENT_PIN.toByte()) + cbor {
+            map {
+                1 to 1
+                2 to PIN_CMD_GET_UV_RETRIES
             }
         }
     }

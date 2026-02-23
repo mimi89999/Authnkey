@@ -15,6 +15,7 @@ object FidoCommands {
         excludeList: List<ByteArray>? = null,
         requireResidentKey: Boolean = true,
         requireUserVerification: Boolean = true,
+        extensions: Map<String, Any>? = null,
         pinUvAuthParam: ByteArray? = null,
         pinUvAuthProtocol: Int? = null
     ): ByteArray {
@@ -53,6 +54,14 @@ object FidoCommands {
                     }
                 }
 
+                if (extensions != null && extensions.isNotEmpty()) {
+                    6 to map {
+                        for ((key, value) in extensions) {
+                            key to value
+                        }
+                    }
+                }
+
                 7 to map { "rk" to requireResidentKey }
 
                 if (pinUvAuthParam != null) {
@@ -73,6 +82,7 @@ object FidoCommands {
         clientDataHash: ByteArray,
         allowList: List<ByteArray>? = null,
         requireUserVerification: Boolean = true,
+        extensions: CborRaw? = null,
         pinUvAuthParam: ByteArray? = null,
         pinUvAuthProtocol: Int? = null
     ): ByteArray {
@@ -90,6 +100,10 @@ object FidoCommands {
                             }
                         }
                     }
+                }
+
+                if (extensions != null) {
+                    4 to extensions
                 }
 
                 5 to map { "up" to true }

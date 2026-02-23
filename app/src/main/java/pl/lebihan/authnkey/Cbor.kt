@@ -158,6 +158,15 @@ class CborDecoder private constructor(private val data: ByteArray) {
 
     companion object {
         fun decode(data: ByteArray): Any? = CborDecoder(data).readValue()
+
+        /**
+         * Measure how many bytes the first CBOR value in the data occupies.
+         */
+        fun measureFirstValue(data: ByteArray): Int {
+            val decoder = CborDecoder(data)
+            decoder.readValue()
+            return decoder.pos
+        }
     }
 
     private fun readValue(): Any? {

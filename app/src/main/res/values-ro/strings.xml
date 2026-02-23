@@ -211,4 +211,9 @@
     <string name="security_key_detected">Cheie de securitate detectată</string>
     <string name="using_nfc">Prin NFC</string>
     <string name="using_usb">Prin USB</string>
+    <string name="instruction_waiting_biometric">Atinge senzorul de amprentă de pe cheia ta de securitate…</string>
+    <string name="btn_use_biometric">Folosește amprenta</string>
+    <string name="error_uv_blocked">Verificare biometrică blocată. Folosește codul PIN.</string>
+    <string name="error_uv_failed">Verificare biometrică eșuată</string>
+    <string name="error_uv_invalid_retries">Amprenta nu a fost recunoscută. Mai ai %1$d încercări</string>
 </resources>

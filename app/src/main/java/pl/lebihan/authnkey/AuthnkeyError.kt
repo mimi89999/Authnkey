@@ -14,4 +14,7 @@ sealed class AuthnkeyError(message: String) : Exception(message) {
     // Authentication errors
     class UserVerificationRequiredNoPin : AuthnkeyError("User verification required but no PIN set")
     class PinBlocked : AuthnkeyError("PIN is blocked")
+
+    // On-device UV errors
+    class UvBlocked : AuthnkeyError("Biometric verification is blocked")
 }

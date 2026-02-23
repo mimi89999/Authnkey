@@ -19,6 +19,12 @@ class NfcTransport(private val isoDep: IsoDep) : FidoTransport {
             false
         }
 
+    override fun reclaimConnection() {
+        if (!isConnected) {
+            throw AuthnkeyError.NotConnected()
+        }
+    }
+
     init {
         if (!isoDep.isConnected) {
             isoDep.connect()

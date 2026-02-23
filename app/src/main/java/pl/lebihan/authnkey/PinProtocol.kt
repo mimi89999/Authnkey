@@ -139,6 +139,36 @@ class PinProtocol(private val transport: FidoTransport) {
         }
     }
 
+    // CTAP2.1 subCommand 0x06: getPinUvAuthTokenUsingUvWithPermissions
+    suspend fun requestUvToken(permissions: Int, rpId: String? = null): Result<Unit> {
+        val secret = sharedSecret
+            ?: return Result.failure(Exception("Shared secret not available"))
+        val pubKey = platformPublicKey
+            ?: return Result.failure(Exception("Platform key not available"))
+
+        return try {
+            val command = buildGetUvTokenCommand(pubKey, permissions, rpId)
+            val response = transport.sendCtapCommand(command)
+
+            if (response.isEmpty()) {
+                return Result.failure(Exception("Empty response"))
+            }
+
+            val error = CTAP.getResponseError(response)
+            if (error != null) {
+                return Result.failure(CTAP.Exception(error))
+            }
+
+            val encryptedToken = parsePinTokenResponse(response)
+                ?: return Result.failure(Exception("Failed to parse UV token"))
+            pinToken = aesDecrypt(secret, encryptedToken)
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getPinRetries(): Result<Int> {
         return try {
             val response = transport.sendCtapCommand(CTAP.buildGetPinRetriesCommand())
@@ -153,6 +183,29 @@ class PinProtocol(private val transport: FidoTransport) {
                 ?: return Result.failure(Exception("Failed to parse response"))
             val retries = parsed.int(3)
                 ?: return Result.failure(Exception("Missing retries field"))
+
+            Result.success(retries)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // CTAP2.1 subCommand 0x07: getUvRetries
+    suspend fun getUvRetries(): Result<Int> {
+        return try {
+            val response = transport.sendCtapCommand(CTAP.buildGetUvRetriesCommand())
+            if (!CTAP.isSuccess(response)) {
+                return Result.failure(CTAP.Exception(
+                    CTAP.getResponseError(response) ?: CTAP.Error.OTHER
+                ))
+            }
+
+            val data = response.drop(1).toByteArray()
+            val parsed = CborMap.decode(data)
+                ?: return Result.failure(Exception("Failed to parse response"))
+            // UV retries are in key 5 per CTAP2.1 spec
+            val retries = parsed.int(5)
+                ?: return Result.failure(Exception("Missing UV retries field"))
 
             Result.success(retries)
         } catch (e: Exception) {
@@ -265,6 +318,9 @@ class PinProtocol(private val transport: FidoTransport) {
 
     fun hasPinToken(): Boolean = pinToken != null
 
+    val isInitialized: Boolean
+        get() = sharedSecret != null && platformPublicKey != null
+
     fun computeAuthParam(message: ByteArray): ByteArray? {
         val token = pinToken ?: return null
 
@@ -278,6 +334,46 @@ class PinProtocol(private val transport: FidoTransport) {
         }
     }
 
+    /**
+     * Build the hmac-secret extension input for getAssertion.
+     *
+     * @param salt1 First 32-byte salt (required)
+     * @param salt2 Second 32-byte salt (optional)
+     * @return Encrypted salts and authentication tag, or null if not initialized
+     */
+    fun buildHmacSecretInput(salt1: ByteArray, salt2: ByteArray? = null): HmacSecretInput? {
+        val secret = sharedSecret ?: return null
+
+        val salts = if (salt2 != null) salt1 + salt2 else salt1
+        val saltEnc = aesEncrypt(secret, salts)
+
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(SecretKeySpec(secret, "HmacSHA256"))
+        val saltAuth = mac.doFinal(saltEnc).copyOf(16)
+
+        return HmacSecretInput(saltEnc, saltAuth)
+    }
+
+    /**
+     * Decrypt the hmac-secret output from the authenticator.
+     *
+     * @param encrypted The encrypted output bytes from the authenticator's authData extensions
+     * @return Decrypted output (32 bytes for one salt, 64 for two)
+     */
+    fun decryptHmacSecretOutput(encrypted: ByteArray): ByteArray? {
+        val secret = sharedSecret ?: return null
+        return try {
+            aesDecrypt(secret, encrypted)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    data class HmacSecretInput(
+        val saltEnc: ByteArray,
+        val saltAuth: ByteArray
+    )
+
     private fun buildGetKeyAgreementCommand(): ByteArray {
         return byteArrayOf(CTAP.CMD_CLIENT_PIN.toByte()) + cbor {
             map {
@@ -285,6 +381,29 @@ class PinProtocol(private val transport: FidoTransport) {
                 2 to 2
             }
         }
+    }
+
+    /**
+     * Encode an EC public key as a COSE_Key map using the CBOR builder.
+     * Exposed for use by hmac-secret extension building.
+     */
+    fun encodePlatformCoseKeyBytes(): CborRaw? {
+        val pubKey = platformPublicKey ?: return null
+        val point = pubKey.w
+        val x = bigIntegerToBytes(point.affineX, 32)
+        val y = bigIntegerToBytes(point.affineY, 32)
+
+        val bytes = cbor {
+            map {
+                1 to 2
+                3 to -25
+                -1 to 1
+                -2 to bytes(x)
+                -3 to bytes(y)
+            }
+        }
+        // The cbor {} block wraps it in a map header, which is already what we need
+        return CborRaw(bytes.toList())
     }
 
     private fun buildGetPinTokenCommand(platformKey: ECPublicKey, encryptedPinHash: ByteArray): ByteArray {
@@ -313,6 +432,25 @@ class PinProtocol(private val transport: FidoTransport) {
                 9 to permissions
                 if (rpId != null) {
                     0x0A to rpId
+                }
+            }
+        }
+    }
+
+    // subCommand 0x06 — no PIN hash, authenticator performs UV internally
+    private fun buildGetUvTokenCommand(
+        platformKey: ECPublicKey,
+        permissions: Int,
+        rpId: String? = null
+    ): ByteArray {
+        return byteArrayOf(CTAP.CMD_CLIENT_PIN.toByte()) + cbor {
+            map {
+                1 to 1  // pinUvAuthProtocol
+                2 to CTAP.PIN_CMD_GET_PIN_UV_TOKEN_USING_UV  // subCommand 0x06
+                3 to encodeCoseKey(platformKey)  // keyAgreement
+                9 to permissions  // permissions
+                if (rpId != null) {
+                    0x0A to rpId  // rpId
                 }
             }
         }

@@ -1,0 +1,8 @@
+- Add PRF extension support
+- Add support for keys with on-device user verification
+- Detect stale USB connections on resume
+- Fix FIDO2 registration failure on strict authenticators due to incorrect CBOR key order
+
+New translations:
+- Czech by Fjuro
+- Hungarian by Szabó István

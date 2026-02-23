@@ -56,6 +56,12 @@ class UsbTransport(
         }
     }
 
+    override fun reclaimConnection() {
+        if (!_isConnected || !connection.claimInterface(hidInterface, false)) {
+            throw AuthnkeyError.NotConnected()
+        }
+    }
+
     override suspend fun sendCtapCommand(command: ByteArray): ByteArray = withContext(Dispatchers.IO) {
         // CTAPHID_CBOR command
         sendRaw(channelId, CMD_CBOR, command)

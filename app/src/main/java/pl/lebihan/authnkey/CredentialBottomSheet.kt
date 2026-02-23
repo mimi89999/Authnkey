@@ -28,6 +28,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         TOUCH,
         PROCESSING,
         PIN,
+        BIOMETRIC,
         ACCOUNT_SELECT,
         SUCCESS,
         TAG_LOST,
@@ -44,6 +45,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var btnCancel: MaterialButton
     private lateinit var btnContinue: MaterialButton
+    private lateinit var btnBiometric: MaterialButton
     private lateinit var pinInputField: PinInputField
     private lateinit var iconStatus: ImageView
     private lateinit var iconBackground: View
@@ -59,6 +61,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
     var onCancelClick: (() -> Unit)? = null
     var onPinEntered: ((String) -> Unit)? = null
     var onAccountSelected: ((Int) -> Unit)? = null
+    var onBiometricSelected: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +88,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         progressBar = view.findViewById(R.id.progressBar)
         btnCancel = view.findViewById(R.id.btnCancel)
         btnContinue = view.findViewById(R.id.btnContinue)
+        btnBiometric = view.findViewById(R.id.btnBiometric)
         pinInputField = view.findViewById(R.id.pinInputField)
         iconStatus = view.findViewById(R.id.iconStatus)
         iconBackground = view.findViewById(R.id.iconBackground)
@@ -113,6 +117,10 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
 
         btnContinue.setOnClickListener {
             submitPin()
+        }
+
+        btnBiometric.setOnClickListener {
+            onBiometricSelected?.invoke()
         }
 
         pinInputField.setOnDoneAction {
@@ -166,6 +174,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
             State.TOUCH -> R.drawable.fingerprint_24
             State.PROCESSING -> R.drawable.key_24
             State.PIN -> R.drawable.lock_24
+            State.BIOMETRIC -> R.drawable.fingerprint_24
             State.ACCOUNT_SELECT -> R.drawable.account_circle_24
             State.SUCCESS -> R.drawable.check_circle_24
             State.TAG_LOST -> R.drawable.sensors_24
@@ -176,7 +185,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         iconBackground.backgroundTintList = null
 
         when (state) {
-            State.WAITING, State.TOUCH -> startPulse()
+            State.WAITING, State.TOUCH, State.BIOMETRIC -> startPulse()
             State.TAG_LOST -> {
                 iconBackground.backgroundTintList = ColorStateList.valueOf(
                     ContextCompat.getColor(requireContext(), R.color.warning_container)
@@ -236,10 +245,34 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
                 pinInputField.clear()
                 setState(State.PIN)
                 pinInputField.focus()
+            } else {
+                hideBiometricOption()
             }
         } else {
             pendingShowPinInput = show
             if (show) pendingState = State.PIN
+        }
+    }
+
+    fun showBiometricOption(show: Boolean) {
+        if (::btnBiometric.isInitialized) {
+            btnBiometric.visibility = if (show) View.VISIBLE else View.GONE
+        }
+    }
+
+    fun hideBiometricOption() {
+        if (::btnBiometric.isInitialized) {
+            btnBiometric.visibility = View.GONE
+        }
+    }
+
+    fun showBiometricWaiting() {
+        if (::pinInputField.isInitialized) {
+            pinInputField.visibility = View.GONE
+            btnContinue.visibility = View.GONE
+            hideBiometricOption()
+            hideAccounts()
+            setState(State.BIOMETRIC)
         }
     }
 
@@ -249,6 +282,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         setState(State.ACCOUNT_SELECT)
         pinInputField.visibility = View.GONE
         btnContinue.visibility = View.GONE
+        hideBiometricOption()
         accountList.visibility = View.VISIBLE
         accountList.adapter = AccountAdapter(accounts) { index ->
             onAccountSelected?.invoke(index)
