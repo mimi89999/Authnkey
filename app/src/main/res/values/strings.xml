@@ -51,6 +51,12 @@
     <string name="error_uv_failed">Biometric verification failed</string>
     <string name="error_uv_invalid_retries">Fingerprint not recognized. %1$d retries remaining</string>
 
+    <!-- noMcGaPermissionsWithClientPin related -->
+    <string name="error_uv_required_pin_cannot_auth">This security key requires fingerprint verification for sign-in and passkey creation. PIN cannot be used for this operation.</string>
+    <string name="error_pin_cannot_be_used_for_auth">PIN cannot be used for authentication on this security key. Use fingerprint instead.</string>
+    <string name="error_unauthorized_permission">The security key rejected this request. The PIN cannot be used for this type of operation.</string>
+    <string name="instruction_use_fingerprint">Use the fingerprint sensor on your security key</string>
+
     <!-- Errors -->
     <string name="error_format">%1$s\n\nTry again or cancel</string>
     <string name="error_retry_format">%1$s\n\nTry again</string>

@@ -17,4 +17,7 @@ sealed class AuthnkeyError(message: String) : Exception(message) {
 
     // On-device UV errors
     class UvBlocked : AuthnkeyError("Biometric verification is blocked")
+
+    // noMcGaPermissionsWithClientPin errors
+    class UvRequiredPinCannotBeUsed : AuthnkeyError("User verification required but PIN cannot be used for this operation")
 }
