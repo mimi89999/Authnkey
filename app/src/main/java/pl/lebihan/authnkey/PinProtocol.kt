@@ -226,6 +226,9 @@ class PinProtocol(private val transport: FidoTransport) {
 
         try {
             val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
+            if (newPinBytes.size > 64) {
+                return Result.failure(PinSetError.PinPolicyViolation())
+                }
             val newPinPadded = ByteArray(64)
             newPinBytes.copyInto(newPinPadded, 0, 0, newPinBytes.size)
 
@@ -279,6 +282,9 @@ class PinProtocol(private val transport: FidoTransport) {
             val currentPinHashLeft16 = currentPinHash.copyOf(16)
 
             val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
+            if (newPinBytes.size > 64) {
+                return Result.failure(PinSetError.PinPolicyViolation())
+                }
             val newPinPadded = ByteArray(64)
             newPinBytes.copyInto(newPinPadded, 0, 0, newPinBytes.size)
 
