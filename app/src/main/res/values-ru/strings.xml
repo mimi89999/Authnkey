@@ -211,4 +211,9 @@
     <string name="security_key_detected">Обнаружен ключ безопасности</string>
     <string name="using_nfc">Используя NFC</string>
     <string name="using_usb">Используя USB</string>
+    <string name="btn_use_biometric">Используйте отпечаток пальца</string>
+    <string name="error_uv_invalid_retries">Отпечаток не распознан. Осталось %1$d попыток</string>
+    <string name="instruction_waiting_biometric">Приложите палец к сканеру отпечатка на вашем ключе безопасности…</string>
+    <string name="error_uv_failed">Не удалось пройти биометрическую проверку</string>
+    <string name="error_uv_blocked">Биометрическая проверка заблокирована. Используйте вместо неё ПИН-код.</string>
 </resources>
