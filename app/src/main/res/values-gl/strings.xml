@@ -184,7 +184,7 @@
     <string name="btn_change_pin">Cambiar PIN</string>
     <string name="credentials_dialog_title">Credenciais gardadas</string>
     <string name="credentials_stats">%1$d credenciais • %2$d ocos dispoñibles</string>
-    <string name="credential_detail_display_name">Nome público</string>
+    <string name="credential_detail_display_name">Nome mostrado</string>
     <string name="credential_detail_username">Identificador</string>
     <string name="credential_detail_user_id">ID de usuaria</string>
     <string name="credential_detail_credential_id">ID da credencial</string>
@@ -201,7 +201,7 @@
     <string name="credential_rp_header">RP %1$d: %2$s</string>
     <string name="credential_number">Credencial %1$d:</string>
     <string name="credential_username">Identificador: %1$s</string>
-    <string name="credential_display_name">Nome público: %1$s</string>
+    <string name="credential_display_name">Nome mostrado: %1$s</string>
     <string name="credential_user_id">ID de usuaria: %1$s</string>
     <string name="credential_id">ID da credencial: %1$s…</string>
     <string name="credential_protection">Protección: %1$s</string>
@@ -216,4 +216,6 @@
     <string name="device_info_option_bioEnroll">Inscrición biométrica</string>
     <string name="device_info_option_noMcGaPermissionsWithClientPin">Sen permiso MC/GA con PIN do cliente</string>
     <string name="device_info_option_ep">Asteación empresarial</string>
+    <string name="pin_too_long_title">PIN demasiado longo</string>
+    <string name="pin_too_long_message">O PIN supera a lonxitude máxima permitida</string>
 </resources>
