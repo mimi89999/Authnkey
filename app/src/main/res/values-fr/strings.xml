@@ -41,6 +41,8 @@
     <string name="pin_hint_confirm">Confirmez le nouveau code PIN</string>
     <string name="pin_continue">Continuer</string>
     <string name="pin_too_short">Le code PIN doit contenir au moins %1$d caractères</string>
+    <string name="pin_too_long_title">Code PIN trop long</string>
+    <string name="pin_too_long_message">Le code PIN dépasse la longueur maximale autorisée</string>
     <string name="pin_retries_remaining">Entrez le code PIN (%1$d tentatives restantes)</string>
     <string name="pin_incorrect_retries">Code PIN incorrect. %1$d tentatives restantes</string>
 
