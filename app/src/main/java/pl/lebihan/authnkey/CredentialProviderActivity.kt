@@ -652,6 +652,12 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun authenticateWithUvAndExecute(requestJson: JSONObject) {
         scope.launch {
             try {
+                if (deviceInfo?.supportsPinUvAuthToken != true) {
+                    // Auth tokens are not supported by the device try using CTAP2.0 like request
+                    executeRequest(requestJson, null, true)
+                    return@launch
+                }
+
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 runOnUiThread {
@@ -764,14 +770,14 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun executeRequest(requestJson: JSONObject, pinProtocol: PinProtocol?) {
+    private suspend fun executeRequest(requestJson: JSONObject, pinProtocol: PinProtocol?, requestUvForCTAP20Devices: Boolean = false) {
         try {
             val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
 
             if (isCreateRequest) {
-                executeCreateCredential(transport, requestJson, pinProtocol)
+                executeCreateCredential(transport, requestJson, pinProtocol, requestUvForCTAP20Devices)
             } else {
-                executeGetAssertion(transport, requestJson, pinProtocol)
+                executeGetAssertion(transport, requestJson, pinProtocol, requestUvForCTAP20Devices)
             }
 
         } catch (e: Exception) {
@@ -783,7 +789,8 @@ class CredentialProviderActivity : AppCompatActivity() {
     private suspend fun executeCreateCredential(
         transport: FidoTransport,
         requestJson: JSONObject,
-        pinProtocol: PinProtocol?
+        pinProtocol: PinProtocol?,
+        requestUvForCTAP20Devices: Boolean = false
     ) {
         setInstruction(getString(R.string.instruction_creating))
 
@@ -873,7 +880,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             pubKeyCredParams = pubKeyCredParams,
             excludeList = if (excludeList.isNotEmpty()) excludeList else null,
             requireResidentKey = residentKey.requiresResidentKey(),
-            requireUserVerification = false, // UV is provided by pinUvAuthParam
+            requireUserVerification = pinUvAuthParam == null && requestUvForCTAP20Devices, // UV is provided by pinUvAuthParam when given but for CTAP 2.0 devices the old userVerification option is needed
             extensions = if (ctapExtensions.isNotEmpty()) ctapExtensions else null,
             pinUvAuthParam = pinUvAuthParam,
             pinUvAuthProtocol = if (pinProtocol != null) 1 else null
@@ -884,6 +891,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 setInstruction(getString(R.string.instruction_touch_key))
                 setState(CredentialBottomSheet.State.TOUCH)
             }
+            // QUESTION: Maybe here the biometric use dialog should be displays instead of the touch option
         }
 
         val response = withContext(Dispatchers.IO) {
@@ -974,7 +982,8 @@ class CredentialProviderActivity : AppCompatActivity() {
     private suspend fun executeGetAssertion(
         transport: FidoTransport,
         requestJson: JSONObject,
-        pinProtocol: PinProtocol?
+        pinProtocol: PinProtocol?,
+        requestUvForCTAP20Devices: Boolean = false
     ) {
         setInstruction(getString(R.string.instruction_signing_in))
 
@@ -1094,7 +1103,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             rpId = rpId,
             clientDataHash = clientData.hash,
             allowList = if (allowList.isNotEmpty()) allowList else null,
-            requireUserVerification = false, // UV is provided by pinUvAuthParam
+            requireUserVerification = pinUvAuthParam == null && requestUvForCTAP20Devices, // UV is provided by pinUvAuthParam for CTAP 2.1 or higher devices. We will only request this option for CTAP 2.0 devices that do not support the pinUvAuthParam option.
             extensions = hmacSecretExtensions,
             pinUvAuthParam = pinUvAuthParam,
             pinUvAuthProtocol = if (effectiveProtocol != null && effectiveProtocol.hasPinToken()) 1 else null

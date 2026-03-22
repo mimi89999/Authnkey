@@ -62,7 +62,10 @@ object FidoCommands {
                     }
                 }
 
-                7 to map { "rk" to requireResidentKey }
+                7 to map {
+                    "rk" to requireResidentKey
+                    if (requireUserVerification) "uv" to true
+                }
 
                 if (pinUvAuthParam != null) {
                     8 to bytes(pinUvAuthParam)
@@ -106,7 +109,10 @@ object FidoCommands {
                     4 to extensions
                 }
 
-                5 to map { "up" to true }
+                5 to map {
+                    "up" to true
+                    if (requireUserVerification) "uv" to true
+                }
 
                 if (pinUvAuthParam != null) {
                     6 to bytes(pinUvAuthParam)
