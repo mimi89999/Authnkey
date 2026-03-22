@@ -216,4 +216,6 @@
     <string name="credential_deleted">Hitelesítő adat törölve</string>
     <string name="credential_delete_error">Nem sikerült törölni a következőt: %1$s</string>
     <string name="delete">Törlés</string>
+    <string name="pin_too_long_title"></string>
+    <string name="pin_too_long_message"></string>
 </resources>
