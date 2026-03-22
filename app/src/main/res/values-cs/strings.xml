@@ -216,4 +216,6 @@
     <string name="error_uv_blocked">Biometrické ověření zablokováno. Použijte místo toho PIN.</string>
     <string name="error_uv_failed">Biometrické ověření selhalo</string>
     <string name="error_uv_invalid_retries">Otisk prstu nerozpoznán. Zbývá %1$d pokusů</string>
+    <string name="pin_too_long_title">PIN je příliš dlouhý</string>
+    <string name="pin_too_long_message">PIN přesáhl maximální povolenou délku</string>
 </resources>
