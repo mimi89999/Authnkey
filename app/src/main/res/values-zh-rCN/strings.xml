@@ -211,4 +211,7 @@
     <string name="using_nfc">使用 NFC</string>
     <string name="security_key_detected">检测到安全密钥</string>
     <string name="using_usb">使用 USB</string>
+    <string name="pin_too_long_title"></string>
+    <string name="error_uv_invalid_retries"></string>
+    <string name="pin_too_long_message"></string>
 </resources>
