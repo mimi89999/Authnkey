@@ -1,0 +1,6 @@
+- Allow text input in PIN fields regardless of keyboard type
+- Fix authentication failure on some FIDO2 cards due to incorrect CBOR key order
+- Show error for PIN exceeding max length on set and change
+
+New translations:
+- Galician by josé m.
