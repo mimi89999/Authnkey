@@ -13,7 +13,7 @@ class CborEncoder {
         val map = CborMapEncoder()
         map.block()
         writeHeader(5, map.entries.size)
-        sortCanonical(map.entries).forEach { out.addAll(it) }
+        sortCanonical(map.entries).forEach { (k, v) -> out.addAll(k); out.addAll(v) }
     }
 
     fun toByteArray(): ByteArray = out.toByteArray()
@@ -24,14 +24,14 @@ class CborEncoder {
 }
 
 class CborMapEncoder {
-    internal val entries = mutableListOf<List<Byte>>()
+    internal val entries = mutableListOf<RawMapEntry>()
 
     infix fun Int.to(value: Any?) {
-        entries.add(encodeInt(this) + encodeValue(value))
+        entries.add(encodeInt(this) to encodeValue(value))
     }
 
     infix fun String.to(value: Any?) {
-        entries.add(encodeText(this) + encodeValue(value))
+        entries.add(encodeText(this) to encodeValue(value))
     }
 
     fun map(block: CborMapEncoder.() -> Unit): CborRaw {
@@ -39,7 +39,7 @@ class CborMapEncoder {
         nested.block()
         val bytes = mutableListOf<Byte>()
         bytes.addAll(encodeHeader(5, nested.entries.size))
-        sortCanonical(nested.entries).forEach { bytes.addAll(it) }
+        sortCanonical(nested.entries).forEach { (k, v) -> bytes.addAll(k); bytes.addAll(v) }
         return CborRaw(bytes)
     }
 
@@ -67,7 +67,7 @@ class CborArrayEncoder {
         nested.block()
         val bytes = mutableListOf<Byte>()
         bytes.addAll(encodeHeader(5, nested.entries.size))
-        sortCanonical(nested.entries).forEach { bytes.addAll(it) }
+        sortCanonical(nested.entries).forEach { (k, v) -> bytes.addAll(k); bytes.addAll(v) }
         items.add(bytes)
     }
 }
@@ -75,13 +75,15 @@ class CborArrayEncoder {
 @JvmInline
 value class CborRaw(val bytes: List<Byte>)
 
-private fun sortCanonical(entries: List<List<Byte>>): List<List<Byte>> {
+private typealias RawMapEntry = Pair<List<Byte>, List<Byte>>
+
+private fun sortCanonical(entries: List<RawMapEntry>): List<RawMapEntry> {
     return entries.sortedWith { a, b ->
-        val ka = CborDecoder.measureFirstValue(a.toByteArray())
-        val kb = CborDecoder.measureFirstValue(b.toByteArray())
-        if (ka != kb) ka - kb
-        else (0 until ka).map {
-            (a[it].toInt() and 0xFF) - (b[it].toInt() and 0xFF)
+        val ka = a.first
+        val kb = b.first
+        if (ka.size != kb.size) ka.size - kb.size
+        else ka.indices.map {
+            (ka[it].toInt() and 0xFF) - (kb[it].toInt() and 0xFF)
         }.firstOrNull { it != 0 } ?: 0
     }
 }
