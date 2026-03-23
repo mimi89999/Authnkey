@@ -115,6 +115,22 @@ data class DeviceInfo(
 
     val supportsBuiltInUv: Boolean
         get() = options["uv"] == true
+
+    /** True when the authenticator reports noMcGaPermissionsWithClientPin = true */
+    val noMcGaPermissionsWithClientPin: Boolean
+        get() = options["noMcGaPermissionsWithClientPin"] == true
+
+    /**
+     * Whether Client PIN can be used to obtain pinUvAuthToken with mc/ga permissions.
+     * Returns true only when clientPin is set AND noMcGaPermissionsWithClientPin is
+     * absent or false.
+     */
+    val canUsePinForMcGa: Boolean
+        get() = clientPinSet && !noMcGaPermissionsWithClientPin
+
+    /** Whether the alwaysUv option is set */
+    val alwaysUv: Boolean
+        get() = options["alwaysUv"] == true
 }
 
 object CTAP {
