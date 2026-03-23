@@ -185,6 +185,18 @@ class CredentialProviderActivity : AppCompatActivity() {
             return
         }
 
+        // Check if we were started with an NFC tag already present
+        val action = intent?.action
+        if (action == NfcAdapter.ACTION_TECH_DISCOVERED || action == NfcAdapter.ACTION_TAG_DISCOVERED || action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
+            val tag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+            }
+            tag?.let { handleNfcTag(it) }
+        }
+
         // Check if PIN is likely required based on userVerification preference
         checkPinRequirement()
     }
@@ -297,28 +309,43 @@ class CredentialProviderActivity : AppCompatActivity() {
         super.onResume()
 
         nfcAdapter?.let { adapter ->
-            val intent = Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-
-            val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                val options = ActivityOptions.makeBasic().apply {
-                    pendingIntentCreatorBackgroundActivityStartMode =
-                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                }
-                PendingIntent.getActivity(
-                    this, 0, intent,
-                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    options.toBundle()
-                )
+            // Use ReaderMode for more reliable NFC detection, especially for already-present tags
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                val flags = NfcAdapter.FLAG_READER_NFC_A or
+                        NfcAdapter.FLAG_READER_NFC_B or
+                        NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK
+                adapter.enableReaderMode(this, { tag ->
+                    runOnUiThread {
+                        handleNfcTag(tag)
+                    }
+                }, flags, null)
             } else {
-                PendingIntent.getActivity(
+                // Fallback for older devices
+                val intent = Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                val pendingIntent = PendingIntent.getActivity(
                     this, 0, intent,
                     PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
+                val filters = arrayOf(IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED))
+                val techLists = arrayOf(arrayOf(IsoDep::class.java.name))
+                adapter.enableForegroundDispatch(this, pendingIntent, filters, techLists)
             }
+        }
 
-            val filters = arrayOf(IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED))
-            val techLists = arrayOf(arrayOf(IsoDep::class.java.name))
-            adapter.enableForegroundDispatch(this, pendingIntent, filters, techLists)
+        // Also check intent for already-present tag
+        if (currentTransport?.isConnected != true) {
+            val action = intent?.action
+            if (action == NfcAdapter.ACTION_TECH_DISCOVERED || action == NfcAdapter.ACTION_TAG_DISCOVERED) {
+                val tag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+                }
+                tag?.let {
+                    handleNfcTag(it)
+                }
+            }
         }
 
         val usbAttachFilter = IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED)
@@ -336,6 +363,9 @@ class CredentialProviderActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         nfcAdapter?.disableForegroundDispatch(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            nfcAdapter?.disableReaderMode(this)
+        }
         try {
             unregisterReceiver(usbAttachReceiver)
         } catch (e: Exception) {
