@@ -266,11 +266,8 @@ class MainActivity : AppCompatActivity() {
                 currentTransport?.close()
                 currentTransport = null
 
-                val isoDep = IsoDep.get(tag) ?: throw AuthnkeyError.NotIsoDepTag()
-                val transport = NfcTransport(isoDep)
-
-                if (!transport.selectFidoApplet()) {
-                    throw AuthnkeyError.FidoAppletNotFound()
+                val transport = withContext(Dispatchers.IO) {
+                    NfcTransport.connect(tag)
                 }
 
                 currentTransport = transport
@@ -374,8 +371,8 @@ class MainActivity : AppCompatActivity() {
                 statusText.text = getString(R.string.connecting_usb)
 
                 val transport = withContext(Dispatchers.IO) {
-                    UsbTransport.create(usbManager, device)
-                } ?: throw AuthnkeyError.ConnectionFailed()
+                    UsbTransport.connect(usbManager, device)
+                }
 
                 currentTransport = transport
                 pinProtocol = PinProtocol(transport)

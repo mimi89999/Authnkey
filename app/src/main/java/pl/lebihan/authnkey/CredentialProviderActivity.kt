@@ -421,11 +421,8 @@ class CredentialProviderActivity : AppCompatActivity() {
                 bottomSheet?.getCurrentPinIfValid()?.let { pendingPin = it }
                 bottomSheet?.showPinInput(false)
 
-                val isoDep = IsoDep.get(tag) ?: throw AuthnkeyError.NotIsoDepTag()
-                val transport = NfcTransport(isoDep)
-
-                if (!transport.selectFidoApplet()) {
-                    throw AuthnkeyError.FidoAppletNotFound()
+                val transport = withContext(Dispatchers.IO) {
+                    NfcTransport.connect(tag)
                 }
 
                 currentTransport = transport
@@ -464,8 +461,8 @@ class CredentialProviderActivity : AppCompatActivity() {
                 setState(CredentialBottomSheet.State.PROCESSING)
 
                 val transport = withContext(Dispatchers.IO) {
-                    UsbTransport.create(usbManager, device)
-                } ?: throw AuthnkeyError.ConnectionFailed()
+                    UsbTransport.connect(usbManager, device)
+                }
 
                 currentTransport = transport
                 pinProtocol = PinProtocol(transport)

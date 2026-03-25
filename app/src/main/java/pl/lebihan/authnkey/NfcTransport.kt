@@ -1,5 +1,6 @@
 package pl.lebihan.authnkey
 
+import android.nfc.Tag
 import android.nfc.TagLostException
 import android.nfc.tech.IsoDep
 import kotlinx.coroutines.Dispatchers
@@ -8,7 +9,7 @@ import kotlinx.coroutines.withContext
 /**
  * FIDO transport over NFC using ISO 7816-4 APDUs
  */
-class NfcTransport(private val isoDep: IsoDep) : FidoTransport {
+class NfcTransport private constructor(private val isoDep: IsoDep) : FidoTransport {
 
     override val transportType = TransportType.NFC
 
@@ -25,17 +26,10 @@ class NfcTransport(private val isoDep: IsoDep) : FidoTransport {
         }
     }
 
-    init {
-        if (!isoDep.isConnected) {
-            isoDep.connect()
-        }
-        isoDep.timeout = 5000
-    }
-
     /**
      * Select the FIDO applet on the NFC device
      */
-    suspend fun selectFidoApplet(): Boolean = withContext(Dispatchers.IO) {
+    private suspend fun selectFidoApplet(): Boolean = withContext(Dispatchers.IO) {
         try {
             val response = isoDep.transceive(SELECT_FIDO_APPLET)
             isSuccess(response)
@@ -136,11 +130,31 @@ class NfcTransport(private val isoDep: IsoDep) : FidoTransport {
 
     companion object {
         // FIDO Alliance AID
-        val SELECT_FIDO_APPLET = byteArrayOf(
+        private val SELECT_FIDO_APPLET = byteArrayOf(
             0x00, 0xA4.toByte(), 0x04, 0x00,  // SELECT command
             0x08,                              // Length of AID
             0xA0.toByte(), 0x00, 0x00, 0x06, 0x47, 0x2F, 0x00, 0x01,  // FIDO AID
             0x00                               // Le
         )
+
+        /**
+         * Connect to a FIDO NFC device via the given NFC tag.
+         * Opens the ISO-DEP connection and selects the FIDO applet.
+         */
+        suspend fun connect(tag: Tag): NfcTransport {
+            val isoDep = IsoDep.get(tag) ?: throw AuthnkeyError.NotIsoDepTag()
+
+            if (!isoDep.isConnected) {
+                isoDep.connect()
+            }
+            isoDep.timeout = 5000
+
+            val transport = NfcTransport(isoDep)
+            if (!transport.selectFidoApplet()) {
+                transport.close()
+                throw AuthnkeyError.FidoAppletNotFound()
+            }
+            return transport
+        }
     }
 }
