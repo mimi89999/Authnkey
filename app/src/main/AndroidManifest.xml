@@ -22,7 +22,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:configChanges="keyboard|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -35,6 +36,7 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:taskAffinity=".credential"
+            android:configChanges="keyboard|keyboardHidden"
             android:theme="@style/Theme.Authnkey.Transparent" />
 
         <!-- Credential Provider Service (Android 14+) -->
