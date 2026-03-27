@@ -115,6 +115,9 @@ data class DeviceInfo(
 
     val supportsBuiltInUv: Boolean
         get() = options["uv"] == true
+
+    val supportsPinUvAuthToken: Boolean
+        get() = options["pinUvAuthToken"] == true
 }
 
 object CTAP {
