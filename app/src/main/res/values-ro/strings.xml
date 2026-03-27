@@ -216,4 +216,6 @@
     <string name="error_uv_blocked">Verificare biometrică blocată. Folosește codul PIN.</string>
     <string name="error_uv_failed">Verificare biometrică eșuată</string>
     <string name="error_uv_invalid_retries">Amprenta nu a fost recunoscută. Mai ai %1$d încercări</string>
+    <string name="pin_too_long_title">PIN prea lung</string>
+    <string name="pin_too_long_message">PIN-ul depășește lungimea maximă permisă</string>
 </resources>
