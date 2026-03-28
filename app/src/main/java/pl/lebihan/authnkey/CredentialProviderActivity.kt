@@ -43,7 +43,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         /** Ask the authenticator to perform UV itself. */
         object BuiltIn : UvMode()
         /** UV via a pinUvAuth token. */
-        class WithToken(val protocol: PinProtocol) : UvMode()
+        class WithToken(val authToken: PinProtocol.Authenticated) : UvMode()
     }
 
     private data class ClientData(val json: String?, val hash: ByteArray)
@@ -620,10 +620,9 @@ class CredentialProviderActivity : AppCompatActivity() {
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
                 setInstruction(getString(R.string.instruction_initializing))
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
-                    throw AuthnkeyError.PinProtocolInitFailed()
-                }
+                val keyAgreement = withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse { throw AuthnkeyError.PinProtocolInitFailed() }
 
                 // Determine permissions and rpId based on operation type
                 val permissions: Int
@@ -639,9 +638,9 @@ class CredentialProviderActivity : AppCompatActivity() {
 
                 setInstruction(getString(R.string.instruction_verifying_pin))
                 // Try CTAP2.1 style with permissions first (falls back to basic internally)
-                withContext(Dispatchers.IO) {
-                    protocol.requestPinToken(pin, permissions, rpId)
-                }.onFailure { e ->
+                val authToken = withContext(Dispatchers.IO) {
+                    keyAgreement.requestPinToken(pin, permissions, rpId)
+                }.getOrElse { e ->
                     if (e is CTAP.Exception && e.error == CTAP.Error.PIN_INVALID) {
                         val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrThrow()
                         if (retries > 0) {
@@ -664,7 +663,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                executeRequest(requestJson, UvMode.WithToken(protocol))
+                executeRequest(requestJson, UvMode.WithToken(authToken))
 
             } catch (e: Exception) {
                 Log.e(TAG, "Authentication error", e)
@@ -712,10 +711,9 @@ class CredentialProviderActivity : AppCompatActivity() {
                     showProgress(true)
                 }
 
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
-                    throw AuthnkeyError.PinProtocolInitFailed()
-                }
+                val keyAgreement = withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse { throw AuthnkeyError.PinProtocolInitFailed() }
 
                 // Determine permissions and rpId
                 val permissions: Int
@@ -729,9 +727,9 @@ class CredentialProviderActivity : AppCompatActivity() {
                     rpId = requestJson.getString("rpId")
                 }
 
-                withContext(Dispatchers.IO) {
-                    protocol.requestUvToken(permissions, rpId)
-                }.onFailure { e ->
+                val authToken = withContext(Dispatchers.IO) {
+                    keyAgreement.requestUvToken(permissions, rpId)
+                }.getOrElse { e ->
                     if (e is CTAP.Exception) {
                         when (e.error) {
                             CTAP.Error.UV_INVALID -> {
@@ -790,7 +788,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 }
 
                 // UV succeeded — proceed with the request
-                executeRequest(requestJson, UvMode.WithToken(protocol))
+                executeRequest(requestJson, UvMode.WithToken(authToken))
 
             } catch (e: Exception) {
                 Log.e(TAG, "UV authentication error", e)
@@ -912,14 +910,10 @@ class CredentialProviderActivity : AppCompatActivity() {
         val fidoUvMode = when (uvMode) {
             is UvMode.None -> FidoCommands.UvMode.None
             is UvMode.BuiltIn -> FidoCommands.UvMode.BuiltIn
-            is UvMode.WithToken -> if (uvMode.protocol.hasPinToken()) {
-                FidoCommands.UvMode.AuthToken(
-                    uvMode.protocol.computeAuthParam(clientData.hash),
-                    protocol = 1
-                )
-            } else {
-                FidoCommands.UvMode.None
-            }
+            is UvMode.WithToken -> FidoCommands.UvMode.AuthToken(
+                uvMode.authToken.computeAuthParam(clientData.hash),
+                protocol = 1
+            )
         }
 
         // Build and send command
@@ -1064,21 +1058,23 @@ class CredentialProviderActivity : AppCompatActivity() {
         // Prepare hmac-secret extension for getAssertion if PRF is requested
         var hmacSecretExtensions: CborRaw? = null
         var prfHasTwoSalts = false
-        var prfProtocol: PinProtocol? = null
+        var prfKeyAgreement: PinProtocol.Initialized? = null
 
         if (prfRequested) {
-            val protocol = (uvMode as? UvMode.WithToken)?.protocol
-                ?: this.pinProtocol
-                ?: throw Exception("PIN protocol not available for PRF")
-
-            // Ensure key agreement is initialized (needed for hmac-secret even without PIN)
-            if (!protocol.isInitialized) {
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
+            // Get Initialized state: from Authenticated if available, or fresh key agreement
+            val initState = (uvMode as? UvMode.WithToken)?.authToken?.keyAgreement
+            prfKeyAgreement = if (initState != null) {
+                initState
+            } else {
+                val protocol = this.pinProtocol
+                    ?: throw Exception("PIN protocol not available for PRF")
+                withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse {
                     throw Exception("Failed to initialize key agreement for PRF")
                 }
             }
-            prfProtocol = protocol
+            val prfState = prfKeyAgreement
 
             // Extract and convert PRF salts to hmac-secret salts
             // PRF salt → hmac-secret salt: SHA-256("WebAuthn PRF" || 0x00 || salt)
@@ -1086,7 +1082,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             val prfPrefix = "WebAuthn PRF".toByteArray(Charsets.UTF_8)
 
             val firstSaltRaw = Base64.decode(
-                prfEval!!.getString("first"),
+                prfEval.getString("first"),
                 Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
             )
             sha256.reset()
@@ -1108,12 +1104,10 @@ class CredentialProviderActivity : AppCompatActivity() {
             }
 
             // Build hmac-secret extension input
-            val hmacInput = protocol.buildHmacSecretInput(salt1, salt2)
-                ?: throw Exception("Failed to build hmac-secret input")
+            val hmacInput = prfState.buildHmacSecretInput(salt1, salt2)
 
             // Build the CBOR extensions map: {"hmac-secret": {1: coseKey, 2: saltEnc, 3: saltAuth}}
-            val coseKey = protocol.encodePlatformCoseKeyBytes()
-                ?: throw Exception("Failed to encode platform key")
+            val coseKey = prfState.encodePlatformCoseKeyBytes()
 
             hmacSecretExtensions = cbor {
                 map {
@@ -1146,14 +1140,10 @@ class CredentialProviderActivity : AppCompatActivity() {
         val fidoUvMode = when (uvMode) {
             is UvMode.None -> FidoCommands.UvMode.None
             is UvMode.BuiltIn -> FidoCommands.UvMode.BuiltIn
-            is UvMode.WithToken -> if (uvMode.protocol.hasPinToken()) {
-                FidoCommands.UvMode.AuthToken(
-                    uvMode.protocol.computeAuthParam(clientData.hash),
-                    protocol = 1
-                )
-            } else {
-                FidoCommands.UvMode.None
-            }
+            is UvMode.WithToken -> FidoCommands.UvMode.AuthToken(
+                uvMode.authToken.computeAuthParam(clientData.hash),
+                protocol = 1
+            )
         }
 
         // Build and send command
@@ -1204,12 +1194,12 @@ class CredentialProviderActivity : AppCompatActivity() {
 
         // Parse PRF results from authenticator data extensions
         var prfResults: JSONObject? = null
-        if (prfRequested && prfProtocol != null) {
+        if (prfRequested && prfKeyAgreement != null) {
             val authData = AuthenticatorData.parse(selectedAssertion.authData)
             val hmacSecretOutput = authData?.extensions?.bytes("hmac-secret")
 
             if (hmacSecretOutput != null) {
-                val decrypted = prfProtocol.decryptHmacSecretOutput(hmacSecretOutput)
+                val decrypted = prfKeyAgreement.decryptHmacSecretOutput(hmacSecretOutput)
                 if (decrypted != null) {
                     prfResults = JSONObject().apply {
                         val first = decrypted.sliceArray(0 until 32)

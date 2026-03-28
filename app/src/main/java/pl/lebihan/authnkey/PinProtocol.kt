@@ -21,20 +21,17 @@ class PinProtocol(private val transport: FidoTransport) {
         const val PERMISSION_ACFG = 0x20
     }
 
-    private var sharedSecret: ByteArray? = null
-    private var pinToken: ByteArray? = null
-    private var platformPublicKey: ECPublicKey? = null
-
-    suspend fun initialize(): Boolean {
-        try {
+    suspend fun initialize(): Result<Initialized> {
+        return try {
             val keyAgreementResponse = transport.sendCtapCommand(buildGetKeyAgreementCommand())
 
-            if (!CTAP.isSuccess(keyAgreementResponse)) {
-                return false
+            val error = CTAP.getResponseError(keyAgreementResponse)
+            if (error != null) {
+                return Result.failure(CTAP.Exception(error))
             }
 
             val authenticatorPublicKey = parseKeyAgreementResponse(keyAgreementResponse)
-                ?: return false
+                ?: return Result.failure(Exception("Failed to parse key agreement response"))
 
             val keyPairGenerator = KeyPairGenerator.getInstance("EC")
             keyPairGenerator.initialize(ECGenParameterSpec("secp256r1"))
@@ -46,124 +43,11 @@ class PinProtocol(private val transport: FidoTransport) {
             val rawSharedSecret = keyAgreement.generateSecret()
 
             val sha256 = MessageDigest.getInstance("SHA-256")
-            sharedSecret = sha256.digest(rawSharedSecret)
+            val sharedSecret = sha256.digest(rawSharedSecret)
 
-            platformPublicKey = ephemeralKeyPair.public as ECPublicKey
+            val platformPublicKey = ephemeralKeyPair.public as ECPublicKey
 
-            return true
-        } catch (e: Exception) {
-            return false
-        }
-    }
-
-    suspend fun requestPinToken(pin: String): Result<Unit> {
-        val secret = sharedSecret
-            ?: return Result.failure(Exception("Shared secret not available"))
-        val pubKey = platformPublicKey
-            ?: return Result.failure(Exception("Platform key not available"))
-
-        return try {
-            val sha256 = MessageDigest.getInstance("SHA-256")
-            val pinHash = sha256.digest(pin.toByteArray(Charsets.UTF_8))
-            val pinHashLeft16 = pinHash.copyOf(16)
-
-            val encryptedPinHash = aesEncrypt(secret, pinHashLeft16)
-
-            val command = buildGetPinTokenCommand(pubKey, encryptedPinHash)
-            val response = transport.sendCtapCommand(command)
-
-            val error = CTAP.getResponseError(response)
-            if (error != null) {
-                return Result.failure(CTAP.Exception(error))
-            }
-
-            val encryptedToken = parsePinTokenResponse(response)
-                ?: return Result.failure(Exception("Failed to parse PIN token"))
-            pinToken = aesDecrypt(secret, encryptedToken)
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun requestPinToken(pin: String, permissions: Int, rpId: String? = null): Result<Unit> {
-        val secret = sharedSecret
-            ?: return Result.failure(Exception("Shared secret not available"))
-        val pubKey = platformPublicKey
-            ?: return Result.failure(Exception("Platform key not available"))
-
-        return try {
-            val sha256 = MessageDigest.getInstance("SHA-256")
-            val pinHash = sha256.digest(pin.toByteArray(Charsets.UTF_8))
-            val pinHashLeft16 = pinHash.copyOf(16)
-
-            val encryptedPinHash = aesEncrypt(secret, pinHashLeft16)
-
-            val command = buildGetPinTokenWithPermissionsCommand(pubKey, encryptedPinHash, permissions, rpId)
-            val response = transport.sendCtapCommand(command)
-
-            if (response.isEmpty()) {
-                return Result.failure(Exception("Empty response"))
-            }
-
-            val error = CTAP.getResponseError(response)
-            if (error != null) {
-                // Fallback to basic method if authenticator doesn't support permissions
-                val fallbackErrors = listOf(
-                    CTAP.Error.INVALID_COMMAND,
-                    CTAP.Error.INVALID_PARAMETER,
-                    CTAP.Error.CBOR_UNEXPECTED_TYPE,
-                    CTAP.Error.INVALID_CBOR,
-                    CTAP.Error.MISSING_PARAMETER,
-                    CTAP.Error.UNSUPPORTED_OPTION,
-                    CTAP.Error.INVALID_SUBCOMMAND,
-                    CTAP.Error.OTHER
-                )
-                if (error in fallbackErrors) {
-                    return requestPinToken(pin)
-                }
-                return Result.failure(CTAP.Exception(error))
-            }
-
-            val encryptedToken = parsePinTokenResponse(response)
-                ?: return Result.failure(Exception("Failed to parse PIN token"))
-            pinToken = aesDecrypt(secret, encryptedToken)
-
-            Result.success(Unit)
-        } catch (e: java.io.IOException) {
-            Result.failure(e)
-        } catch (e: Exception) {
-            // On unexpected exception, try fallback to basic method
-            requestPinToken(pin)
-        }
-    }
-
-    // CTAP2.1 subCommand 0x06: getPinUvAuthTokenUsingUvWithPermissions
-    suspend fun requestUvToken(permissions: Int, rpId: String? = null): Result<Unit> {
-        val secret = sharedSecret
-            ?: return Result.failure(Exception("Shared secret not available"))
-        val pubKey = platformPublicKey
-            ?: return Result.failure(Exception("Platform key not available"))
-
-        return try {
-            val command = buildGetUvTokenCommand(pubKey, permissions, rpId)
-            val response = transport.sendCtapCommand(command)
-
-            if (response.isEmpty()) {
-                return Result.failure(Exception("Empty response"))
-            }
-
-            val error = CTAP.getResponseError(response)
-            if (error != null) {
-                return Result.failure(CTAP.Exception(error))
-            }
-
-            val encryptedToken = parsePinTokenResponse(response)
-                ?: return Result.failure(Exception("Failed to parse UV token"))
-            pinToken = aesDecrypt(secret, encryptedToken)
-
-            Result.success(Unit)
+            Result.success(Initialized(sharedSecret, platformPublicKey))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -221,49 +105,6 @@ class PinProtocol(private val transport: FidoTransport) {
         data class Other(val errorName: String) : PinSetError(errorName)
     }
 
-    suspend fun setPin(newPin: String): Result<Unit> {
-        val secret = sharedSecret ?: return Result.failure(Exception("Shared secret not available"))
-        val pubKey = platformPublicKey ?: return Result.failure(Exception("Platform key not available"))
-
-        try {
-            val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
-            if (newPinBytes.size > 63) {
-                return Result.failure(PinSetError.PinTooLong())
-            }
-            val newPinPadded = ByteArray(64)
-            newPinBytes.copyInto(newPinPadded, 0, 0, newPinBytes.size)
-
-            val encryptedNewPin = aesEncrypt(secret, newPinPadded)
-
-            val mac = Mac.getInstance("HmacSHA256")
-            mac.init(SecretKeySpec(secret, "HmacSHA256"))
-            val hmacResult = mac.doFinal(encryptedNewPin)
-            val pinUvAuthParam = hmacResult.copyOf(16)
-
-            val command = buildSetPinCommand(pubKey, encryptedNewPin, pinUvAuthParam)
-            val response = transport.sendCtapCommand(command)
-
-            if (response.isEmpty()) {
-                return Result.failure(PinSetError.Other("Empty response"))
-            }
-
-            if (CTAP.isSuccess(response)) {
-                return Result.success(Unit)
-            }
-
-            return when (CTAP.getResponseError(response)) {
-                CTAP.Error.PIN_AUTH_INVALID -> Result.failure(PinSetError.PinAlreadySet())
-                CTAP.Error.NOT_ALLOWED -> Result.failure(PinSetError.PinAlreadySet())
-                CTAP.Error.PIN_POLICY_VIOLATION -> Result.failure(PinSetError.PinPolicyViolation())
-                CTAP.Error.PIN_BLOCKED -> Result.failure(PinSetError.PinBlocked())
-                else -> Result.failure(PinSetError.Other(CTAP.getErrorName(response[0])))
-            }
-
-        } catch (e: Exception) {
-            return Result.failure(e)
-        }
-    }
-
     sealed class PinChangeError(message: String) : Exception(message) {
         class InvalidPin : PinChangeError("Current PIN is incorrect")
         class PinBlocked : PinChangeError("PIN is blocked due to too many incorrect attempts")
@@ -273,110 +114,294 @@ class PinProtocol(private val transport: FidoTransport) {
         data class Other(val errorName: String) : PinChangeError(errorName)
     }
 
-    suspend fun changePin(currentPin: String, newPin: String): Result<Unit> {
-        val secret = sharedSecret ?: return Result.failure(Exception("Shared secret not available"))
-        val pubKey = platformPublicKey ?: return Result.failure(Exception("Platform key not available"))
-
-        try {
-            val sha256 = MessageDigest.getInstance("SHA-256")
-
-            val currentPinHash = sha256.digest(currentPin.toByteArray(Charsets.UTF_8))
-            val currentPinHashLeft16 = currentPinHash.copyOf(16)
-
-            val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
-            if (newPinBytes.size > 63) {
-                return Result.failure(PinChangeError.PinTooLong())
-            }
-            val newPinPadded = ByteArray(64)
-            newPinBytes.copyInto(newPinPadded, 0, 0, newPinBytes.size)
-
-            val encryptedCurrentPinHash = aesEncrypt(secret, currentPinHashLeft16)
-            val encryptedNewPin = aesEncrypt(secret, newPinPadded)
-
-            val mac = Mac.getInstance("HmacSHA256")
-            mac.init(SecretKeySpec(secret, "HmacSHA256"))
-            mac.update(encryptedNewPin)
-            mac.update(encryptedCurrentPinHash)
-            val hmacResult = mac.doFinal()
-            val pinUvAuthParam = hmacResult.copyOf(16)
-
-            val command = buildChangePinCommand(pubKey, encryptedNewPin, encryptedCurrentPinHash, pinUvAuthParam)
-            val response = transport.sendCtapCommand(command)
-
-            if (response.isEmpty()) {
-                return Result.failure(PinChangeError.Other("Empty response"))
-            }
-
-            if (CTAP.isSuccess(response)) {
-                return Result.success(Unit)
-            }
-
-            return when (CTAP.getResponseError(response)) {
-                CTAP.Error.PIN_INVALID -> Result.failure(PinChangeError.InvalidPin())
-                CTAP.Error.PIN_BLOCKED -> Result.failure(PinChangeError.PinBlocked())
-                CTAP.Error.PIN_POLICY_VIOLATION -> Result.failure(PinChangeError.PinPolicyViolation())
-                CTAP.Error.PIN_NOT_SET -> Result.failure(PinChangeError.PinNotSet())
-                else -> Result.failure(PinChangeError.Other(CTAP.getErrorName(response[0])))
-            }
-
-        } catch (e: Exception) {
-            return Result.failure(e)
-        }
-    }
-
-    fun hasPinToken(): Boolean = pinToken != null
-
-    val isInitialized: Boolean
-        get() = sharedSecret != null && platformPublicKey != null
-
-    fun computeAuthParam(message: ByteArray): ByteArray {
-        val token = pinToken ?: throw IllegalStateException("No pin token")
-
-        val mac = Mac.getInstance("HmacSHA256")
-        mac.init(SecretKeySpec(token, "HmacSHA256"))
-        val hmacResult = mac.doFinal(message)
-        return hmacResult.copyOf(16)
-    }
-
-    /**
-     * Build the hmac-secret extension input for getAssertion.
-     *
-     * @param salt1 First 32-byte salt (required)
-     * @param salt2 Second 32-byte salt (optional)
-     * @return Encrypted salts and authentication tag, or null if not initialized
-     */
-    fun buildHmacSecretInput(salt1: ByteArray, salt2: ByteArray? = null): HmacSecretInput? {
-        val secret = sharedSecret ?: return null
-
-        val salts = if (salt2 != null) salt1 + salt2 else salt1
-        val saltEnc = aesEncrypt(secret, salts)
-
-        val mac = Mac.getInstance("HmacSHA256")
-        mac.init(SecretKeySpec(secret, "HmacSHA256"))
-        val saltAuth = mac.doFinal(saltEnc).copyOf(16)
-
-        return HmacSecretInput(saltEnc, saltAuth)
-    }
-
-    /**
-     * Decrypt the hmac-secret output from the authenticator.
-     *
-     * @param encrypted The encrypted output bytes from the authenticator's authData extensions
-     * @return Decrypted output (32 bytes for one salt, 64 for two)
-     */
-    fun decryptHmacSecretOutput(encrypted: ByteArray): ByteArray? {
-        val secret = sharedSecret ?: return null
-        return try {
-            aesDecrypt(secret, encrypted)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     data class HmacSecretInput(
         val saltEnc: ByteArray,
         val saltAuth: ByteArray
     )
+
+    /**
+     * State after successful key agreement with the authenticator.
+     * Can request PIN/UV tokens, set/change PINs, and use hmac-secret.
+     */
+    inner class Initialized internal constructor(
+        internal val sharedSecret: ByteArray,
+        internal val platformPublicKey: ECPublicKey
+    ) {
+        suspend fun requestPinToken(pin: String): Result<Authenticated> {
+            return try {
+                val sha256 = MessageDigest.getInstance("SHA-256")
+                val pinHash = sha256.digest(pin.toByteArray(Charsets.UTF_8))
+                val pinHashLeft16 = pinHash.copyOf(16)
+
+                val encryptedPinHash = aesEncrypt(sharedSecret, pinHashLeft16)
+
+                val command = buildGetPinTokenCommand(platformPublicKey, encryptedPinHash)
+                val response = transport.sendCtapCommand(command)
+
+                val error = CTAP.getResponseError(response)
+                if (error != null) {
+                    return Result.failure(CTAP.Exception(error))
+                }
+
+                val encryptedToken = parsePinTokenResponse(response)
+                    ?: return Result.failure(Exception("Failed to parse PIN token"))
+                val pinToken = aesDecrypt(sharedSecret, encryptedToken)
+
+                Result.success(Authenticated(this, pinToken))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
+        suspend fun requestPinToken(
+            pin: String, permissions: Int, rpId: String? = null
+        ): Result<Authenticated> {
+            return try {
+                val sha256 = MessageDigest.getInstance("SHA-256")
+                val pinHash = sha256.digest(pin.toByteArray(Charsets.UTF_8))
+                val pinHashLeft16 = pinHash.copyOf(16)
+
+                val encryptedPinHash = aesEncrypt(sharedSecret, pinHashLeft16)
+
+                val command = buildGetPinTokenWithPermissionsCommand(
+                    platformPublicKey, encryptedPinHash, permissions, rpId
+                )
+                val response = transport.sendCtapCommand(command)
+
+                if (response.isEmpty()) {
+                    return Result.failure(Exception("Empty response"))
+                }
+
+                val error = CTAP.getResponseError(response)
+                if (error != null) {
+                    // Fallback to basic method if authenticator doesn't support permissions
+                    val fallbackErrors = listOf(
+                        CTAP.Error.INVALID_COMMAND,
+                        CTAP.Error.INVALID_PARAMETER,
+                        CTAP.Error.CBOR_UNEXPECTED_TYPE,
+                        CTAP.Error.INVALID_CBOR,
+                        CTAP.Error.MISSING_PARAMETER,
+                        CTAP.Error.UNSUPPORTED_OPTION,
+                        CTAP.Error.INVALID_SUBCOMMAND,
+                        CTAP.Error.OTHER
+                    )
+                    if (error in fallbackErrors) {
+                        return requestPinToken(pin)
+                    }
+                    return Result.failure(CTAP.Exception(error))
+                }
+
+                val encryptedToken = parsePinTokenResponse(response)
+                    ?: return Result.failure(Exception("Failed to parse PIN token"))
+                val pinToken = aesDecrypt(sharedSecret, encryptedToken)
+
+                Result.success(Authenticated(this, pinToken))
+            } catch (e: java.io.IOException) {
+                Result.failure(e)
+            } catch (e: Exception) {
+                // On unexpected exception, try fallback to basic method
+                requestPinToken(pin)
+            }
+        }
+
+        // CTAP2.1 subCommand 0x06: getPinUvAuthTokenUsingUvWithPermissions
+        suspend fun requestUvToken(permissions: Int, rpId: String? = null): Result<Authenticated> {
+            return try {
+                val command = buildGetUvTokenCommand(platformPublicKey, permissions, rpId)
+                val response = transport.sendCtapCommand(command)
+
+                if (response.isEmpty()) {
+                    return Result.failure(Exception("Empty response"))
+                }
+
+                val error = CTAP.getResponseError(response)
+                if (error != null) {
+                    return Result.failure(CTAP.Exception(error))
+                }
+
+                val encryptedToken = parsePinTokenResponse(response)
+                    ?: return Result.failure(Exception("Failed to parse UV token"))
+                val pinToken = aesDecrypt(sharedSecret, encryptedToken)
+
+                Result.success(Authenticated(this, pinToken))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
+        suspend fun setPin(newPin: String): Result<Unit> {
+            try {
+                val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
+                if (newPinBytes.size > 63) {
+                    return Result.failure(PinSetError.PinTooLong())
+                }
+                val newPinPadded = ByteArray(64)
+                newPinBytes.copyInto(newPinPadded, 0, 0, newPinBytes.size)
+
+                val encryptedNewPin = aesEncrypt(sharedSecret, newPinPadded)
+
+                val mac = Mac.getInstance("HmacSHA256")
+                mac.init(SecretKeySpec(sharedSecret, "HmacSHA256"))
+                val hmacResult = mac.doFinal(encryptedNewPin)
+                val pinUvAuthParam = hmacResult.copyOf(16)
+
+                val command = buildSetPinCommand(platformPublicKey, encryptedNewPin, pinUvAuthParam)
+                val response = transport.sendCtapCommand(command)
+
+                if (response.isEmpty()) {
+                    return Result.failure(PinSetError.Other("Empty response"))
+                }
+
+                if (CTAP.isSuccess(response)) {
+                    return Result.success(Unit)
+                }
+
+                return when (CTAP.getResponseError(response)) {
+                    CTAP.Error.PIN_AUTH_INVALID -> Result.failure(PinSetError.PinAlreadySet())
+                    CTAP.Error.NOT_ALLOWED -> Result.failure(PinSetError.PinAlreadySet())
+                    CTAP.Error.PIN_POLICY_VIOLATION -> Result.failure(PinSetError.PinPolicyViolation())
+                    CTAP.Error.PIN_BLOCKED -> Result.failure(PinSetError.PinBlocked())
+                    else -> Result.failure(PinSetError.Other(CTAP.getErrorName(response[0])))
+                }
+
+            } catch (e: Exception) {
+                return Result.failure(e)
+            }
+        }
+
+        suspend fun changePin(currentPin: String, newPin: String): Result<Unit> {
+            try {
+                val sha256 = MessageDigest.getInstance("SHA-256")
+
+                val currentPinHash = sha256.digest(currentPin.toByteArray(Charsets.UTF_8))
+                val currentPinHashLeft16 = currentPinHash.copyOf(16)
+
+                val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
+                if (newPinBytes.size > 63) {
+                    return Result.failure(PinChangeError.PinTooLong())
+                }
+                val newPinPadded = ByteArray(64)
+                newPinBytes.copyInto(newPinPadded, 0, 0, newPinBytes.size)
+
+                val encryptedCurrentPinHash = aesEncrypt(sharedSecret, currentPinHashLeft16)
+                val encryptedNewPin = aesEncrypt(sharedSecret, newPinPadded)
+
+                val mac = Mac.getInstance("HmacSHA256")
+                mac.init(SecretKeySpec(sharedSecret, "HmacSHA256"))
+                mac.update(encryptedNewPin)
+                mac.update(encryptedCurrentPinHash)
+                val hmacResult = mac.doFinal()
+                val pinUvAuthParam = hmacResult.copyOf(16)
+
+                val command = buildChangePinCommand(
+                    platformPublicKey, encryptedNewPin, encryptedCurrentPinHash, pinUvAuthParam
+                )
+                val response = transport.sendCtapCommand(command)
+
+                if (response.isEmpty()) {
+                    return Result.failure(PinChangeError.Other("Empty response"))
+                }
+
+                if (CTAP.isSuccess(response)) {
+                    return Result.success(Unit)
+                }
+
+                return when (CTAP.getResponseError(response)) {
+                    CTAP.Error.PIN_INVALID -> Result.failure(PinChangeError.InvalidPin())
+                    CTAP.Error.PIN_BLOCKED -> Result.failure(PinChangeError.PinBlocked())
+                    CTAP.Error.PIN_POLICY_VIOLATION -> Result.failure(PinChangeError.PinPolicyViolation())
+                    CTAP.Error.PIN_NOT_SET -> Result.failure(PinChangeError.PinNotSet())
+                    else -> Result.failure(PinChangeError.Other(CTAP.getErrorName(response[0])))
+                }
+
+            } catch (e: Exception) {
+                return Result.failure(e)
+            }
+        }
+
+        /**
+         * Build the hmac-secret extension input for getAssertion.
+         *
+         * @param salt1 First 32-byte salt (required)
+         * @param salt2 Second 32-byte salt (optional)
+         * @return Encrypted salts and authentication tag
+         */
+        fun buildHmacSecretInput(salt1: ByteArray, salt2: ByteArray? = null): HmacSecretInput {
+            val salts = if (salt2 != null) salt1 + salt2 else salt1
+            val saltEnc = aesEncrypt(sharedSecret, salts)
+
+            val mac = Mac.getInstance("HmacSHA256")
+            mac.init(SecretKeySpec(sharedSecret, "HmacSHA256"))
+            val saltAuth = mac.doFinal(saltEnc).copyOf(16)
+
+            return HmacSecretInput(saltEnc, saltAuth)
+        }
+
+        /**
+         * Decrypt the hmac-secret output from the authenticator.
+         *
+         * @param encrypted The encrypted output bytes from the authenticator's authData extensions
+         * @return Decrypted output (32 bytes for one salt, 64 for two)
+         */
+        fun decryptHmacSecretOutput(encrypted: ByteArray): ByteArray? {
+            return try {
+                aesDecrypt(sharedSecret, encrypted)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        /**
+         * Encode the platform EC public key as a COSE_Key map.
+         * Exposed for use by hmac-secret extension building.
+         */
+        fun encodePlatformCoseKeyBytes(): CborRaw {
+            val point = platformPublicKey.w
+            val x = bigIntegerToBytes(point.affineX, 32)
+            val y = bigIntegerToBytes(point.affineY, 32)
+
+            val bytes = cbor {
+                map {
+                    1 to 2
+                    3 to -25
+                    -1 to 1
+                    -2 to bytes(x)
+                    -3 to bytes(y)
+                }
+            }
+            return CborRaw(bytes.toList())
+        }
+    }
+
+    /**
+     * State after obtaining a pinUvAuthToken.
+     * Can compute auth parameters for CTAP commands.
+     * Also provides access to [Initialized] capabilities via [keyAgreement].
+     */
+    inner class Authenticated internal constructor(
+        val keyAgreement: Initialized,
+        private val pinToken: ByteArray
+    ) {
+        fun computeAuthParam(message: ByteArray): ByteArray {
+            val mac = Mac.getInstance("HmacSHA256")
+            mac.init(SecretKeySpec(pinToken, "HmacSHA256"))
+            val hmacResult = mac.doFinal(message)
+            return hmacResult.copyOf(16)
+        }
+
+        // Delegate commonly needed Initialized capabilities
+
+        fun buildHmacSecretInput(salt1: ByteArray, salt2: ByteArray? = null): HmacSecretInput =
+            keyAgreement.buildHmacSecretInput(salt1, salt2)
+
+        fun decryptHmacSecretOutput(encrypted: ByteArray): ByteArray? =
+            keyAgreement.decryptHmacSecretOutput(encrypted)
+
+        fun encodePlatformCoseKeyBytes(): CborRaw =
+            keyAgreement.encodePlatformCoseKeyBytes()
+    }
+
+    // --- Private helpers ---
 
     private fun buildGetKeyAgreementCommand(): ByteArray {
         return byteArrayOf(CTAP.CMD_CLIENT_PIN.toByte()) + cbor {
@@ -385,29 +410,6 @@ class PinProtocol(private val transport: FidoTransport) {
                 2 to 2
             }
         }
-    }
-
-    /**
-     * Encode an EC public key as a COSE_Key map using the CBOR builder.
-     * Exposed for use by hmac-secret extension building.
-     */
-    fun encodePlatformCoseKeyBytes(): CborRaw? {
-        val pubKey = platformPublicKey ?: return null
-        val point = pubKey.w
-        val x = bigIntegerToBytes(point.affineX, 32)
-        val y = bigIntegerToBytes(point.affineY, 32)
-
-        val bytes = cbor {
-            map {
-                1 to 2
-                3 to -25
-                -1 to 1
-                -2 to bytes(x)
-                -3 to bytes(y)
-            }
-        }
-        // The cbor {} block wraps it in a map header, which is already what we need
-        return CborRaw(bytes.toList())
     }
 
     private fun buildGetPinTokenCommand(platformKey: ECPublicKey, encryptedPinHash: ByteArray): ByteArray {

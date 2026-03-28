@@ -2,7 +2,7 @@ package pl.lebihan.authnkey
 
 class CredentialManagement(
     private val transport: FidoTransport,
-    private val pinProtocol: PinProtocol,
+    private val authToken: PinProtocol.Authenticated,
     private val usePreviewCommand: Boolean = false
 ) {
 
@@ -45,10 +45,6 @@ class CredentialManagement(
     )
 
     suspend fun getCredentialsMetadata(): Result<CredentialMetadata> {
-        if (!pinProtocol.hasPinToken()) {
-            return Result.failure(Exception("PIN token not available"))
-        }
-
         try {
             val command = buildCredMgmtCommand(CMD_GET_CREDS_METADATA, null)
             val response = transport.sendCtapCommand(command)
@@ -73,10 +69,6 @@ class CredentialManagement(
     }
 
     suspend fun enumerateRelyingParties(): Result<List<RelyingParty>> {
-        if (!pinProtocol.hasPinToken()) {
-            return Result.failure(Exception("PIN token not available"))
-        }
-
         val relyingParties = mutableListOf<RelyingParty>()
 
         try {
@@ -116,10 +108,6 @@ class CredentialManagement(
     }
 
     suspend fun enumerateCredentials(rpIdHash: ByteArray): Result<List<Credential>> {
-        if (!pinProtocol.hasPinToken()) {
-            return Result.failure(Exception("PIN token not available"))
-        }
-
         val credentials = mutableListOf<Credential>()
 
         try {
@@ -161,10 +149,6 @@ class CredentialManagement(
     }
 
     suspend fun deleteCredential(credentialId: ByteArray): Result<Unit> {
-        if (!pinProtocol.hasPinToken()) {
-            return Result.failure(Exception("PIN token not available"))
-        }
-
         try {
             val params = buildCredentialIdParam(credentialId)
             val command = buildCredMgmtCommand(CMD_DELETE_CREDENTIAL, params)
@@ -193,8 +177,7 @@ class CredentialManagement(
             if (subCommandParams != null) {
                 authMessage.addAll(subCommandParams.toList())
             }
-            pinProtocol.computeAuthParam(authMessage.toByteArray())
-                ?: throw Exception("Failed to compute auth param")
+            authToken.computeAuthParam(authMessage.toByteArray())
         } else null
 
         val payload = cbor {

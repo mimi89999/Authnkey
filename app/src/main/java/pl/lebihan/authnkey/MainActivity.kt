@@ -697,8 +697,9 @@ class MainActivity : AppCompatActivity() {
 
                 resultText.text = getString(R.string.authenticating)
 
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
+                val keyAgreement = withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse { e ->
                     if (isNfcDisconnected()) {
                         showNfcReconnectDialog()
                     } else {
@@ -709,17 +710,17 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 resultText.text = getString(R.string.verifying_pin)
-                withContext(Dispatchers.IO) {
-                    if (usePreviewCommand) protocol.requestPinToken(pin)
-                    else protocol.requestPinToken(pin, PinProtocol.PERMISSION_CM)
-                }.onFailure { e ->
+                val authToken = withContext(Dispatchers.IO) {
+                    if (usePreviewCommand) keyAgreement.requestPinToken(pin)
+                    else keyAgreement.requestPinToken(pin, PinProtocol.PERMISSION_CM)
+                }.getOrElse { e ->
                     if (e is java.io.IOException) throw e
                     resultText.text = e.toUserMessage(this@MainActivity)
                     pendingAction = null
                     return@launch
                 }
 
-                enumerateAndShowCredentials(usePreviewCommand)
+                enumerateAndShowCredentials(authToken, usePreviewCommand)
 
             } catch (e: Exception) {
                 if (isNfcDisconnected()) {
@@ -733,11 +734,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun enumerateAndShowCredentials(usePreviewCommand: Boolean) {
+    private suspend fun enumerateAndShowCredentials(
+        authToken: PinProtocol.Authenticated,
+        usePreviewCommand: Boolean
+    ) {
         val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
-        val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
-        val credMgmt = CredentialManagement(transport, protocol, usePreviewCommand)
+        val credMgmt = CredentialManagement(transport, authToken, usePreviewCommand)
         credentialManagement = credMgmt
 
         resultText.text = getString(R.string.getting_metadata)
@@ -868,8 +871,9 @@ class MainActivity : AppCompatActivity() {
                 val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
+                val keyAgreement = withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse { e ->
                     dismissBiometricDialog()
                     if (isNfcDisconnected()) {
                         showNfcReconnectDialog()
@@ -880,9 +884,9 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                withContext(Dispatchers.IO) {
-                    protocol.requestUvToken(PinProtocol.PERMISSION_CM)
-                }.onFailure { e ->
+                val authToken = withContext(Dispatchers.IO) {
+                    keyAgreement.requestUvToken(PinProtocol.PERMISSION_CM)
+                }.getOrElse { e ->
                     dismissBiometricDialog()
                     if (e is java.io.IOException) throw e
                     if (e is CTAP.Exception) {
@@ -939,7 +943,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 dismissBiometricDialog()
-                enumerateAndShowCredentials(usePreviewCommand)
+                enumerateAndShowCredentials(authToken, usePreviewCommand)
 
             } catch (e: Exception) {
                 dismissBiometricDialog()
@@ -1159,8 +1163,9 @@ class MainActivity : AppCompatActivity() {
 
                 resultText.text = getString(R.string.initializing_pin_protocol)
 
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
+                val keyAgreement = withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse { e ->
                     if (isNfcDisconnected()) {
                         showNfcReconnectDialog()
                     } else {
@@ -1173,7 +1178,7 @@ class MainActivity : AppCompatActivity() {
                 resultText.text = getString(R.string.setting_pin)
 
                 val result = withContext(Dispatchers.IO) {
-                    protocol.setPin(newPin)
+                    keyAgreement.setPin(newPin)
                 }
 
                 result.fold(
@@ -1212,8 +1217,9 @@ class MainActivity : AppCompatActivity() {
 
                 resultText.text = getString(R.string.initializing_pin_protocol)
 
-                val initialized = withContext(Dispatchers.IO) { protocol.initialize() }
-                if (!initialized) {
+                val keyAgreement = withContext(Dispatchers.IO) {
+                    protocol.initialize()
+                }.getOrElse { e ->
                     if (isNfcDisconnected()) {
                         showNfcReconnectDialog()
                     } else {
@@ -1226,7 +1232,7 @@ class MainActivity : AppCompatActivity() {
                 resultText.text = getString(R.string.changing_pin)
 
                 val result = withContext(Dispatchers.IO) {
-                    protocol.changePin(currentPin, newPin)
+                    keyAgreement.changePin(currentPin, newPin)
                 }
 
                 result.fold(
