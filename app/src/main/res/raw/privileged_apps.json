@@ -819,6 +819,66 @@
     {
       "type": "android",
       "info": {
+        "package_name": "com.zoho.primeum.stable",
+        "signatures": [
+          {
+            "build": "release",
+            "cert_fingerprint_sha256": "A9:D6:D0:A2:AF:DB:15:84:9B:8C:D3:1D:51:FE:73:B8:E1:B1:70:BA:A5:70:C2:F8:F2:A3:F8:65:28:29:CB:BD"
+          }
+        ]
+      }
+    },
+    {
+      "type": "android",
+      "info": {
+        "package_name": "com.amazon.cloud9",
+        "signatures": [
+          {
+            "build": "release",
+            "cert_fingerprint_sha256": "2F:19:AD:EB:28:4E:B3:6F:7F:07:78:61:52:B9:A1:D1:4B:21:65:32:03:AD:0B:04:EB:BF:9C:73:AB:6D:76:25"
+          },
+          {
+            "build": "release",
+            "cert_fingerprint_sha256": "70:D5:68:EC:6A:E6:F3:38:BC:1A:63:99:A6:53:7E:E0:69:08:CA:1D:72:FB:8F:F0:48:74:AB:95:43:3B:25:0E"
+          },
+          {
+            "build": "userdebug",
+            "cert_fingerprint_sha256": "7C:AC:39:19:37:98:1B:61:34:BD:CE:1F:D9:83:4C:25:31:81:F5:AB:F9:1D:ED:60:78:21:0D:0F:91:AC:E3:60"
+          }
+        ]
+      }
+    },
+    {
+      "type": "android",
+      "info": {
+        "package_name": "com.iode.firefox",
+        "signatures": [
+          {
+            "build": "release",
+            "cert_fingerprint_sha256": "C9:96:DA:AB:86:A8:CD:32:53:77:49:A5:EE:1D:C2:F9:84:F2:9D:43:F3:06:7D:2C:0A:54:BF:8B:BF:AB:62:C0"
+          }
+        ]
+      }
+    },
+    {
+      "type": "android",
+      "info": {
+        "package_name": "eu.weblibre.gecko",
+        "signatures": [
+          {
+            "build": "release",
+            "cert_fingerprint_sha256": "BB:2A:97:F5:61:53:35:C9:E5:7C:86:6F:1C:30:ED:4F:D7:D7:BD:DC:BC:BC:06:68:FE:93:A5:79:17:3D:3D:2D"
+          },
+          {
+            "build": "release",
+            "cert_fingerprint_sha256": "8F:52:6E:1E:53:D6:BD:4D:FB:F4:F4:B9:3C:2A:91:EC:B5:CB:8D:A5:E1:4A:D9:4C:25:70:E1:E3:C7:13:52:7F"
+          }
+        ]
+      }
+    },
+    {
+      "type": "android",
+      "info": {
         "package_name": "io.github.forkmaintainers.iceraven",
         "signatures": [
           {
@@ -831,11 +891,11 @@
     {
       "type": "android",
       "info": {
-        "package_name": "org.chromium.chrome",
+        "package_name": "org.calyxos.chromium",
         "signatures": [
           {
             "build": "release",
-            "cert_fingerprint_sha256": "A8:56:48:50:79:BC:B3:57:BF:BE:69:BA:19:A9:BA:43:CD:0A:D9:AB:22:67:52:C7:80:B6:88:8A:FD:48:21:6B"
+            "cert_fingerprint_sha256": "CB:33:EE:73:84:2F:2F:BD:C3:E3:52:5F:D1:C3:74:07:41:82:6F:33:84:9B:C9:6F:95:4D:76:18:17:D3:00:EB"
           }
         ]
       }
