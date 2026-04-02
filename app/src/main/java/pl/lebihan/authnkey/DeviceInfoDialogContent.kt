@@ -217,11 +217,13 @@ class DeviceInfoDialogContent(
             "largeBlobs" -> R.string.device_info_option_largeBlobs
             "pinUvAuthToken" -> R.string.device_info_option_pinUvAuthToken
             "authnrCfg" -> R.string.device_info_option_authnrCfg
+            "uvAcfg" -> R.string.device_info_option_uvAcfg
             "setMinPINLength" -> R.string.device_info_option_setMinPINLength
             "makeCredUvNotRqd" -> R.string.device_info_option_makeCredUvNotRqd
             "alwaysUv" -> R.string.device_info_option_alwaysUv
             "ep" -> R.string.device_info_option_ep
             "bioEnroll" -> R.string.device_info_option_bioEnroll
+            "uvBioEnroll" -> R.string.device_info_option_uvBioEnroll
             "userVerificationMgmtPreview" -> R.string.device_info_option_userVerificationMgmtPreview
             "noMcGaPermissionsWithClientPin" -> R.string.device_info_option_noMcGaPermissionsWithClientPin
             else -> return key
