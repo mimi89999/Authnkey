@@ -218,17 +218,17 @@
     <string name="device_info_option_credMgmt">Credential Management</string>
     <string name="device_info_option_credentialMgmtPreview">Credential Management (Preview)</string>
     <string name="device_info_option_largeBlobs">Large Blobs</string>
-    <string name="device_info_option_pinUvAuthToken">PIN/UV Auth Token</string>
+    <string name="device_info_option_pinUvAuthToken">PIN/User Verification Auth Token</string>
     <string name="device_info_option_authnrCfg">Authenticator Config</string>
-    <string name="device_info_option_uvAcfg">UV Authenticator Config</string>
+    <string name="device_info_option_uvAcfg">Authenticator Configuration with User Verification</string>
     <string name="device_info_option_setMinPINLength">Set Minimum PIN Length</string>
-    <string name="device_info_option_makeCredUvNotRqd">Make Credential UV Not Required</string>
-    <string name="device_info_option_alwaysUv">Always Require UV</string>
+    <string name="device_info_option_makeCredUvNotRqd">Make Credential Without Requiring User Verification</string>
+    <string name="device_info_option_alwaysUv">Always Require User Verification</string>
     <string name="device_info_option_ep">Enterprise Attestation</string>
     <string name="device_info_option_bioEnroll">Biometric Enrollment</string>
-    <string name="device_info_option_uvBioEnroll">UV Biometric Enrollment</string>
+    <string name="device_info_option_uvBioEnroll">Biometric Enrollment with User Verification</string>
     <string name="device_info_option_userVerificationMgmtPreview">User Verification Management (Preview)</string>
-    <string name="device_info_option_noMcGaPermissionsWithClientPin">No MC/GA Permissions With Client PIN</string>
+    <string name="device_info_option_noMcGaPermissionsWithClientPin">Client PIN Does Not Grant Make Credential/Get Assertion Permissions</string>
 
     <!-- Device Info Limit Labels -->
     <string name="device_info_limit_max_msg_size">Max Message Size</string>
