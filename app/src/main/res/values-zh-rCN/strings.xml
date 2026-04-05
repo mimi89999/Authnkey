@@ -171,15 +171,15 @@
     <string name="device_info_option_credMgmt">凭据管理</string>
     <string name="device_info_option_credentialMgmtPreview">凭据管理（预览）</string>
     <string name="device_info_option_largeBlobs">大型 Blob</string>
-    <string name="device_info_option_pinUvAuthToken">PIN/UV 认证令牌</string>
+    <string name="device_info_option_pinUvAuthToken">PIN/用户验证认证令牌</string>
     <string name="device_info_option_authnrCfg">认证器配置</string>
     <string name="device_info_option_setMinPINLength">设置最小 PIN 长度</string>
-    <string name="device_info_option_makeCredUvNotRqd">创建凭据无需 UV</string>
-    <string name="device_info_option_alwaysUv">始终要求 UV</string>
+    <string name="device_info_option_makeCredUvNotRqd">无需用户验证即可创建凭证</string>
+    <string name="device_info_option_alwaysUv">始终要求用户验证</string>
     <string name="device_info_option_ep">企业证明</string>
     <string name="device_info_option_bioEnroll">生物特征注册</string>
     <string name="device_info_option_userVerificationMgmtPreview">用户验证管理（预览）</string>
-    <string name="device_info_option_noMcGaPermissionsWithClientPin">无 MC/GA 权限（使用客户端 PIN 时）</string>
+    <string name="device_info_option_noMcGaPermissionsWithClientPin">客户端PIN不授予创建凭证/获取断言权限</string>
     <string name="device_info_limit_max_msg_size">最大消息大小</string>
     <string name="device_info_limit_max_creds_in_list">列表中最大凭据数</string>
     <string name="device_info_limit_max_cred_id_length">最大凭据 ID 长度</string>
@@ -211,4 +211,11 @@
     <string name="using_nfc">使用 NFC</string>
     <string name="security_key_detected">检测到安全密钥</string>
     <string name="using_usb">使用 USB</string>
+    <string name="pin_too_long_title">PIN 码过长</string>
+    <string name="device_info_option_uvAcfg">带用户验证的认证器配置</string>
+    <string name="device_info_section_uv_modality">支持的用户验证方法</string>
+    <string name="error_uv_invalid_retries">无法识别指纹。剩余 %1$d 次重试机会</string>
+    <string name="pin_too_long_message">PIN 码超过最大允许长度</string>
+    <string name="error_uv_blocked">生物识别验证失败。请改用 PIN 码。</string>
+    <string name="device_info_option_uvBioEnroll">带用户验证的生物特征注册</string>
 </resources>

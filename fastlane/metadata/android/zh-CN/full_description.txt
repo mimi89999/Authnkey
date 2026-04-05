@@ -1,4 +1,4 @@
-Authnkey 是一个凭证提供程序，可让您在 Android 上使用 FIDO2 安全密钥（如 YubiKey 或 SoloKey）进行通行密钥身份验证。
+Authnkey 是一个凭证提供程序，可让您在 Android 上使用 FIDO2 安全密钥（如 YubiKey，SoloKey，Nitrokey 或 Token2）进行通行密钥身份验证。
 
 Android 内置的 WebAuthn 支持存在一个重大缺陷：它不支持通过 NFC 的 CTAP2 协议。这意味着您无法将 NFC 安全密钥与 PIN 保护的通行密钥或可发现凭证一起使用——您只能使用基本的 U2F 点击验证。Authnkey 通过实现完整的 CTAP2 协议填补了这一空白。
 
