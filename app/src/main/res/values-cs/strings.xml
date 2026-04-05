@@ -174,15 +174,15 @@
     <string name="device_info_option_credMgmt">Správa údajů</string>
     <string name="device_info_option_credentialMgmtPreview">Správa údajů (náhled)</string>
     <string name="device_info_option_largeBlobs">Velké bloby</string>
-    <string name="device_info_option_pinUvAuthToken">Autentifikační token OU/PIN</string>
+    <string name="device_info_option_pinUvAuthToken">PIN / Autentifikační token ověření uživatele</string>
     <string name="device_info_option_authnrCfg">Konfigurace autentifikátoru</string>
     <string name="device_info_option_setMinPINLength">Minimální délka kódu PIN</string>
-    <string name="device_info_option_makeCredUvNotRqd">Nevyžadovat údaje OU</string>
-    <string name="device_info_option_alwaysUv">Vždy vyžadovat OU</string>
+    <string name="device_info_option_makeCredUvNotRqd">Vytvořit údaj bez požadování ověření uživatele</string>
+    <string name="device_info_option_alwaysUv">Vždy vyžadovat ověření uživatele</string>
     <string name="device_info_option_ep">Osvědčení pro podniky</string>
     <string name="device_info_option_bioEnroll">Biometrická registrace</string>
     <string name="device_info_option_userVerificationMgmtPreview">Správa ověření uživatele (náhled)</string>
-    <string name="device_info_option_noMcGaPermissionsWithClientPin">Žádná oprávnění MC/GA s kódem PIN klienta</string>
+    <string name="device_info_option_noMcGaPermissionsWithClientPin">PIN klienta neuděluje oprávnění k vytvoření údaje ani k získání potvrzení</string>
     <string name="device_info_limit_max_msg_size">Max. velikost zprávy</string>
     <string name="device_info_limit_max_creds_in_list">Max. údajů v seznamu</string>
     <string name="device_info_limit_max_cred_id_length">Max. délka ID údaje</string>
@@ -218,4 +218,7 @@
     <string name="error_uv_invalid_retries">Otisk prstu nerozpoznán. Zbývá %1$d pokusů</string>
     <string name="pin_too_long_title">PIN je příliš dlouhý</string>
     <string name="pin_too_long_message">PIN přesáhl maximální povolenou délku</string>
+    <string name="device_info_option_uvAcfg">Konfigurace autentifikátoru s ověřením uživatele</string>
+    <string name="device_info_option_uvBioEnroll">Biometrické ověření s ověřením uživatele</string>
+    <string name="device_info_section_uv_modality">Podporované způsoby ověření uživatele</string>
 </resources>
