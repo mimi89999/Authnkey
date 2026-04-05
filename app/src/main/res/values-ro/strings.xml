@@ -192,15 +192,15 @@
     <string name="device_info_option_credMgmt">Gestionarea credențialelor</string>
     <string name="device_info_option_credentialMgmtPreview">Gestionarea credențialelor (Previzualizare)</string>
     <string name="device_info_option_largeBlobs">Obiecte Binare Mari</string>
-    <string name="device_info_option_pinUvAuthToken">Token de autentificare PIN/UV</string>
+    <string name="device_info_option_pinUvAuthToken">Token de autentificare și verificare PIN/User</string>
     <string name="device_info_option_authnrCfg">Configurare autentificator</string>
     <string name="device_info_option_setMinPINLength">Setează lungimea minimă a PIN-ului</string>
-    <string name="device_info_option_makeCredUvNotRqd">Crearea credențialelor fără verificare (UV)</string>
-    <string name="device_info_option_alwaysUv">Solicită întotdeauna verificarea (UV)</string>
+    <string name="device_info_option_makeCredUvNotRqd">Creează credențiale fără a solicita verificarea utilizatorului</string>
+    <string name="device_info_option_alwaysUv">Solicită întotdeauna verificarea utilizatorului</string>
     <string name="device_info_option_ep">Atestare Enterprise</string>
     <string name="device_info_option_bioEnroll">Înregistrare biometrică</string>
     <string name="device_info_option_userVerificationMgmtPreview">Gestionarea verificării utilizatorului (Previzualizare)</string>
-    <string name="device_info_option_noMcGaPermissionsWithClientPin">Fără permisiuni MC/GA cu PIN-ul client setat</string>
+    <string name="device_info_option_noMcGaPermissionsWithClientPin">PIN-ul clientului nu acordă permisiuni pentru crearea de credențiale/obținerea de aserțiuni</string>
     <string name="device_info_limit_max_msg_size">Dimensiune maximă mesaj</string>
     <string name="device_info_limit_max_creds_in_list">Număr maxim de credențiale în listă</string>
     <string name="device_info_limit_max_cred_id_length">Lungime maximă ID credențial</string>
@@ -218,4 +218,7 @@
     <string name="error_uv_invalid_retries">Amprenta nu a fost recunoscută. Mai ai %1$d încercări</string>
     <string name="pin_too_long_title">PIN prea lung</string>
     <string name="pin_too_long_message">PIN-ul depășește lungimea maximă permisă</string>
+    <string name="device_info_option_uvAcfg">Configurare autentificator cu verificarea utilizatorului</string>
+    <string name="device_info_option_uvBioEnroll">Înregistrare biometrie cu verificarea utilizatorului</string>
+    <string name="device_info_section_uv_modality">Metode acceptate de verificare a utilizatorului</string>
 </resources>
