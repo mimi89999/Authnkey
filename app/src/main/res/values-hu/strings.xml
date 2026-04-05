@@ -179,7 +179,7 @@
     <string name="device_info_option_credMgmt">Azonosítók kezelése</string>
     <string name="device_info_option_credentialMgmtPreview">Azonosítók kezelése (előzetes)</string>
     <string name="device_info_option_largeBlobs">Nagyméretű adatok (Large Blobs)</string>
-    <string name="device_info_option_pinUvAuthToken">PIN/UV hitelesítési token</string>
+    <string name="device_info_option_pinUvAuthToken">PIN / Felhasználói hitelesítési token</string>
     <string name="device_info_option_authnrCfg">Hitelesítő konfigurációja</string>
     <string name="device_info_option_setMinPINLength">Min. PIN-hossz megadása</string>
     <string name="device_info_option_makeCredUvNotRqd">Felhasználó-ellenőrzés mellőzése kulcskészítéskor</string>
@@ -216,4 +216,9 @@
     <string name="credential_deleted">Hitelesítő adat törölve</string>
     <string name="credential_delete_error">Nem sikerült törölni a következőt: %1$s</string>
     <string name="delete">Törlés</string>
+    <string name="device_info_option_uvAcfg">Felhasználói hitelesítési beállítások</string>
+    <string name="device_info_option_uvBioEnroll">Felhasználó általi biometrikus bejegyzés</string>
+    <string name="pin_too_long_title">A PIN-kód túl hosszú</string>
+    <string name="device_info_section_uv_modality">Támogatott felhasználói hitelesítési módok</string>
+    <string name="pin_too_long_message">A PIN-kód elérte a megengedett hosszt</string>
 </resources>
