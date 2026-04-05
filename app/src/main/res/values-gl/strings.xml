@@ -163,11 +163,11 @@
     <string name="device_info_option_clientPin">PIN do cliente</string>
     <string name="device_info_option_credMgmt">Xestión de credenciais</string>
     <string name="device_info_option_credentialMgmtPreview">Xestión de credenciais (Vista previa)</string>
-    <string name="device_info_option_pinUvAuthToken">Token PIN/UV Auth</string>
+    <string name="device_info_option_pinUvAuthToken">Token para Autenticación con PIN/Verificación</string>
     <string name="device_info_option_authnrCfg">Configuración do Autenticador</string>
     <string name="device_info_option_setMinPINLength">Establecer lonxitude mínima do PIN</string>
-    <string name="device_info_option_makeCredUvNotRqd">Facer que Credential UV non sexa obrigatorio</string>
-    <string name="device_info_option_alwaysUv">Pedir sempre UV</string>
+    <string name="device_info_option_makeCredUvNotRqd">Facer a credencial sen requerir verificación da usuaria</string>
+    <string name="device_info_option_alwaysUv">Pedir sempre verificación da usuaria</string>
     <string name="device_info_option_userVerificationMgmtPreview">Xestión da verificación da usuaria (Vista previa)</string>
     <string name="device_info_limit_max_msg_size">Tamaño máx. da mensaxe</string>
     <string name="device_info_limit_max_creds_in_list">Máx. de credenciais na lista</string>
@@ -214,8 +214,11 @@
     <string name="device_info_aaguid">AAGUID: %1$s</string>
     <string name="device_info_option_largeBlobs">Binarios grandes</string>
     <string name="device_info_option_bioEnroll">Inscrición biométrica</string>
-    <string name="device_info_option_noMcGaPermissionsWithClientPin">Sen permiso MC/GA con PIN do cliente</string>
+    <string name="device_info_option_noMcGaPermissionsWithClientPin">O PIN do cliente non concede permisos Facer credencial/Obter confirmación</string>
     <string name="device_info_option_ep">Asteación empresarial</string>
     <string name="pin_too_long_title">PIN demasiado longo</string>
     <string name="pin_too_long_message">O PIN supera a lonxitude máxima permitida</string>
+    <string name="device_info_option_uvAcfg">Configuración do autenticador con Verificación da usuaria</string>
+    <string name="device_info_section_uv_modality">Métodos compatibles para verificar usuarias</string>
+    <string name="device_info_option_uvBioEnroll">Usar biometría para a verificación da usuaria</string>
 </resources>
