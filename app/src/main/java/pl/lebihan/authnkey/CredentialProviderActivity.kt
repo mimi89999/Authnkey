@@ -524,54 +524,35 @@ class CredentialProviderActivity : AppCompatActivity() {
                         setInstruction(getString(R.string.instruction_authenticating))
                         authenticateAndExecute(pendingPin!!, json)
                     }
-                    // UV required but device has no PIN and no built-in UV - fail
-                    userVerification == UserVerification.REQUIRED && !deviceHasPin && !deviceSupportsUv -> {
-                        throw AuthnkeyError.UserVerificationRequiredNoPin()
-                    }
-                    // UV required/preferred, device supports built-in UV but no PIN set
-                    // -> go directly to biometric (use token flow if supported, otherwise built-in)
-                    userVerification != UserVerification.DISCOURAGED && deviceSupportsUv && !deviceHasPin -> {
-                        if (supportsPinUvAuthToken) {
-                            authenticateWithUvAndExecute(json)
-                        } else {
-                            executeWithBuiltInUv(json)
+                    // Verification needed (required/preferred, or forced by alwaysUv)
+                    userVerification != UserVerification.DISCOURAGED || alwaysUv -> when {
+                        // Device has both PIN and built-in UV -> show PIN input with biometric option
+                        deviceHasPin && deviceSupportsUv -> {
+                            val retries = withContext(Dispatchers.IO) {
+                                protocol.getPinRetries()
+                            }.getOrDefault(8)
+                            showPinDialogWithBiometric(retries, json)
                         }
-                    }
-                    // UV required/preferred, device has both PIN and built-in UV
-                    // -> show PIN input with biometric option
-                    userVerification != UserVerification.DISCOURAGED && deviceHasPin && deviceSupportsUv -> {
-                        val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
-                        showPinDialogWithBiometric(retries, json)
-                    }
-                    // alwaysUv but device has no PIN - fail
-                    alwaysUv && !deviceHasPin && !deviceSupportsUv -> {
-                        throw AuthnkeyError.UserVerificationRequiredNoPin()
-                    }
-                    // UV required/preferred and device has PIN only - need to get PIN
-                    userVerification != UserVerification.DISCOURAGED && deviceHasPin -> {
-                        val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
-                        showPinDialog(retries, json)
-                    }
-                    // UV discouraged but device has alwaysUv - need PIN or UV anyway
-                    userVerification == UserVerification.DISCOURAGED && alwaysUv -> {
-                        if (deviceSupportsUv) {
-                            // Use built-in UV silently since UV is discouraged but alwaysUv forces it
-                            if (supportsPinUvAuthToken) {
-                                authenticateWithUvAndExecute(json)
-                            } else {
-                                executeWithBuiltInUv(json)
-                            }
-                        } else if (deviceHasPin) {
-                            val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
+                        // Device has PIN only -> need to get PIN
+                        deviceHasPin -> {
+                            val retries = withContext(Dispatchers.IO) {
+                                protocol.getPinRetries()
+                            }.getOrDefault(8)
                             showPinDialog(retries, json)
-                        } else {
-                            throw AuthnkeyError.UserVerificationRequiredNoPin()
                         }
+                        // Device supports built-in UV but no PIN set
+                        // -> go directly to biometric (use token flow if supported, otherwise built-in)
+                        deviceSupportsUv -> {
+                            if (supportsPinUvAuthToken) authenticateWithUvAndExecute(json)
+                            else executeWithBuiltInUv(json)
+                        }
+                        // No verification method available
+                        userVerification == UserVerification.REQUIRED || alwaysUv ->
+                            throw AuthnkeyError.UserVerificationRequiredNoPin()
+                        else -> tryExecuteWithoutPin(json)
                     }
-                    // UV discouraged or preferred with no PIN - try without
-                    else -> {
-                        tryExecuteWithoutPin(json)
-                    }
+                    // UV discouraged, no alwaysUv -> try without
+                    else -> tryExecuteWithoutPin(json)
                 }
 
             } catch (e: Exception) {
