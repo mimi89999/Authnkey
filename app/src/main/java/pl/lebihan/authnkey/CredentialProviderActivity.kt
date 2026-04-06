@@ -517,30 +517,32 @@ class CredentialProviderActivity : AppCompatActivity() {
                 val alwaysUv = deviceInfo?.options?.get("alwaysUv") == true
                 deviceSupportsUv = deviceInfo?.supportsBuiltInUv == true
                 val supportsPinUvAuthToken = deviceInfo?.supportsPinUvAuthToken == true
+                val noMcGaWithClientPin = deviceInfo?.noMcGaPermissionsWithClientPin == true
+                val canUsePinForMcGa = deviceHasPin && !noMcGaWithClientPin
 
                 when {
                     // We already have PIN from pre-prompt
-                    deviceHasPin && pendingPin != null -> {
+                    canUsePinForMcGa && pendingPin != null -> {
                         setInstruction(getString(R.string.instruction_authenticating))
                         authenticateAndExecute(pendingPin!!, json)
                     }
                     // Verification needed (required/preferred, or forced by alwaysUv)
                     userVerification != UserVerification.DISCOURAGED || alwaysUv -> when {
-                        // Device has both PIN and built-in UV -> show PIN input with biometric option
-                        deviceHasPin && deviceSupportsUv -> {
+                        // Device has both usable PIN and built-in UV -> show PIN input with biometric option
+                        canUsePinForMcGa && deviceSupportsUv -> {
                             val retries = withContext(Dispatchers.IO) {
                                 protocol.getPinRetries()
                             }.getOrDefault(8)
                             showPinDialogWithBiometric(retries, json)
                         }
-                        // Device has PIN only -> need to get PIN
-                        deviceHasPin -> {
+                        // Device has usable PIN only -> need to get PIN
+                        canUsePinForMcGa -> {
                             val retries = withContext(Dispatchers.IO) {
                                 protocol.getPinRetries()
                             }.getOrDefault(8)
                             showPinDialog(retries, json)
                         }
-                        // Device supports built-in UV but no PIN set
+                        // Device supports built-in UV but PIN not usable
                         // -> go directly to biometric (use token flow if supported, otherwise built-in)
                         deviceSupportsUv -> {
                             if (supportsPinUvAuthToken) authenticateWithUvAndExecute(json)
@@ -548,7 +550,9 @@ class CredentialProviderActivity : AppCompatActivity() {
                         }
                         // No verification method available
                         userVerification == UserVerification.REQUIRED || alwaysUv ->
-                            throw AuthnkeyError.UserVerificationRequiredNoPin()
+                            throw if (noMcGaWithClientPin)
+                                AuthnkeyError.PinNotSupportedForOperation()
+                            else AuthnkeyError.UserVerificationRequiredNoPin()
                         else -> tryExecuteWithoutPin(json)
                     }
                     // UV discouraged, no alwaysUv -> try without

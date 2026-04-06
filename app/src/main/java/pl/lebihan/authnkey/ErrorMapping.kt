@@ -18,6 +18,7 @@ fun Throwable.toUserMessage(context: Context): String = when (this) {
     is AuthnkeyError.PinProtocolNotInitialized -> context.getString(R.string.error_key_disconnected)
     is AuthnkeyError.PinProtocolInitFailed -> context.getString(R.string.error_communication_failed)
     is AuthnkeyError.UserVerificationRequiredNoPin -> context.getString(R.string.error_uv_required_no_pin)
+    is AuthnkeyError.PinNotSupportedForOperation -> context.getString(R.string.error_pin_not_supported_for_operation)
     is AuthnkeyError.PinBlocked -> context.getString(R.string.error_pin_blocked)
     is AuthnkeyError.UvBlocked -> context.getString(R.string.error_uv_blocked)
 

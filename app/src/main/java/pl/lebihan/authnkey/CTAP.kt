@@ -122,6 +122,9 @@ data class DeviceInfo(
 
     val supportsPinUvAuthToken: Boolean
         get() = options["pinUvAuthToken"] == true
+
+    val noMcGaPermissionsWithClientPin: Boolean
+        get() = options["noMcGaPermissionsWithClientPin"] == true
 }
 
 enum class UvModality(val bit: Int, val label: String) {

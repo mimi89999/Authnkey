@@ -13,6 +13,7 @@ sealed class AuthnkeyError(message: String) : Exception(message) {
 
     // Authentication errors
     class UserVerificationRequiredNoPin : AuthnkeyError("User verification required but no PIN set")
+    class PinNotSupportedForOperation : AuthnkeyError("PIN cannot be used for this operation")
     class PinBlocked : AuthnkeyError("PIN is blocked")
 
     // On-device UV errors

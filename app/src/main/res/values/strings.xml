@@ -63,6 +63,7 @@
     <string name="error_metadata">Error getting metadata: %1$s</string>
     <string name="error_pins_dont_match">New PINs don\'t match</string>
     <string name="error_uv_required_no_pin">Verification required but no PIN is set on your security key</string>
+    <string name="error_pin_not_supported_for_operation">Verification required but PIN cannot be used for this operation</string>
 
     <!-- User-friendly error messages (used by ErrorMapping) -->
     <string name="error_tag_lost">Lost contact with the security key</string>
