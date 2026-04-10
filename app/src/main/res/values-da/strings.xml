@@ -192,7 +192,7 @@
     <string name="device_info_option_credMgmt">Håndtering af legitimationsoplysninger</string>
     <string name="device_info_option_credentialMgmtPreview">Håndtering af legitimationsoplysninger (tidlig adgang)</string>
     <string name="device_info_option_largeBlobs">Store binære data</string>
-    <string name="device_info_option_pinUvAuthToken">PIN/UV-godkendelsestoken</string>
+    <string name="device_info_option_pinUvAuthToken">PIN-kode/brugerverifikation godkendelsestoken</string>
     <string name="device_info_option_authnrCfg">Indstillinger for sikkerhedsnøgle</string>
     <string name="device_info_option_setMinPINLength">Indstil minimum PIN-kode længde</string>
     <string name="device_info_option_makeCredUvNotRqd">Gør brugerbekræftelse på sikkerhedsnøgle valgfri</string>
@@ -200,7 +200,7 @@
     <string name="device_info_option_ep">Virksomhedsattestation</string>
     <string name="device_info_option_bioEnroll">Registrering af biometri</string>
     <string name="device_info_option_userVerificationMgmtPreview">Brugerverifikationsstyring (tidlig adgang)</string>
-    <string name="device_info_option_noMcGaPermissionsWithClientPin">Ingen MC/GA-tilladelser med klient PIN-kode</string>
+    <string name="device_info_option_noMcGaPermissionsWithClientPin">Klient PIN-kode giver ikke rettighed til at oprette eller godkende identitet</string>
     <string name="set">Angiv</string>
     <string name="device_info_limit_max_msg_size">Maksimal beskedstørrelse</string>
     <string name="device_info_limit_max_creds_in_list">Maksimal antal legitimationsoplysninger i listen</string>
@@ -218,4 +218,8 @@
     <string name="credential_deleted">Legitimationsoplysning slettet</string>
     <string name="credential_delete_error">Kunne ikke slette: %1$s</string>
     <string name="delete">Slet</string>
+    <string name="device_info_option_uvAcfg">Opsætning af autentifikator med brugerverifikation</string>
+    <string name="device_info_section_uv_modality">Understøttede brugerverifikationsmetoder</string>
+    <string name="device_info_option_uvBioEnroll">Biometrisk registrering med brugerverifikation</string>
+    <string name="error_pin_not_supported_for_operation">Verifikation kræves, men PIN-koden kan ikke bruges til denne handling</string>
 </resources>
