@@ -56,6 +56,7 @@
     <string name="error_metadata">Erreur lors de la récupération des métadonnées : %1$s</string>
     <string name="error_pins_dont_match">Les nouveaux codes PIN ne correspondent pas</string>
     <string name="error_uv_required_no_pin">Vérification requise mais aucun code PIN n\'est défini sur votre clé de sécurité</string>
+    <string name="error_pin_not_supported_for_operation">Une vérification est requise, mais le code PIN ne peut pas être utilisé pour cette opération</string>
 
     <!-- User-friendly error messages (used by ErrorMapping) -->
     <string name="error_tag_lost">Perte de contact avec la clé de sécurité</string>
