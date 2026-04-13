@@ -221,4 +221,5 @@
     <string name="device_info_option_uvAcfg">Configurare autentificator cu verificarea utilizatorului</string>
     <string name="device_info_option_uvBioEnroll">Înregistrare biometrie cu verificarea utilizatorului</string>
     <string name="device_info_section_uv_modality">Metode acceptate de verificare a utilizatorului</string>
+    <string name="error_pin_not_supported_for_operation">Verificarea este necesară, dar PIN-ul nu poate fi utilizat pentru această operațiune</string>
 </resources>
