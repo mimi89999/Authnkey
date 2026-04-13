@@ -221,4 +221,5 @@
     <string name="device_info_option_uvAcfg">Konfigurace autentifikátoru s ověřením uživatele</string>
     <string name="device_info_option_uvBioEnroll">Biometrické ověření s ověřením uživatele</string>
     <string name="device_info_section_uv_modality">Podporované způsoby ověření uživatele</string>
+    <string name="error_pin_not_supported_for_operation">Je vyžadováno ověření, PIN ale nelze použít k této operaci</string>
 </resources>
