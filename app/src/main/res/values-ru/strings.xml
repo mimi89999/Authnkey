@@ -221,4 +221,5 @@
     <string name="device_info_option_uvAcfg">Конфигурация аутентификатора с пользовательской верификацией</string>
     <string name="device_info_option_uvBioEnroll">Регистрация биометрии с пользовательской верификацией</string>
     <string name="device_info_section_uv_modality">Поддерживаемые методы пользовательской верификации</string>
+    <string name="error_pin_not_supported_for_operation">Требуется верификация, но для этой операции нельзя использовать ПИН-код</string>
 </resources>
