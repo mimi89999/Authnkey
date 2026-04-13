@@ -221,4 +221,5 @@
     <string name="device_info_option_uvAcfg">Configuración do autenticador con Verificación da usuaria</string>
     <string name="device_info_section_uv_modality">Métodos compatibles para verificar usuarias</string>
     <string name="device_info_option_uvBioEnroll">Usar biometría para a verificación da usuaria</string>
+    <string name="error_pin_not_supported_for_operation">Requírese verificación, pero non se pode usar o PIN para esta operación</string>
 </resources>
