@@ -1,0 +1,6 @@
+- Show supported user verification methods in device info dialog
+- Handle keys where PIN does not grant passkey creation and authentication permissions
+- Update privileged apps list, adding iodé Browser among others
+
+New translations:
+- Danish by Peder Thorsø

@@ -14,8 +14,8 @@ android {
         applicationId = "pl.lebihan.authnkey"
         minSdk = 34
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.2.2"
+        versionCode = 10
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
