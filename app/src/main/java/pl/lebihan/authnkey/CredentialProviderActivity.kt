@@ -616,9 +616,14 @@ class CredentialProviderActivity : AppCompatActivity() {
                 }
 
                 setInstruction(getString(R.string.instruction_verifying_pin))
-                // Try CTAP2.1 style with permissions first (falls back to basic internally)
+                val supportsPinUvAuthToken =
+                    ctapSession?.deviceInfo?.supportsPinUvAuthToken == true
                 val authToken = withContext(Dispatchers.IO) {
-                    keyAgreement.requestPinToken(pin, permissions, rpId)
+                    if (supportsPinUvAuthToken) {
+                        keyAgreement.requestPinToken(pin, permissions, rpId)
+                    } else {
+                        keyAgreement.requestPinToken(pin)
+                    }
                 }.getOrElse { e ->
                     if (e is CTAP.Exception && e.error == CTAP.Error.PIN_INVALID) {
                         val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrThrow()
