@@ -53,9 +53,8 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private var bottomSheet: CredentialBottomSheet? = null
 
-    private var currentTransport: FidoTransport? = null
+    private var ctapSession: CtapSession? = null
     private var pinProtocol: PinProtocol? = null
-    private var deviceInfo: DeviceInfo? = null
 
     private var createRequest: ProviderCreateCredentialRequest? = null
     private var getRequest: ProviderGetCredentialRequest? = null
@@ -211,7 +210,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private fun handlePinEntered(pin: String) {
-        if (currentTransport?.isConnected == true) {
+        if (ctapSession?.isConnected == true) {
             val json = JSONObject(requestJson!!)
             showProgress(true)
             setInstruction(getString(R.string.instruction_verifying))
@@ -227,12 +226,12 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private fun handleBiometricSelected() {
-        if (currentTransport?.isConnected == true) {
+        if (ctapSession?.isConnected == true) {
             val json = JSONObject(requestJson!!)
             bottomSheet?.showBiometricWaiting()
             setInstruction(getString(R.string.instruction_waiting_biometric))
             showProgress(true)
-            if (deviceInfo?.supportsPinUvAuthToken == true) {
+            if (ctapSession?.deviceInfo?.supportsPinUvAuthToken == true) {
                 authenticateWithUvAndExecute(json)
             } else {
                 executeWithBuiltInUv(json)
@@ -343,7 +342,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             registerReceiver(usbAttachReceiver, usbAttachFilter)
         }
 
-        if (currentTransport?.isConnected != true || currentTransport is UsbTransport) {
+        if (ctapSession?.isConnected != true || ctapSession?.transportType == TransportType.USB) {
             checkForUsbDevice()
         }
     }
@@ -371,7 +370,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             // Ignore
         }
         scope.cancel()
-        currentTransport?.close()
+        ctapSession?.close()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -390,16 +389,17 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private fun checkForUsbDevice() {
         // Verify the existing USB connection is still usable
-        val transport = currentTransport
-        if (transport is UsbTransport) {
-            try {
-                transport.reclaimConnection()
-                return // still good
-            } catch (e: AuthnkeyError.NotConnected) {
-                transport.close()
-                currentTransport = null
-                pinProtocol = null
+        try {
+            ctapSession?.let {
+                if (it.transportType == TransportType.USB) {
+                    it.reclaimConnection()
+                    return // still good
+                }
             }
+        } catch (e: AuthnkeyError.NotConnected) {
+            ctapSession?.close()
+            ctapSession = null
+            pinProtocol = null
         }
 
         val devices = usbManager.deviceList.values.filter { UsbTransport.isFidoDevice(it) }
@@ -430,7 +430,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun handleNfcTag(tag: Tag) {
         scope.launch {
             try {
-                currentTransport?.close()
+                ctapSession?.close()
 
                 // Capture any valid PIN and hide input
                 bottomSheet?.getCurrentPinIfValid()?.let { pendingPin = it }
@@ -440,7 +440,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     NfcTransport.connect(tag)
                 }
 
-                currentTransport = transport
+                ctapSession = CtapSession.attach(transport)
                 pinProtocol = PinProtocol(transport)
 
                 setInstruction(getString(R.string.instruction_key_connected))
@@ -467,7 +467,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         scope.launch {
             if (!connectMutex.tryLock()) return@launch
             try {
-                currentTransport?.close()
+                ctapSession?.close()
 
                 // Capture any valid PIN and hide input
                 bottomSheet?.getCurrentPinIfValid()?.let { pendingPin = it }
@@ -480,7 +480,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     UsbTransport.connect(usbManager, device)
                 }
 
-                currentTransport = transport
+                ctapSession = CtapSession.attach(transport)
                 pinProtocol = PinProtocol(transport)
 
                 setInstruction(getString(R.string.instruction_key_connected))
@@ -503,21 +503,15 @@ class CredentialProviderActivity : AppCompatActivity() {
         scope.launch {
             try {
                 val json = JSONObject(requestJson!!)
-                val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
+                val currentSession = ctapSession ?: throw AuthnkeyError.NotConnected()
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
-                // Get device info to check PIN requirements and CTAP version
-                val infoResponse = withContext(Dispatchers.IO) {
-                    transport.sendCtapCommand(CTAP.buildCommand(CTAP.CMD_GET_INFO))
-                }
-                deviceInfo = CTAP.parseGetInfoStructured(infoResponse).getOrThrow()
-
                 // Check if clientPin is actually set on the device
-                val deviceHasPin = deviceInfo?.clientPinSet == true
-                val alwaysUv = deviceInfo?.options?.get("alwaysUv") == true
-                deviceSupportsUv = deviceInfo?.supportsBuiltInUv == true
-                val supportsPinUvAuthToken = deviceInfo?.supportsPinUvAuthToken == true
-                val noMcGaWithClientPin = deviceInfo?.noMcGaPermissionsWithClientPin == true
+                val deviceHasPin = currentSession.deviceInfo.clientPinSet
+                val alwaysUv = currentSession.deviceInfo.options["alwaysUv"] == true
+                deviceSupportsUv = currentSession.deviceInfo.supportsBuiltInUv
+                val supportsPinUvAuthToken = currentSession.deviceInfo.supportsPinUvAuthToken
+                val noMcGaWithClientPin = currentSession.deviceInfo.noMcGaPermissionsWithClientPin
                 val canUsePinForMcGa = deviceHasPin && !noMcGaWithClientPin
 
                 when {
@@ -783,7 +777,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private suspend fun fallbackToPinAfterUvFailure(requestJson: JSONObject) {
-        val deviceHasPin = deviceInfo?.clientPinSet == true
+        val deviceHasPin = ctapSession?.deviceInfo?.clientPinSet == true
         if (deviceHasPin) {
             val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
             val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
@@ -801,7 +795,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private suspend fun executeRequest(requestJson: JSONObject, uvMode: UvMode) {
         try {
-            val transport = currentTransport ?: throw AuthnkeyError.NotConnected()
+            val transport = ctapSession?.transport ?: throw AuthnkeyError.NotConnected()
 
             if (isCreateRequest) {
                 executeCreateCredential(transport, requestJson, uvMode)
@@ -867,7 +861,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         val prfRequested = extensions?.has("prf") == true
 
         // Check if authenticator supports hmac-secret (CTAP2 backing for PRF)
-        val authenticatorSupportsHmacSecret = deviceInfo?.extensions?.contains("hmac-secret") == true
+        val authenticatorSupportsHmacSecret = ctapSession?.deviceInfo?.extensions?.contains("hmac-secret") == true
 
         // Build CTAP extensions map
         val ctapExtensions = mutableMapOf<String, Any>()
@@ -943,7 +937,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
         // Determine if credential is actually discoverable
         // If we requested rk AND the authenticator supports it AND succeeded, it's discoverable
-        val supportsResidentKey = deviceInfo?.options?.get("rk") ?: true
+        val supportsResidentKey = ctapSession?.deviceInfo?.options?.get("rk") ?: true
         val isDiscoverable = residentKey.requiresResidentKey() && supportsResidentKey
 
         // Check if hmac-secret was confirmed in the authenticator's authData extensions
@@ -1037,7 +1031,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         val extensions = requestJson.optJSONObject("extensions")
         val prfExtension = extensions?.optJSONObject("prf")
         val prfEval = prfExtension?.optJSONObject("eval")
-        val authenticatorSupportsHmacSecret = deviceInfo?.extensions?.contains("hmac-secret") == true
+        val authenticatorSupportsHmacSecret = ctapSession?.deviceInfo?.extensions?.contains("hmac-secret") == true
         val prfRequested = prfEval != null && authenticatorSupportsHmacSecret
 
         // Prepare hmac-secret extension for getAssertion if PRF is requested
