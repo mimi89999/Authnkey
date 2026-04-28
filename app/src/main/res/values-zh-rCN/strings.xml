@@ -221,4 +221,5 @@
     <string name="btn_use_biometric">使用指纹</string>
     <string name="instruction_waiting_biometric">触摸指纹识别器上的安全密钥…</string>
     <string name="error_uv_failed">生物识别验证失败</string>
+    <string name="error_pin_not_supported_for_operation"></string>
 </resources>
