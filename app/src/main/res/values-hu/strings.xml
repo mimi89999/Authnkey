@@ -221,4 +221,5 @@
     <string name="pin_too_long_title">A PIN-kód túl hosszú</string>
     <string name="device_info_section_uv_modality">Támogatott felhasználói hitelesítési módok</string>
     <string name="pin_too_long_message">A PIN-kód elérte a megengedett hosszt</string>
+    <string name="error_pin_not_supported_for_operation"></string>
 </resources>
