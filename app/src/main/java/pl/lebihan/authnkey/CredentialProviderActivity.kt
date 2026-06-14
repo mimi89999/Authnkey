@@ -577,8 +577,12 @@ class CredentialProviderActivity : AppCompatActivity() {
                         showPinDialog(retries, json)
                     }
                 } else {
-                    throw e
+                    Log.e(TAG, "Execute error", e)
+                    handleError(e)
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Execute error", e)
+                handleError(e)
             }
         }
     }
@@ -799,18 +803,12 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private suspend fun executeRequest(requestJson: JSONObject, uvMode: UvMode) {
-        try {
-            val transport = ctapSession?.transport ?: throw AuthnkeyError.NotConnected()
+        val transport = ctapSession?.transport ?: throw AuthnkeyError.NotConnected()
 
-            if (isCreateRequest) {
-                executeCreateCredential(transport, requestJson, uvMode)
-            } else {
-                executeGetAssertion(transport, requestJson, uvMode)
-            }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Execute error", e)
-            handleError(e)
+        if (isCreateRequest) {
+            executeCreateCredential(transport, requestJson, uvMode)
+        } else {
+            executeGetAssertion(transport, requestJson, uvMode)
         }
     }
 
