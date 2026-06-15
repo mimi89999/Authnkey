@@ -1,0 +1,6 @@
+- Fix correct PINs being rejected with some security keys
+- Fix passkey creation failing when a PIN prompt was required
+- Add support for setting the app's language in system settings
+
+New translations:
+- German by Ranger
