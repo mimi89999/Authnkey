@@ -221,4 +221,5 @@
     <string name="credential_deleted"></string>
     <string name="credential_delete_error"></string>
     <string name="delete"></string>
+    <string name="credential_provider_subtitle">พาสคีย์บนฮาร์ดแวร์คีย์ความปลอดภัย</string>
 </resources>
