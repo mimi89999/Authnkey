@@ -1,4 +1,4 @@
-Authnkey es un proveedor de credenciales que te permite usar llaves de seguridad físicas FIDO2 (como YubiKey, SoloKey, Nitrokey o Token2) para autenticar llaves de acceso (passkeys) en Android.
+Authnkey es un proveedor de credenciales que te permite usar llaves de seguridad FIDO2 (como YubiKey, SoloKey, Nitrokey o Token2) para autenticar llaves de acceso (passkeys) en Android.
 
 El soporte integrado de WebAuthn en Android tiene una limitación importante: no es compatible con CTAP2 a través de NFC. Esto significa que no puedes usar llaves de acceso (passkeys) protegidas por un PIN ni credenciales residentes con llaves de seguridad NFC; estás limitado a usar la llave solo como un segundo paso básico para iniciar sesión. Authnkey soluciona esta limitación implementando el protocolo CTAP2 completo. 
 
@@ -11,6 +11,6 @@ Funciones soportadas:
 - Verificación con PIN (admite letras, números y símbolos)
 - Permite iniciar sesión sin escribir tu usuario con credenciales residentes
 - Soporta múltiples cuentas por sitio
-- Es compatible con llaves NFC y USB
+- Es compatible con llaves de seguridad físicas NFC y USB
 
 No requiere root.
