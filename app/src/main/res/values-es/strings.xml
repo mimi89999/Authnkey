@@ -1,3 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="authenticating">Autenticando…</string>
+    <string name="error_init_pin_protocol">No se pudo establecer una conexión segura</string>
+    <string name="verifying_pin">Verificando PIN…</string>
+    <string name="getting_metadata">Obteniendo metadatos de la credencial…</string>
+    <string name="enumerating_rps">Buscando entidades de confianza…</string>
+    <string name="loading_credentials_for">Cargando las credenciales para %1$s…</string>
+    <string name="checking_pin_status">Comprobando el estado del PIN…</string>
+    <string name="pin_retries_status">Intentos de PIN restantes: %1$d</string>
+    <string name="change_pin_title">Cambiar PIN</string>
+    <string name="set_pin_title">Establecer PIN</string>
+    <string name="set">Establecer</string>
 </resources>
