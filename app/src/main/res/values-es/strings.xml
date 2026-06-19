@@ -40,7 +40,7 @@
     <string name="instruction_authenticating">Autenticando…</string>
     <string name="instruction_creating">Creando llave de acceso…</string>
     <string name="instruction_key_connected">Llave de seguridad conectada</string>
-    <string name="credential_provider_subtitle">Llaves de acceso en llaves de seguridad físicas</string>
+    <string name="credential_provider_subtitle">Proveedor de credenciales para llaves de seguridad físicas</string>
     <string name="credential_create_description">Crear llave de acceso en tu llave de seguridad para %1$s</string>
     <string name="credential_get_description">Usa tu llave de seguridad para %1$s</string>
     <string name="btn_list_credentials">Ver credenciales guardadas</string>
