@@ -38,4 +38,5 @@
     <string name="toggle_keyboard_type">Alternar o tipo de teclado</string>
     <string name="usb_permission_denied">Permissão USB negada</string>
     <string name="security_key_detected">Chave de segurança detectada</string>
+    <string name="ok">OK</string>
 </resources>
