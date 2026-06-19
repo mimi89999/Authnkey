@@ -1,6 +1,6 @@
 # Authnkey
 
-A credential provider for Android that enables FIDO2/CTAP2 security keys over NFC.
+A credential provider for Android that supports FIDO2/CTAP2 security keys over NFC and USB.
 
 [<img src="https://f-droid.org/badge/get-it-on.png"
     alt="Get it on F-Droid"
@@ -8,11 +8,9 @@ A credential provider for Android that enables FIDO2/CTAP2 security keys over NF
 
 ## Background
 
-Android does not support CTAP2 over NFC. The built-in WebAuthn implementation only handles basic U2F-style authentication for NFC keys, which means no PIN verification and no discoverable credentials (passkeys). USB-C keys have better support, but NFC keys are limited to tap-to-authenticate without user verification.
+Many NFC security keys don't work properly on Android. Native CTAP2 over NFC only works with keys that support applet selection using extended encoding, and plenty of keys and smartcards don't. Those keys are stuck with basic U2F-style tap-to-authenticate, which means no PIN verification and no discoverable credentials (passkeys).
 
-Authnkey implements the CTAP2 protocol directly, allowing full passkey functionality with NFC security keys like YubiKey, SoloKey, Nitrokey, or Token2.
-
-Additionally, Android's FIDO2 support depends on Google Play Services. Authnkey works on devices without GApps since it implements the protocol independently.
+Additionally, Android's FIDO2 support depends on Google Play Services. Authnkey implements the CTAP2 protocol directly, so full passkey functionality works even on devices without GApps.
 
 ## Features
 
