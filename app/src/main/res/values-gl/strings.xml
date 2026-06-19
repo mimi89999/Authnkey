@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Authnkey</string>
     <string name="credential_provider_subtitle">Claves de paso en Chaves de Seguridade físicas</string>
-    <string name="credential_entry_title">Chave de Seguridade</string>
+    <string name="credential_entry_title">Chave de seguridade</string>
     <string name="credential_create_description">Crea unha clave de paso para %1$s na túa chave de seguridade</string>
     <string name="credential_get_description">Usa a chave de seguridade para %1$s</string>
     <string name="security_key">Chave de seguridade</string>
