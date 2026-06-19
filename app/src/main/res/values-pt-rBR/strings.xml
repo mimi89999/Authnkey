@@ -1,4 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Authnkey</string>
+    <string name="credential_entry_title">Chave de segurança</string>
+    <string name="credential_create_description">Criar chave de acesso na sua chave de segurança para %1$s</string>
+    <string name="security_key">Chave de segurança</string>
+    <string name="create_passkey">Criar chave de acesso</string>
+    <string name="instruction_creating">Criando chave de acesso…</string>
+    <string name="credential_provider_subtitle">Chaves de acesso em chaves de segurança físicas</string>
+    <string name="instruction_connect_key">Aproxime a sua chave de segurança da parte de trás do seu telefone ou conecte-a via USB</string>
+    <string name="credential_get_description">Use a sua chave de segurança para %1$s</string>
+    <string name="instruction_touch_key">Toque na sua chave de segurança para confirmar…</string>
+    <string name="instruction_enter_pin">Insira o PIN da chave de segurança</string>
+    <string name="instruction_usb_permission_denied">Permissão USB negada. Tente novamente ou use o NFC.</string>
+    <string name="instruction_key_connected">Chave de segurança conectada</string>
+    <string name="instruction_connecting_usb">Conectando ao dispositivo USB…</string>
+    <string name="instruction_authenticating">Autenticando…</string>
+    <string name="instruction_initializing">Inicializando…</string>
+    <string name="instruction_verifying">Verificando…</string>
+    <string name="instruction_verifying_pin">Verificando o PIN…</string>
+    <string name="pin_dialog_title">PIN da Chave de Segurança</string>
+    <string name="pin_dialog_message">Insira o PIN da chave de segurança</string>
+    <string name="pin_hint">Insira o PIN</string>
+    <string name="pin_hint_current">PIN atual</string>
+    <string name="pin_hint_new">Novo PIN</string>
+    <string name="pin_hint_confirm">Confirme novo PIN</string>
+    <string name="pin_continue">Continuar</string>
+    <string name="pin_too_short">O PIN deve ser de pelo menos %1$d caracteres</string>
+    <string name="pin_too_long_title">PIN muito longo</string>
+    <string name="pin_too_long_message">PIN excede o comprimento máximo permitido</string>
+    <string name="pin_retries_remaining">Insira o PIN (%1$d tentativas restantes)</string>
+    <string name="sign_in">Entrar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="close">Fechar</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="security_key_icon_desc">Chave de segurança</string>
+    <string name="toggle_keyboard_type">Alternar o tipo de teclado</string>
+    <string name="usb_permission_denied">Permissão USB negada</string>
+    <string name="security_key_detected">Chave de segurança detectada</string>
 </resources>
