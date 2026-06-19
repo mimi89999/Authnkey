@@ -1,1 +1,1 @@
-Proveedor de credenciales passkey para llaves de seguridad físicas
+Proveedor de credenciales para llaves de seguridad físicas
