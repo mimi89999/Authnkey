@@ -1,6 +1,6 @@
 Authnkey é un provedor de credenciais que che permite usar chaves de seguridade FIDO2 (como Yubikey, Solokey, Nitrokey, ou Token2) para autenticación con clave de paso en Android.
 
-O sistema WebAuthn propio de Android ten unha eiva importante: non é compatible con CTAP2 sobre NFC. Por isto non podes usar claves de paso protexidas cun PIN ou credenciais descubribles con chaves de seguridade NFC — só te podes limitar ao básico U2F tocar-para-autenticar. Authnkey soluciona este problema implementando completamente o protocolo CTAP2.
+Moitas chaves de seguridade NFC non funcionan correctamente en Android. O CTAP2 nativo sobre NFC só funciona con chaves compatibles coa selección de applet usando codificación extendida, e moitas chaves e tarxetas de seguridade non o fan. Esas chaves limítanse ao U2F básico tocar-para-autenticar, o que significa que non son claves de paso protexidas con PIN ou credenciais descubribles. Authnkey soluciona este problema implementando na súa integridade o protocolo CTAP2.
 
 A app rexístrase como provedor de credenciais, polo que calquera app ou navegador compatible con Android Credential Manager API ofrecerá Authnkey como opción cando se soliciten claves de paso.
 
