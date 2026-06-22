@@ -39,4 +39,24 @@
     <string name="usb_permission_denied">Permissão USB negada</string>
     <string name="security_key_detected">Chave de segurança detectada</string>
     <string name="ok">OK</string>
+    <string name="error_parse_device_info">Não foi possível analisar as informações do dispositivo</string>
+    <string name="error_pin_status">Não foi possível verificar o status do PIN</string>
+    <string name="no_pin_set_message">Este autenticador não tem PIN</string>
+    <string name="change">Alterar</string>
+    <string name="waiting_for_key">Aproxime a sua chave de segurança da parte de trás do seu telefone ou conecte-a via USB</string>
+    <string name="connection_lost">Conexão perdida</string>
+    <string name="connection_lost_title">Conexão perdida</string>
+    <string name="connection_lost_message">Aproxime a chave de segurança da parte traseira do celular para continuar.</string>
+    <string name="operation_cancelled">Operação cancelada</string>
+    <string name="reading_device_info">Lendo informações do dispositivo…</string>
+    <string name="checking_cred_mgmt">Verificando o suporte de gestão de credenciais…</string>
+    <string name="error_pin_auth_blocked">Tentativas de PIN incorretas excessivas</string>
+    <string name="error_credential_excluded">Esta chave de acesso já existe</string>
+    <string name="error_operation_denied">Operação negada pela chave de segurança</string>
+    <string name="error_operation_cancelled">Operação cancelada</string>
+    <string name="connecting_usb">Conectando ao dispositivo USB…</string>
+    <string name="using_nfc">Usando NFC</string>
+    <string name="using_usb">Usando USB</string>
+    <string name="not_connected">Não conectado</string>
+    <string name="waiting_reconnection">Esperando a reconexão…</string>
 </resources>
