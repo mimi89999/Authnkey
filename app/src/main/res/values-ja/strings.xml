@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Authnkey</string>
+    <string name="credential_provider_subtitle">物理セキュリティキー上のパスキー</string>
+    <string name="credential_entry_title">セキュリティキー</string>
+    <string name="credential_create_description">%1$s のセキュリティキーにパスキーを作成</string>
+    <string name="credential_get_description">%1$s にセキュリティキーを使用する</string>
+    <string name="security_key">セキュリティキー</string>
+    <string name="create_passkey">パスキーを作成</string>
+    <string name="sign_in">ログイン</string>
+    <string name="cancel">キャンセル</string>
+    <string name="close">閉じる</string>
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
+    <string name="instruction_connect_key">セキュリティキーをスマートフォンの背面に当てるか、USBで接続してください</string>
+    <string name="instruction_touch_key">セキュリティキーをタッチして確定…</string>
+    <string name="instruction_signing_in">ログイン中…</string>
+    <string name="instruction_creating">パスキーを作成中…</string>
+    <string name="instruction_enter_pin">セキュリティキーのPINを入力してください</string>
+    <string name="instruction_usb_permission_denied">USBの接続許可が拒否されました。もう一度試すか、NFCを使用してください。</string>
+    <string name="instruction_key_connected">セキュリティキーが接続されました</string>
+    <string name="instruction_connecting_usb">USB機器に接続中…</string>
+    <string name="instruction_authenticating">認証中…</string>
+    <string name="instruction_initializing">初期化中…</string>
+    <string name="instruction_verifying">検証中…</string>
+    <string name="instruction_verifying_pin">PINを確認中…</string>
+    <string name="instruction_tag_lost">セキュリティキーとの接続が失われました\n\n位置を調整して完了まで動かさないでください</string>
+    <string name="instruction_waiting_biometric">セキュリティキーの指紋センサーに触れてください…</string>
+    <string name="pin_dialog_title">セキュリティキーのPIN</string>
+    <string name="pin_dialog_message">セキュリティキーのPINを入力してください</string>
+    <string name="pin_hint">PINを入力</string>
+    <string name="pin_hint_current">現在のPIN</string>
+    <string name="pin_hint_new">新しいPIN</string>
+    <string name="pin_hint_confirm">新しいPINの確認</string>
+    <string name="pin_continue">続ける</string>
+    <string name="pin_too_short">PINは%1$d文字以上である必要があります</string>
+    <string name="pin_too_long_title">PIN が長すぎます</string>
+    <string name="pin_too_long_message">PINが最大文字数を超えています</string>
+</resources>
