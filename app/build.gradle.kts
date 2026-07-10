@@ -7,13 +7,13 @@ plugins {
 android {
     namespace = "pl.lebihan.authnkey"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "pl.lebihan.authnkey"
         minSdk = 34
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 11
         versionName = "1.2.4"
 
