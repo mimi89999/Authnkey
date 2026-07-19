@@ -13,6 +13,7 @@ import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -49,6 +50,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     private data class ClientData(val json: String?, val hash: ByteArray)
 
     private var nfcAdapter: NfcAdapter? = null
+    private var connectPromptVisible = false
     private lateinit var usbManager: UsbManager
 
     private var bottomSheet: CredentialBottomSheet? = null
@@ -116,7 +118,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 if (granted && device != null) {
                     connectToUsbDevice(device)
                 } else {
-                    setInstruction(getString(R.string.instruction_usb_permission_denied))
+                    setInstruction(usbPermissionDeniedInstruction())
                 }
             }
         }
@@ -141,6 +143,17 @@ class CredentialProviderActivity : AppCompatActivity() {
                         requestUsbPermission(device)
                     }
                 }
+            }
+        }
+    }
+
+    // Fires when NFC is toggled anywhere, including the quick settings shade.
+    private val nfcStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != NfcAdapter.ACTION_ADAPTER_STATE_CHANGED) return
+            when (intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE, NfcAdapter.STATE_OFF)) {
+                NfcAdapter.STATE_ON, NfcAdapter.STATE_OFF ->
+                    if (connectPromptVisible) showConnectPrompt()
             }
         }
     }
@@ -171,7 +184,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 val publicKeyRequest = createRequest!!.callingRequest as? CreatePublicKeyCredentialRequest
                 requestJson = publicKeyRequest?.requestJson
                 providedClientDataHash = publicKeyRequest?.clientDataHash
-                showBottomSheet(getString(R.string.create_passkey), getString(R.string.instruction_connect_key))
+                showBottomSheet(getString(R.string.create_passkey))
             }
             getRequest != null -> {
                 isCreateRequest = false
@@ -180,7 +193,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 val publicKeyOption = options.firstOrNull { it is GetPublicKeyCredentialOption } as? GetPublicKeyCredentialOption
                 requestJson = publicKeyOption?.requestJson
                 providedClientDataHash = publicKeyOption?.clientDataHash
-                showBottomSheet(getString(R.string.sign_in), getString(R.string.instruction_connect_key))
+                showBottomSheet(getString(R.string.sign_in))
             }
             else -> {
                 Log.e(TAG, "No valid request found in intent")
@@ -199,14 +212,35 @@ class CredentialProviderActivity : AppCompatActivity() {
         checkPinRequirement()
     }
 
-    private fun showBottomSheet(status: String, instruction: String) {
-        bottomSheet = CredentialBottomSheet.newInstance(status, instruction).apply {
+    private fun showBottomSheet(status: String) {
+        bottomSheet = CredentialBottomSheet.newInstance(status, connectKeyInstruction()).apply {
             onCancelClick = { cancelOperation() }
             onPinEntered = { pin -> handlePinEntered(pin) }
             onBiometricSelected = { handleBiometricSelected() }
+            onNfcSettingsClick = { openNfcSettings() }
         }
         bottomSheet?.show(supportFragmentManager, CredentialBottomSheet.TAG)
         bottomSheet?.setState(CredentialBottomSheet.State.WAITING)
+        connectPromptVisible = true
+        bottomSheet?.showNfcHint(shouldOfferNfcSettings())
+    }
+
+    /**
+     * Asks the user to present a key, naming only the transports this device can
+     * currently use. Re-callable: the instruction depends on live NFC state.
+     */
+    private fun showConnectPrompt() {
+        connectPromptVisible = true
+        bottomSheet?.setInstruction(connectKeyInstruction())
+        bottomSheet?.showNfcHint(shouldOfferNfcSettings())
+    }
+
+    private fun openNfcSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
+        } catch (e: Exception) {
+            Log.w(TAG, "No NFC settings activity", e)
+        }
     }
 
     private fun handlePinEntered(pin: String) {
@@ -219,7 +253,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             authenticateAndExecute(pin, json)
         } else {
             pendingPin = pin
-            setInstruction(getString(R.string.instruction_connect_key))
+            showConnectPrompt()
             setState(CredentialBottomSheet.State.WAITING)
             bottomSheet?.showPinInput(false)
         }
@@ -238,7 +272,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             }
         } else {
             // Key not connected yet — show waiting state
-            setInstruction(getString(R.string.instruction_connect_key))
+            showConnectPrompt()
             setState(CredentialBottomSheet.State.WAITING)
         }
     }
@@ -248,7 +282,9 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private fun setInstruction(text: String) {
+        connectPromptVisible = false
         bottomSheet?.setInstruction(text)
+        bottomSheet?.showNfcHint(false)
     }
 
     private fun showProgress(show: Boolean) {
@@ -310,6 +346,16 @@ class CredentialProviderActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        // NFC may have been toggled while we were backgrounded.
+        if (connectPromptVisible) showConnectPrompt()
+
+        // Also catch toggles that happen while we're in the foreground (e.g. the quick
+        // settings shade, which does not pause us).
+        registerReceiver(
+            nfcStateReceiver,
+            IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)
+        )
+
         nfcAdapter?.let { adapter ->
             val intent = Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
@@ -355,6 +401,11 @@ class CredentialProviderActivity : AppCompatActivity() {
         } catch (e: Exception) {
             // Ignore
         }
+        try {
+            unregisterReceiver(nfcStateReceiver)
+        } catch (e: Exception) {
+            // Ignore
+        }
     }
 
     override fun onDestroy() {
@@ -366,6 +417,11 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
         try {
             unregisterReceiver(usbAttachReceiver)
+        } catch (e: Exception) {
+            // Ignore
+        }
+        try {
+            unregisterReceiver(nfcStateReceiver)
         } catch (e: Exception) {
             // Ignore
         }

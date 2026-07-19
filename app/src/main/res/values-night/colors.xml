@@ -13,6 +13,10 @@
     <color name="provider_not_supported_background">#B71C1C</color>
     <color name="provider_not_supported_text">#FFCDD2</color>
     
+    <!-- Inline hint row (dark theme) -->
+    <color name="hint_background">#3A2E22</color>
+    <color name="hint_text">#FFCC80</color>
+    
     <!-- Tag lost warning state -->
     <color name="warning_container">#7C2D12</color>
     

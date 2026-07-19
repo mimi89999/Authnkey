@@ -50,18 +50,22 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
     private lateinit var iconStatus: ImageView
     private lateinit var iconBackground: View
     private lateinit var accountList: RecyclerView
+    private lateinit var nfcHintContainer: View
+    private lateinit var btnNfcSettings: MaterialButton
 
     private var pulseAnimator: ObjectAnimator? = null
 
     private var pendingStatus: String? = null
     private var pendingInstruction: String? = null
     private var pendingShowPinInput: Boolean = false
+    private var pendingShowNfcHint: Boolean = false
     private var pendingState: State = State.WAITING
 
     var onCancelClick: (() -> Unit)? = null
     var onPinEntered: ((String) -> Unit)? = null
     var onAccountSelected: ((Int) -> Unit)? = null
     var onBiometricSelected: (() -> Unit)? = null
+    var onNfcSettingsClick: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +97,8 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
         iconStatus = view.findViewById(R.id.iconStatus)
         iconBackground = view.findViewById(R.id.iconBackground)
         accountList = view.findViewById(R.id.accountList)
+        nfcHintContainer = view.findViewById(R.id.nfcHintContainer)
+        btnNfcSettings = view.findViewById(R.id.btnNfcSettings)
 
         accountList.layoutManager = LinearLayoutManager(context)
 
@@ -102,6 +108,8 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
 
         pendingStatus?.let { statusText.text = it }
         pendingInstruction?.let { instructionText.text = it }
+
+        nfcHintContainer.visibility = if (pendingShowNfcHint) View.VISIBLE else View.GONE
 
         if (pendingShowPinInput) {
             pinInputField.visibility = View.VISIBLE
@@ -121,6 +129,10 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
 
         btnBiometric.setOnClickListener {
             onBiometricSelected?.invoke()
+        }
+
+        btnNfcSettings.setOnClickListener {
+            onNfcSettingsClick?.invoke()
         }
 
         pinInputField.setOnDoneAction {
@@ -227,6 +239,15 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
             instructionText.text = text
         } else {
             pendingInstruction = text
+        }
+    }
+
+    /** Shows the "NFC is off" row with a shortcut to system NFC settings. */
+    fun showNfcHint(show: Boolean) {
+        if (::nfcHintContainer.isInitialized) {
+            nfcHintContainer.visibility = if (show) View.VISIBLE else View.GONE
+        } else {
+            pendingShowNfcHint = show
         }
     }
 

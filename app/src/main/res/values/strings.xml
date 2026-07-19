@@ -19,11 +19,15 @@
 
     <!-- Instructions -->
     <string name="instruction_connect_key">Hold your security key against the back of your phone, or plug it in via USB</string>
+    <string name="instruction_connect_key_nfc_only">Hold your security key against the back of your phone</string>
+    <string name="instruction_connect_key_usb_only">Plug your security key in via USB</string>
+    <string name="instruction_no_transport">No usable connection method</string>
     <string name="instruction_touch_key">Touch your security key to confirm…</string>
     <string name="instruction_signing_in">Signing in…</string>
     <string name="instruction_creating">Creating passkey…</string>
     <string name="instruction_enter_pin">Enter your security key PIN</string>
     <string name="instruction_usb_permission_denied">USB permission denied. Try again or use NFC.</string>
+    <string name="instruction_usb_permission_denied_no_nfc">USB permission denied. Try again.</string>
     <string name="instruction_key_connected">Security key connected</string>
     <string name="instruction_connecting_usb">Connecting to USB device…</string>
     <string name="instruction_authenticating">Authenticating…</string>
@@ -32,6 +36,10 @@
     <string name="instruction_verifying_pin">Verifying PIN…</string>
     <string name="instruction_tag_lost">Lost contact with the security key\n\nReposition and hold until completion</string>
     <string name="instruction_waiting_biometric">Touch the fingerprint sensor on your security key…</string>
+
+    <!-- NFC hint -->
+    <string name="hint_nfc_off">NFC is off</string>
+    <string name="action_turn_on_nfc">Turn on</string>
 
     <!-- PIN Dialog -->
     <string name="pin_dialog_title">Security Key PIN</string>

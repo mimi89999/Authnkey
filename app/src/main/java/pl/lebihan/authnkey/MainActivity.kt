@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var providerStatusContainer: LinearLayout
     private lateinit var providerStatusText: TextView
     private lateinit var btnEnableProvider: Button
+    private lateinit var nfcHintContainer: LinearLayout
+    private lateinit var btnNfcSettings: MaterialButton
 
     private var currentTransport: FidoTransport? = null
     private var pinProtocol: PinProtocol? = null
@@ -119,6 +121,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Fires when NFC is toggled anywhere, including the quick settings shade.
+    private val nfcStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != NfcAdapter.ACTION_ADAPTER_STATE_CHANGED) return
+            when (intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE, NfcAdapter.STATE_OFF)) {
+                NfcAdapter.STATE_ON, NfcAdapter.STATE_OFF -> updateConnectionStatus()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -147,6 +159,8 @@ class MainActivity : AppCompatActivity() {
         providerStatusContainer = findViewById(R.id.providerStatusContainer)
         providerStatusText = findViewById(R.id.providerStatusText)
         btnEnableProvider = findViewById(R.id.btnEnableProvider)
+        nfcHintContainer = findViewById(R.id.nfcHintContainer)
+        btnNfcSettings = findViewById(R.id.btnNfcSettings)
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
@@ -164,6 +178,7 @@ class MainActivity : AppCompatActivity() {
         btnListCredentials.setOnClickListener { listCredentials() }
         btnChangePin.setOnClickListener { showChangePinDialog() }
         btnEnableProvider.setOnClickListener { openProviderSettings() }
+        btnNfcSettings.setOnClickListener { openNfcSettings() }
 
         updateConnectionStatus()
     }
@@ -180,6 +195,11 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             // Ignore
         }
+        try {
+            unregisterReceiver(nfcStateReceiver)
+        } catch (e: Exception) {
+            // Ignore
+        }
         scope.cancel()
     }
 
@@ -188,6 +208,16 @@ class MainActivity : AppCompatActivity() {
 
         // Check credential provider status
         checkProviderStatus()
+
+        // Refresh the waiting prompt: NFC may have been toggled while backgrounded
+        updateConnectionStatus()
+
+        // Catch NFC toggles that happen while we're in the foreground (e.g. from the
+        // quick settings shade, which does not pause us).
+        registerReceiver(
+            nfcStateReceiver,
+            IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)
+        )
 
         // Enable NFC foreground dispatch
         nfcAdapter?.let { adapter ->
@@ -231,6 +261,11 @@ class MainActivity : AppCompatActivity() {
         nfcAdapter?.disableForegroundDispatch(this)
         try {
             unregisterReceiver(usbAttachReceiver)
+        } catch (e: Exception) {
+            // Ignore
+        }
+        try {
+            unregisterReceiver(nfcStateReceiver)
         } catch (e: Exception) {
             // Ignore
         }
@@ -422,7 +457,19 @@ class MainActivity : AppCompatActivity() {
 
         // Update status text if not connected and not waiting for reconnect
         if (!connected && !awaitingNfcReconnect) {
-            statusText.text = getString(R.string.waiting_for_key)
+            statusText.text = connectKeyInstruction()
+        }
+
+        // Offer to turn NFC on, but only while there's nothing connected anyway
+        nfcHintContainer.visibility =
+            if (!connected && shouldOfferNfcSettings()) View.VISIBLE else View.GONE
+    }
+
+    private fun openNfcSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
+        } catch (e: Exception) {
+            // No NFC settings activity available
         }
     }
 
