@@ -19,11 +19,15 @@
 
     <!-- Instructions -->
     <string name="instruction_connect_key">Tenez votre clé de sécurité contre l\'arrière de votre téléphone, ou branchez-la via USB</string>
+    <string name="instruction_connect_key_nfc_only">Tenez votre clé de sécurité contre l\'arrière de votre téléphone</string>
+    <string name="instruction_connect_key_usb_only">Branchez votre clé de sécurité via USB</string>
+    <string name="instruction_no_transport">Aucune méthode de connexion utilisable</string>
     <string name="instruction_touch_key">Touchez votre clé de sécurité pour confirmer…</string>
     <string name="instruction_signing_in">Connexion en cours…</string>
     <string name="instruction_creating">Création de la clé d\'accès…</string>
     <string name="instruction_enter_pin">Entrez le code PIN de votre clé de sécurité</string>
     <string name="instruction_usb_permission_denied">Permission USB refusée. Réessayez ou utilisez NFC.</string>
+    <string name="instruction_usb_permission_denied_no_nfc">Permission USB refusée. Réessayez.</string>
     <string name="instruction_key_connected">Clé de sécurité connectée</string>
     <string name="instruction_connecting_usb">Connexion au périphérique USB…</string>
     <string name="instruction_authenticating">Authentification en cours…</string>
@@ -31,6 +35,10 @@
     <string name="instruction_verifying">Vérification en cours…</string>
     <string name="instruction_verifying_pin">Vérification du code PIN…</string>
     <string name="instruction_tag_lost">Perte de contact avec la clé de sécurité\n\nRepositionnez et tenez jusqu\'à la fin</string>
+
+    <!-- NFC hint -->
+    <string name="hint_nfc_off">Le NFC est désactivé</string>
+    <string name="action_turn_on_nfc">Activer</string>
 
     <!-- PIN Dialog -->
     <string name="pin_dialog_title">Code PIN de la clé de sécurité</string>
