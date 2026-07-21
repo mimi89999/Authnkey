@@ -71,6 +71,12 @@
     <string name="close">Zamknij</string>
     <string name="yes">Tak</string>
     <string name="instruction_connect_key">Przyłóż klucz bezpieczeństwa do tyłu telefonu lub podłącz go przez USB</string>
+    <string name="instruction_connect_key_nfc_only">Przyłóż klucz bezpieczeństwa do tyłu telefonu</string>
+    <string name="instruction_connect_key_usb_only">Podłącz klucz bezpieczeństwa przez USB</string>
+    <string name="instruction_no_transport">Brak dostępnej metody połączenia</string>
+    <string name="instruction_usb_permission_denied_no_nfc">Odmowa dostępu do USB. Spróbuj ponownie.</string>
+    <string name="hint_nfc_off">NFC jest wyłączone</string>
+    <string name="action_turn_on_nfc">Włącz</string>
     <string name="instruction_touch_key">Dotknij klucza bezpieczeństwa, aby potwierdzić…</string>
     <string name="instruction_signing_in">Trwa logowanie…</string>
     <string name="instruction_enter_pin">Wprowadź PIN klucza bezpieczeństwa</string>
