@@ -227,4 +227,5 @@
     <string name="error_operation_cancelled"></string>
     <string name="error_timeout"></string>
     <string name="app_name">Authnkey</string>
+    <string name="credential_provider_subtitle">พาสคีย์บนฮาร์ดแวร์คีย์ความปลอดภัย</string>
 </resources>
