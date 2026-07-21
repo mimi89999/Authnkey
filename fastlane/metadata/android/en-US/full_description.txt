@@ -1,16 +1,11 @@
 Authnkey is a credential provider that lets you use FIDO2 security keys (like YubiKey, SoloKey, Nitrokey, or Token2) for passkey authentication on Android.
 
-Many NFC security keys don't work properly on Android. Native CTAP2 over NFC only works with keys that support applet selection using extended encoding, and plenty of keys and smartcards don't. Those keys are stuck with basic U2F tap-to-authenticate, which means no PIN-protected passkeys or discoverable credentials. Authnkey fills this gap by implementing the full CTAP2 protocol.
+Many security keys don't fully work on Android: no PIN entry, no passkeys, just basic tap-to-authenticate.
 
-The app registers as a credential provider, so any app or browser that supports the Android Credential Manager API will offer Authnkey as an option when passkeys are requested.
+Authnkey fixes that.
 
-This also works on devices without Google Play Services, since Authnkey implements the CTAP2 protocol directly rather than relying on Google's FIDO2 API.
+Install it, enable it in your phone's settings, and your FIDO2 security key or smartcard gains full passkey support over NFC and USB, including PIN and fingerprint verification and stored passkeys.
 
-Supported features:
-- Passkey creation and authentication
-- PIN verification
-- Discoverable credentials
-- Multiple accounts per site
-- NFC and USB transports
+You can also manage your key right from the app: view and delete stored passkeys, and set or change its PIN.
 
-No root required.
+Requires Android 14+ and a FIDO2-compatible security key or smartcard.
