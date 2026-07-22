@@ -222,10 +222,10 @@
     <string name="device_info_section_uv_modality">Métodos compatibles para verificar usuarias</string>
     <string name="device_info_option_uvBioEnroll">Usar biometría para a verificación da usuaria</string>
     <string name="error_pin_not_supported_for_operation">Requírese verificación, pero non se pode usar o PIN para esta operación</string>
-    <string name="instruction_connect_key_nfc_only"></string>
-    <string name="instruction_connect_key_usb_only"></string>
-    <string name="instruction_no_transport"></string>
-    <string name="instruction_usb_permission_denied_no_nfc"></string>
-    <string name="hint_nfc_off"></string>
-    <string name="action_turn_on_nfc"></string>
+    <string name="instruction_connect_key_nfc_only">Mantén a chave de seguridade pegada á parte posterior do móbil</string>
+    <string name="instruction_connect_key_usb_only">Insire a chave de seguridade no porto USB</string>
+    <string name="instruction_no_transport">Non hai un método de conexión dispoñible</string>
+    <string name="instruction_usb_permission_denied_no_nfc">Denegouse o permiso USB. Volve a intentalo.</string>
+    <string name="hint_nfc_off">NFC está apagado</string>
+    <string name="action_turn_on_nfc">Acender</string>
 </resources>
