@@ -1,3 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Authnkey</string>
+    <string name="credential_provider_subtitle">Donanım Güvenlik Kodları İçin Parolalar</string>
+    <string name="credential_entry_title">Güvenlik Kodu</string>
+    <string name="credential_create_description">Güvenlik Kodu Oluştur</string>
+    <string name="credential_get_description">Güvenlik Kodunu Kullan</string>
+    <string name="security_key">Güvenlik Kodu</string>
 </resources>
