@@ -222,10 +222,10 @@
     <string name="device_info_option_uvBioEnroll">Регистрация биометрии с пользовательской верификацией</string>
     <string name="device_info_section_uv_modality">Поддерживаемые методы пользовательской верификации</string>
     <string name="error_pin_not_supported_for_operation">Требуется верификация, но для этой операции нельзя использовать ПИН-код</string>
-    <string name="instruction_connect_key_nfc_only"></string>
-    <string name="instruction_connect_key_usb_only"></string>
-    <string name="instruction_no_transport"></string>
-    <string name="instruction_usb_permission_denied_no_nfc"></string>
-    <string name="hint_nfc_off"></string>
-    <string name="action_turn_on_nfc"></string>
+    <string name="instruction_connect_key_nfc_only">Приложите ключ безопасности к тыльной части телефона</string>
+    <string name="instruction_connect_key_usb_only">Подключите ключ безопасности через USB</string>
+    <string name="instruction_no_transport">Нет доступного способа подключения</string>
+    <string name="instruction_usb_permission_denied_no_nfc">Отказано в доступе к USB. Попробуйте ещё раз.</string>
+    <string name="hint_nfc_off">NFC выключен</string>
+    <string name="action_turn_on_nfc">Включить</string>
 </resources>
