@@ -222,4 +222,10 @@
     <string name="device_info_option_bioEnroll">Registro biometrico</string>
     <string name="error_pin_auth_invalid">La autenticación por PIN falló</string>
     <string name="sign_in">Iniciar sesión</string>
+    <string name="instruction_connect_key_nfc_only"></string>
+    <string name="instruction_connect_key_usb_only"></string>
+    <string name="instruction_no_transport"></string>
+    <string name="instruction_usb_permission_denied_no_nfc"></string>
+    <string name="hint_nfc_off"></string>
+    <string name="action_turn_on_nfc"></string>
 </resources>

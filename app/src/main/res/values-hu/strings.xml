@@ -221,4 +221,11 @@
     <string name="pin_too_long_title">A PIN-kód túl hosszú</string>
     <string name="device_info_section_uv_modality">Támogatott felhasználói hitelesítési módok</string>
     <string name="pin_too_long_message">A PIN-kód elérte a megengedett hosszt</string>
+    <string name="instruction_connect_key_nfc_only"></string>
+    <string name="instruction_connect_key_usb_only"></string>
+    <string name="instruction_no_transport"></string>
+    <string name="instruction_usb_permission_denied_no_nfc"></string>
+    <string name="hint_nfc_off"></string>
+    <string name="action_turn_on_nfc"></string>
+    <string name="error_pin_not_supported_for_operation"></string>
 </resources>

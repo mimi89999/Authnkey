@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Authnkey</string>
+    <string name="credential_provider_subtitle">Donanım Güvenlik Anahtarları İçin Parolalar</string>
+    <string name="credential_entry_title">Güvenlik Anahtarı</string>
+    <string name="credential_create_description">Güvenlik Anahtarıyla Parola Oluştur</string>
+    <string name="credential_get_description">Güvenlik Anahtarını Kullan</string>
+    <string name="security_key">"Güvenlik  Anahtarı"</string>
+    <string name="create_passkey">Parola Oluştur</string>
+    <string name="sign_in">Giriş Yap</string>
+    <string name="cancel">İptal</string>
+    <string name="close">Kapat</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="instruction_connect_key">Güvenlik anahtarınızı telefonunuzun arkasına tutun veya USB kablosuyla takın.</string>
+    <string name="instruction_connect_key_nfc_only">Güvenlik anahtarınızı telefonunuzun arka tarafına tutun</string>
+    <string name="instruction_connect_key_usb_only">Güvenlik anahtarınızı USB üzerinden takın.</string>
+    <string name="instruction_no_transport">Kullanılabilir bağlantı yöntemi yok</string>
+    <string name="instruction_touch_key">Onay için güvenlik anahtarına dokun…</string>
+    <string name="instruction_signing_in">Giriş yapılıyor…</string>
+    <string name="instruction_creating">Parola oluşturuluyor…</string>
+    <string name="instruction_enter_pin">Güvenlik anahtarı PIN\'ini gir</string>
+    <string name="instruction_usb_permission_denied">USB erişimi reddedildi. Tekrar deneyin veya NFC kullanın.</string>
+    <string name="instruction_usb_permission_denied_no_nfc">USB erişimi reddedildi. Tekrar dene.</string>
+    <string name="instruction_key_connected">Güvenlik anahtarı bağlandı</string>
+    <string name="instruction_connecting_usb">USB cihazına bağlanıyor…</string>
+    <string name="instruction_authenticating">Kimlik doğrulama işlemi devam ediyor…</string>
+    <string name="instruction_initializing">Başlatılıyor…</string>
+    <string name="instruction_verifying">Doğrulanıyor…</string>
+    <string name="instruction_verifying_pin">PIN doğrulanıyor…</string>
+    <string name="instruction_tag_lost">Güvenlik anahtarıyla bağlantı kesildi.\n\nYeniden konumlandır ve işlem tamamlanana kadar bekle.</string>
+    <string name="instruction_waiting_biometric">Güvenlik anahtarındaki parmak izi sensörüne dokun…</string>
+    <string name="hint_nfc_off">NFC kapalı</string>
+    <string name="action_turn_on_nfc">Aç</string>
+    <string name="pin_dialog_title">Güvenlik Anahtarı PIN\'i</string>
+    <string name="pin_dialog_message">Güvenlik Anahtarı PIN\'ini Gir</string>
+    <string name="pin_hint">PIN Gir</string>
+    <string name="pin_hint_current">Mevcut PIN</string>
+    <string name="pin_hint_new">Yeni PIN</string>
+    <string name="pin_hint_confirm">Yeni PIN\'i onayla</string>
+    <string name="pin_continue">Devam Et</string>
+    <string name="pin_too_short">"PIN en az  %1$d karakter olmalı"</string>
+    <string name="pin_too_long_title">PIN çok uzun</string>
+    <string name="pin_too_long_message">PIN, izin verilen maksimum uzunluğu aşıyor</string>
+</resources>

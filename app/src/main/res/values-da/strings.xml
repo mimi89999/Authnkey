@@ -222,4 +222,10 @@
     <string name="device_info_section_uv_modality">Understøttede brugerverifikationsmetoder</string>
     <string name="device_info_option_uvBioEnroll">Biometrisk registrering med brugerverifikation</string>
     <string name="error_pin_not_supported_for_operation">Verifikation kræves, men PIN-koden kan ikke bruges til denne handling</string>
+    <string name="instruction_connect_key_nfc_only"></string>
+    <string name="instruction_connect_key_usb_only"></string>
+    <string name="instruction_no_transport"></string>
+    <string name="instruction_usb_permission_denied_no_nfc"></string>
+    <string name="hint_nfc_off"></string>
+    <string name="action_turn_on_nfc"></string>
 </resources>

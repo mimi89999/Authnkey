@@ -222,4 +222,10 @@
     <string name="credential_deleted">Schlüssel wurde gelöscht</string>
     <string name="credential_delete_error">Fehler beim löschen: %1$s</string>
     <string name="delete">Löschen</string>
+    <string name="instruction_no_transport"></string>
+    <string name="instruction_usb_permission_denied_no_nfc"></string>
+    <string name="hint_nfc_off"></string>
+    <string name="action_turn_on_nfc"></string>
+    <string name="instruction_connect_key_nfc_only"></string>
+    <string name="instruction_connect_key_usb_only"></string>
 </resources>

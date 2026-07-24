@@ -222,4 +222,10 @@
     <string name="device_info_option_uvBioEnroll">Înregistrare biometrie cu verificarea utilizatorului</string>
     <string name="device_info_section_uv_modality">Metode acceptate de verificare a utilizatorului</string>
     <string name="error_pin_not_supported_for_operation">Verificarea este necesară, dar PIN-ul nu poate fi utilizat pentru această operațiune</string>
+    <string name="instruction_no_transport"></string>
+    <string name="instruction_connect_key_nfc_only"></string>
+    <string name="instruction_connect_key_usb_only"></string>
+    <string name="instruction_usb_permission_denied_no_nfc"></string>
+    <string name="hint_nfc_off"></string>
+    <string name="action_turn_on_nfc"></string>
 </resources>
