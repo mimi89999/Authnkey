@@ -222,10 +222,10 @@
     <string name="instruction_waiting_biometric">触摸指纹识别器上的安全密钥…</string>
     <string name="error_uv_failed">生物识别验证失败</string>
     <string name="error_pin_not_supported_for_operation">需验证但 PIN 无法用于此操作</string>
-    <string name="instruction_connect_key_nfc_only"></string>
-    <string name="instruction_connect_key_usb_only"></string>
-    <string name="instruction_no_transport"></string>
-    <string name="instruction_usb_permission_denied_no_nfc"></string>
-    <string name="hint_nfc_off"></string>
-    <string name="action_turn_on_nfc"></string>
+    <string name="instruction_connect_key_nfc_only">将安全密钥贴住手机背面</string>
+    <string name="instruction_connect_key_usb_only">通过 USB 插入你的安全密钥</string>
+    <string name="instruction_no_transport">无可用的连接方式</string>
+    <string name="instruction_usb_permission_denied_no_nfc">USB 权限被拒。请重试。</string>
+    <string name="hint_nfc_off">NFC 未开启</string>
+    <string name="action_turn_on_nfc">打开</string>
 </resources>
