@@ -222,4 +222,10 @@
     <string name="device_info_section_uv_modality">Understøttede brugerverifikationsmetoder</string>
     <string name="device_info_option_uvBioEnroll">Biometrisk registrering med brugerverifikation</string>
     <string name="error_pin_not_supported_for_operation">Verifikation kræves, men PIN-koden kan ikke bruges til denne handling</string>
+    <string name="instruction_connect_key_nfc_only">Hold sikkerhedsnøglen mod bagsiden af telefonen</string>
+    <string name="instruction_connect_key_usb_only">Tilslut din sikkerhedsnøgle via USB</string>
+    <string name="instruction_no_transport">Ingen brugbar forbindelsesmetode</string>
+    <string name="instruction_usb_permission_denied_no_nfc">USB-tilladelse nægtet. Prøv igen.</string>
+    <string name="hint_nfc_off">NFC er slukket</string>
+    <string name="action_turn_on_nfc">Tænd</string>
 </resources>
