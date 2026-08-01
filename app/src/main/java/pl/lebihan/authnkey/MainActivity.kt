@@ -861,13 +861,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val credentialItems = rpsWithCredentials.flatMap { rpWithCreds ->
-            rpWithCreds.credentials?.map { cred ->
-                CredentialItem(
-                    rpId = rpWithCreds.relyingParty.rpId ?: rpWithCreds.relyingParty.rpIdHash.toHex(),
-                    credential = cred
-                )
-            } ?: emptyList()
+        val credentialItems = withContext(Dispatchers.IO) {
+            val psl = PublicSuffixes.get(this@MainActivity)
+            rpsWithCredentials.flatMap { rpWithCreds ->
+                rpWithCreds.credentials?.map { cred ->
+                    CredentialItem(
+                        rpId = rpWithCreds.relyingParty.rpId
+                            ?: rpWithCreds.relyingParty.rpIdHash.toHex(),
+                        credential = cred
+                    )
+                } ?: emptyList()
+            }.sortedByRegistrableDomain(psl)
         }
 
         showCredentialsDialog(metadata, credentialItems)

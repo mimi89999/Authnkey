@@ -9,6 +9,7 @@ appcompat = "1.7.1"
 kotlinxCoroutinesAndroid = "1.11.0"
 credentials = "1.6.0"
 material = "1.14.0"
+etldx = "0.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -19,6 +20,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+etldx = { module = "com.github.mimi89999:etldx", version.ref = "etldx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

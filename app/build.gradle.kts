@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.material)
+    implementation(libs.etldx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
