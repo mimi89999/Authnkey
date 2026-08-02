@@ -1,16 +1,11 @@
-Authnkey est un fournisseur d’identifiants qui permet d’utiliser des clés de sécurité FIDO2 (comme YubiKey, SoloKey, Nitrokey ou Token2) pour l’authentification par clé d'accès sur Android.
+Authnkey est un fournisseur d'identifiants qui vous permet d'utiliser des clés de sécurité FIDO2 (comme YubiKey, SoloKey, Nitrokey ou Token2) pour l'authentification par clé d'accès (passkey) sur Android.
 
-De nombreuses clés de sécurité NFC ne fonctionnent pas correctement sous Android. La technologie CTAP2 native sur NFC ne fonctionne qu'avec les clés prenant en charge la sélection d'applets via un encodage étendu, ce qui n'est pas le cas de nombreuses clés et cartes à puce. Ces clés sont limitées à l'authentification U2F de base par simple contact, ce qui exclut la protection par code PIN et la possibilité de découvrir les identifiants. Authnkey comble cette lacune en implémentant le protocole CTAP2 complet.
+De nombreuses clés de sécurité ne fonctionnent pas correctement sur Android : pas de saisie de code PIN, pas de clé d'accès, seulement une authentification par simple contact.
 
-L’application s’enregistre comme fournisseur d’identifiants ; ainsi, toute application ou tout navigateur prenant en charge l’API Android Credential Manager proposera Authnkey comme option lorsqu’une passkey est demandée.
+Authnkey résout ce problème.
 
-Cela fonctionne également sur les appareils sans Google Play Services, puisque Authnkey implémente directement le protocole CTAP2 au lieu de s’appuyer sur l’API FIDO2 de Google.
+Installez l'application, activez-la dans les paramètres de votre téléphone, et votre clé de sécurité ou carte à puce FIDO2 bénéficiera d'une prise en charge complète des clés d'accès via NFC et USB, incluant la vérification par code PIN et empreinte digitale, ainsi que l'utilisation des clés d'accès stockées.
 
-Fonctionnalités prises en charge :
-- Création et authentification par clé d'accès
-- Vérification du PIN
-- Identifiants détectables
-- Plusieurs comptes par site
-- Transports NFC et USB
+Vous pouvez également gérer votre clé directement depuis l'application : consulter et supprimer les clés d'accès enregistrées, et définir ou modifier son code PIN.
 
-Aucun accès root requis.
+Nécessite Android 14 ou ultérieure, et une clé de sécurité ou une carte à puce compatible FIDO2.
