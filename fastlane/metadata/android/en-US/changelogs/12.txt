@@ -1,0 +1,8 @@
+- Sort passkeys by domain in credential management
+- Show a hint with a shortcut to system settings when NFC is turned off
+- Adapt key connection instructions to the methods the device can use
+- Update privileged apps list, adding Waterfox among others
+
+New translations:
+- Polish
+- Spanish by Cyant
