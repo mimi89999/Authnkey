@@ -11,6 +11,7 @@ import kotlin.random.Random
  * FIDO transport over USB HID using CTAPHID protocol
  */
 class UsbTransport private constructor(
+    val deviceId: Int,
     private val connection: UsbDeviceConnection,
     private val hidInterface: UsbInterface,
     private val inEndpoint: UsbEndpoint,
@@ -335,7 +336,14 @@ class UsbTransport private constructor(
 
             auxiliaryInterfaces.forEach { connection.claimInterface(it, true) }
 
-            val transport = UsbTransport(connection, hidInterface, inEp, outEp, auxiliaryInterfaces)
+            val transport = UsbTransport(
+                deviceId = device.deviceId,
+                connection = connection,
+                hidInterface = hidInterface,
+                inEndpoint = inEp,
+                outEndpoint = outEp,
+                auxiliaryInterfaces = auxiliaryInterfaces,
+            )
 
             if (!transport.init()) {
                 transport.close()

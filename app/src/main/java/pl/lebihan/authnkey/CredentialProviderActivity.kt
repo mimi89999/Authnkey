@@ -126,21 +126,28 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private val usbAttachReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
-                usbPermissionRequested = false
+            val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+            }
 
-                val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
-                } else {
-                    @Suppress("DEPRECATION")
-                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
-                }
+            when (intent.action) {
+                UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                    usbPermissionRequested = false
+                    if (device == null || !UsbTransport.isFidoDevice(device)) return
 
-                if (device != null && UsbTransport.isFidoDevice(device)) {
                     if (usbManager.hasPermission(device)) {
                         connectToUsbDevice(device)
                     } else {
                         requestUsbPermission(device)
+                    }
+                }
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
+                    val transport = ctapSession?.transport as? UsbTransport ?: return
+                    if (device?.deviceId == transport.deviceId) {
+                        handleUsbDetached()
                     }
                 }
             }
@@ -381,7 +388,10 @@ class CredentialProviderActivity : AppCompatActivity() {
             adapter.enableForegroundDispatch(this, pendingIntent, filters, techLists)
         }
 
-        val usbAttachFilter = IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+        val usbAttachFilter = IntentFilter().apply {
+            addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+            addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(usbAttachReceiver, usbAttachFilter, RECEIVER_NOT_EXPORTED)
         } else {
@@ -1505,6 +1515,20 @@ class CredentialProviderActivity : AppCompatActivity() {
         PendingIntentHandler.setGetCredentialResponse(resultData, response)
         setResult(RESULT_OK, resultData)
         finish()
+    }
+
+    private fun handleUsbDetached() {
+        ctapSession?.close()
+        ctapSession = null
+        pinProtocol = null
+        pendingPin = null
+
+        runOnUiThread {
+            showProgress(false)
+            bottomSheet?.showPinInput(false)
+            setInstruction(getString(R.string.error_format, getString(R.string.error_key_disconnected)))
+            setState(CredentialBottomSheet.State.ERROR)
+        }
     }
 
     private fun handleError(e: Exception) {

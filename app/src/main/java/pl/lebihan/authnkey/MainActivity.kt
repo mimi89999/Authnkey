@@ -100,21 +100,28 @@ class MainActivity : AppCompatActivity() {
 
     private val usbAttachReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
-                usbPermissionRequested = false
+            val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+            }
 
-                val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
-                } else {
-                    @Suppress("DEPRECATION")
-                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
-                }
+            when (intent.action) {
+                UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                    usbPermissionRequested = false
+                    if (device == null || !UsbTransport.isFidoDevice(device)) return
 
-                if (device != null && UsbTransport.isFidoDevice(device)) {
                     if (usbManager.hasPermission(device)) {
                         connectToUsbDevice(device)
                     } else {
                         requestUsbPermission(device)
+                    }
+                }
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
+                    val transport = currentTransport as? UsbTransport ?: return
+                    if (device?.deviceId == transport.deviceId) {
+                        handleDisconnect()
                     }
                 }
             }
@@ -232,7 +239,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Register USB attach receiver
-        val usbAttachFilter = IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+        val usbAttachFilter = IntentFilter().apply {
+            addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+            addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(usbAttachReceiver, usbAttachFilter, RECEIVER_NOT_EXPORTED)
         } else {
