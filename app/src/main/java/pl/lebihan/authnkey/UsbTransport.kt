@@ -5,6 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.random.Random
 
 /**
@@ -22,12 +25,39 @@ class UsbTransport private constructor(
     override val transportType = TransportType.USB
 
     private var channelId: Int = CID_BROADCAST
-    private var _isConnected = true
+    @Volatile private var closed = false
+    private val transferLock = ReentrantLock()
 
     override val isConnected: Boolean
-        get() = _isConnected
+        get() = !closed
 
-    private val packetSize = outEndpoint.maxPacketSize.coerceAtLeast(64)
+    private val inPacketSize = inEndpoint.maxPacketSize.coerceAtLeast(64)
+    private val outPacketSize = outEndpoint.maxPacketSize.coerceAtLeast(64)
+
+    private val inRequest = UsbRequest().apply { initialize(connection, inEndpoint) }
+    private val outRequest = UsbRequest().apply { initialize(connection, outEndpoint) }
+
+    /**
+     * Transfers a single HID report, sending or receiving depending on the direction
+     * of this request's endpoint. [buffer] holds the report to send, or is filled
+     * with the one received.
+     *
+     * Returns the number of bytes transferred, or -1 if nothing arrived within
+     * [timeoutMs].
+     */
+    private fun UsbRequest.transfer(buffer: ByteBuffer, timeoutMs: Long): Int = transferLock.withLock {
+        if (closed) return -1
+        if (!queue(buffer)) return -1
+        val completed = try {
+            connection.requestWait(timeoutMs)
+        } catch (e: TimeoutException) {
+            // The request stays queued after a timeout, so cancel and reap it
+            cancel()
+            try { connection.requestWait(CANCEL_TIMEOUT_MS) } catch (_: Exception) {}
+            null
+        }
+        return if (completed === this) buffer.position() else -1
+    }
 
     /**
      * Initialize CTAPHID channel
@@ -57,10 +87,16 @@ class UsbTransport private constructor(
     }
 
     override fun reclaimConnection() {
-        if (!_isConnected || !connection.claimInterface(hidInterface, false)) {
-            throw AuthnkeyError.NotConnected()
+        if (closed) throw AuthnkeyError.NotConnected()
+        if (!transferLock.tryLock()) return
+        try {
+            if (closed || !connection.claimInterface(hidInterface, false)) {
+                throw AuthnkeyError.NotConnected()
+            }
+            auxiliaryInterfaces.forEach { connection.claimInterface(it, true) }
+        } finally {
+            transferLock.unlock()
         }
-        auxiliaryInterfaces.forEach { connection.claimInterface(it, true) }
     }
 
     override suspend fun sendCtapCommand(command: ByteArray): ByteArray = withContext(Dispatchers.IO) {
@@ -69,8 +105,10 @@ class UsbTransport private constructor(
     }
 
     private fun sendRaw(cid: Int, cmd: Int, data: ByteArray): ByteArray {
+        if (closed) throw AuthnkeyError.NotConnected()
+
         // Build and send initialization packet
-        val initPacket = ByteArray(packetSize)
+        val initPacket = ByteArray(outPacketSize)
         var offset = 0
 
         // Channel ID (4 bytes, big endian)
@@ -86,19 +124,19 @@ class UsbTransport private constructor(
         initPacket[5] = (data.size shr 8).toByte()
         initPacket[6] = (data.size and 0xFF).toByte()
 
-        // Data (up to packetSize - 7 bytes in init packet)
-        val initDataLen = minOf(data.size, packetSize - 7)
+        // Data (up to outPacketSize - 7 bytes in init packet)
+        val initDataLen = minOf(data.size, outPacketSize - 7)
         System.arraycopy(data, 0, initPacket, 7, initDataLen)
         offset = initDataLen
 
         // Send init packet
-        val sent = connection.bulkTransfer(outEndpoint, initPacket, packetSize, TIMEOUT_MS)
+        val sent = outRequest.transfer(ByteBuffer.wrap(initPacket), TIMEOUT_MS)
         if (sent < 0) throw Exception("Failed to send init packet")
 
         // Send continuation packets if needed
         var seq = 0
         while (offset < data.size) {
-            val contPacket = ByteArray(packetSize)
+            val contPacket = ByteArray(outPacketSize)
 
             // Channel ID
             contPacket[0] = (cid shr 24).toByte()
@@ -111,11 +149,11 @@ class UsbTransport private constructor(
             seq++
 
             // Data
-            val contDataLen = minOf(data.size - offset, packetSize - 5)
+            val contDataLen = minOf(data.size - offset, outPacketSize - 5)
             System.arraycopy(data, offset, contPacket, 5, contDataLen)
             offset += contDataLen
 
-            val contSent = connection.bulkTransfer(outEndpoint, contPacket, packetSize, TIMEOUT_MS)
+            val contSent = outRequest.transfer(ByteBuffer.wrap(contPacket), TIMEOUT_MS)
             if (contSent < 0) throw Exception("Failed to send continuation packet")
         }
 
@@ -135,13 +173,15 @@ class UsbTransport private constructor(
         val maxWaitTime = 30000L // 30 seconds for user to touch the key
 
         while (true) {
+            if (closed) throw AuthnkeyError.NotConnected()
+
             // Check if we've exceeded max wait time
             if (System.currentTimeMillis() - startTime > maxWaitTime) {
                 throw Exception("Timeout waiting for response")
             }
 
-            val packet = ByteArray(packetSize)
-            val received = connection.bulkTransfer(inEndpoint, packet, packetSize, TIMEOUT_MS)
+            val packet = ByteArray(inPacketSize)
+            val received = inRequest.transfer(ByteBuffer.wrap(packet), TIMEOUT_MS)
 
             if (received < 0) {
                 // Timeout on this read, but keep trying if within max wait time
@@ -204,15 +244,25 @@ class UsbTransport private constructor(
     }
 
     override fun close() {
-        _isConnected = false
-        try {
-            auxiliaryInterfaces.forEach {
-                try { connection.releaseInterface(it) } catch (_: Exception) {}
+        if (closed) return
+        closed = true
+
+        // Break any in-flight wait so the transfer lock frees up promptly
+        try { inRequest.cancel() } catch (_: Exception) {}
+        try { outRequest.cancel() } catch (_: Exception) {}
+
+        transferLock.withLock {
+            try {
+                inRequest.close()
+                outRequest.close()
+                auxiliaryInterfaces.forEach {
+                    try { connection.releaseInterface(it) } catch (_: Exception) {}
+                }
+                connection.releaseInterface(hidInterface)
+                connection.close()
+            } catch (e: Exception) {
+                // Ignore
             }
-            connection.releaseInterface(hidInterface)
-            connection.close()
-        } catch (e: Exception) {
-            // Ignore
         }
     }
 
@@ -222,7 +272,8 @@ class UsbTransport private constructor(
         private const val CMD_CBOR = 0x10
         private const val CMD_KEEPALIVE = 0x3B
         private const val CMD_ERROR = 0x3F
-        private const val TIMEOUT_MS = 5000
+        private const val TIMEOUT_MS = 5000L
+        private const val CANCEL_TIMEOUT_MS = 100L
 
         /**
          * Find FIDO HID interface on a USB device
