@@ -27,7 +27,8 @@ class UsbTransport private constructor(
     override val isConnected: Boolean
         get() = _isConnected
 
-    private val packetSize = outEndpoint.maxPacketSize.coerceAtLeast(64)
+    private val inPacketSize = inEndpoint.maxPacketSize
+    private val outPacketSize = outEndpoint.maxPacketSize
 
     /**
      * Initialize CTAPHID channel
@@ -70,7 +71,7 @@ class UsbTransport private constructor(
 
     private fun sendRaw(cid: Int, cmd: Int, data: ByteArray): ByteArray {
         // Build and send initialization packet
-        val initPacket = ByteArray(packetSize)
+        val initPacket = ByteArray(outPacketSize)
         var offset = 0
 
         // Channel ID (4 bytes, big endian)
@@ -87,18 +88,18 @@ class UsbTransport private constructor(
         initPacket[6] = (data.size and 0xFF).toByte()
 
         // Data (up to packetSize - 7 bytes in init packet)
-        val initDataLen = minOf(data.size, packetSize - 7)
+        val initDataLen = minOf(data.size, outPacketSize - 7)
         System.arraycopy(data, 0, initPacket, 7, initDataLen)
         offset = initDataLen
 
         // Send init packet
-        val sent = connection.bulkTransfer(outEndpoint, initPacket, packetSize, TIMEOUT_MS)
+        val sent = connection.bulkTransfer(outEndpoint, initPacket, outPacketSize, TIMEOUT_MS)
         if (sent < 0) throw Exception("Failed to send init packet")
 
         // Send continuation packets if needed
         var seq = 0
         while (offset < data.size) {
-            val contPacket = ByteArray(packetSize)
+            val contPacket = ByteArray(outPacketSize)
 
             // Channel ID
             contPacket[0] = (cid shr 24).toByte()
@@ -111,11 +112,11 @@ class UsbTransport private constructor(
             seq++
 
             // Data
-            val contDataLen = minOf(data.size - offset, packetSize - 5)
+            val contDataLen = minOf(data.size - offset, outPacketSize - 5)
             System.arraycopy(data, offset, contPacket, 5, contDataLen)
             offset += contDataLen
 
-            val contSent = connection.bulkTransfer(outEndpoint, contPacket, packetSize, TIMEOUT_MS)
+            val contSent = connection.bulkTransfer(outEndpoint, contPacket, outPacketSize, TIMEOUT_MS)
             if (contSent < 0) throw Exception("Failed to send continuation packet")
         }
 
@@ -140,8 +141,8 @@ class UsbTransport private constructor(
                 throw Exception("Timeout waiting for response")
             }
 
-            val packet = ByteArray(packetSize)
-            val received = connection.bulkTransfer(inEndpoint, packet, packetSize, TIMEOUT_MS)
+            val packet = ByteArray(inPacketSize)
+            val received = connection.bulkTransfer(inEndpoint, packet, inPacketSize, TIMEOUT_MS)
 
             if (received < 0) {
                 // Timeout on this read, but keep trying if within max wait time
