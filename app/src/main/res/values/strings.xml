@@ -132,6 +132,9 @@
     <string name="getting_metadata">Getting credential metadata…</string>
     <string name="enumerating_rps">Enumerating relying parties…</string>
     <string name="loading_credentials_for">Loading credentials for %1$s…</string>
+    <string name="credential_progress_title">Reading Credentials</string>
+    <string name="credential_progress_rp_count">Site %1$d of %2$d</string>
+    <string name="credential_progress_hold_key">Keep your security key against the back of your phone.</string>
     <string name="checking_pin_status">Checking PIN status…</string>
     <string name="pin_retries_status">PIN retries remaining: %1$d</string>
     <string name="change_pin_title">Change PIN</string>
