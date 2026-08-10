@@ -11,6 +11,45 @@ import kotlinx.coroutines.withContext
  */
 class NfcTransport private constructor(private val isoDep: IsoDep) : FidoTransport {
 
+    sealed class TransportError(message: String) : Exception(message) {
+        class UnsupportedTransceiveLength(length: Int) :
+            TransportError("Unsupported NFC transceive length: $length bytes")
+
+        class ProtocolViolation(detail: String) :
+            TransportError("ISO 7816-4 protocol violation: $detail")
+
+        class MessageTooLarge(size: Int, limit: Int) :
+            TransportError("Message of $size bytes exceeds the APDU limit of $limit bytes")
+
+        class ApduError(sw: Int) : TransportError(
+            "APDU error: ${label(sw)} (0x${sw.toString(16).padStart(4, '0')})"
+        ) {
+            private companion object {
+                fun label(sw: Int) = when (sw) {
+                    0x6300 -> "AUTHENTICATION_FAILED"
+                    0x6700 -> "WRONG_LENGTH"
+                    0x6881 -> "LOGICAL_CHANNEL_NOT_SUPPORTED"
+                    0x6884 -> "COMMAND_CHAINING_NOT_SUPPORTED"
+                    0x6982 -> "SECURITY_STATUS_NOT_SATISFIED"
+                    0x6984 -> "REFERENCE_DATA_INVALID"
+                    0x6985 -> "CONDITIONS_NOT_SATISFIED"
+                    0x6A80 -> "WRONG_DATA"
+                    0x6A81 -> "FUNCTION_NOT_SUPPORTED"
+                    0x6A82 -> "FILE_NOT_FOUND"
+                    0x6A86 -> "INCORRECT_P1P2"
+                    0x6B00 -> "WRONG_P1P2"
+                    0x6D00 -> "INS_NOT_SUPPORTED"
+                    0x6E00 -> "CLA_NOT_SUPPORTED"
+                    0x6F00 -> "NO_PRECISE_DIAGNOSIS"
+                    else -> when (sw and 0xFF00) {
+                        0x6C00 -> "WRONG_LE"
+                        else -> "UNKNOWN"
+                    }
+                }
+            }
+        }
+    }
+
     override val transportType = TransportType.NFC
 
     override val isConnected: Boolean
@@ -20,6 +59,9 @@ class NfcTransport private constructor(private val isoDep: IsoDep) : FidoTranspo
             false
         }
 
+    // CLA, INS, P1, P2, a 3 byte Lc and a 2 byte Le have to fit alongside the payload
+    private val maxMessageSize = minOf(isoDep.maxTransceiveLength - 9, 0xFFFF)
+
     override fun reclaimConnection() {
         if (!isConnected) {
             throw AuthnkeyError.NotConnected()
@@ -27,60 +69,88 @@ class NfcTransport private constructor(private val isoDep: IsoDep) : FidoTranspo
     }
 
     /**
-     * Select the FIDO applet on the NFC device
+     * Select the FIDO applet on the NFC device, making it the active application.
      */
-    private suspend fun selectFidoApplet(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val response = isoDep.transceive(SELECT_FIDO_APPLET)
-            isSuccess(response)
-        } catch (e: SecurityException) {
-            false
+    private suspend fun selectFidoApplet() = withContext(Dispatchers.IO) {
+        val response = try {
+            isoDep.transceive(SELECT_FIDO_APPLET)
+        } catch (e: Exception) {
+            close()
+            throw e as? TagLostException
+                ?: TagLostException("NFC transfer failed").apply { initCause(e) }
+        }
+
+        if (response.size < 2) {
+            throw TransportError.ProtocolViolation(
+                "SELECT response of ${response.size} bytes carries no status word"
+            )
+        }
+
+        val sw = statusWord(response)
+
+        if (sw == SW_FILE_NOT_FOUND || sw == SW_APPLET_SELECT_FAILED) {
+            throw AuthnkeyError.FidoAppletNotFound()
+        }
+
+        if (sw != SW_NO_ERROR) {
+            throw TransportError.ApduError(sw)
         }
     }
 
     override suspend fun sendCtapCommand(command: ByteArray): ByteArray = withContext(Dispatchers.IO) {
-        try {
-            // Wrap CTAP command in ISO 7816-4 APDU
-            val apdu = buildApdu(command)
+        if (command.size > maxMessageSize) {
+            throw TransportError.MessageTooLarge(command.size, maxMessageSize)
+        }
 
-            var response = isoDep.transceive(apdu)
+        // Wrap CTAP command in ISO 7816-4 APDU
+        val apdu = buildApdu(command)
 
-            // Handle response chaining (if response is larger than single frame)
-            val fullResponse = mutableListOf<Byte>()
+        var response = try {
+            isoDep.transceive(apdu)
+        } catch (e: Exception) {
+            close()
+            throw e as? TagLostException
+                ?: TagLostException("NFC transfer failed").apply { initCause(e) }
+        }
 
-            while (response.size >= 2) {
-                val sw1 = response[response.size - 2].toInt() and 0xFF
-                val sw2 = response[response.size - 1].toInt() and 0xFF
+        // Handle response chaining (if response is larger than single frame)
+        val fullResponse = mutableListOf<Byte>()
 
-                // Add data (excluding status bytes)
-                if (response.size > 2) {
-                    fullResponse.addAll(response.dropLast(2))
-                }
-
-                when {
-                    sw1 == 0x90 && sw2 == 0x00 -> {
-                        // Success - return complete response
-                        return@withContext fullResponse.toByteArray()
-                    }
-                    sw1 == 0x61 -> {
-                        // More data available - send GET RESPONSE
-                        response = isoDep.transceive(byteArrayOf(0x00, 0xC0.toByte(), 0x00, 0x00, sw2.toByte()))
-                    }
-                    else -> {
-                        // Error
-                        throw Exception("APDU error: ${String.format("%02X%02X", sw1, sw2)}")
-                    }
-                }
+        while (true) {
+            if (response.size < 2) {
+                throw TransportError.ProtocolViolation(
+                    "Response of ${response.size} bytes carries no status word"
+                )
             }
 
-            fullResponse.toByteArray()
-        } catch (e: TagLostException) {
-            close()
-            throw e
-        } catch (e: SecurityException) {
-            // Tag is out of date / disconnected
-            throw java.io.IOException("NFC connection lost")
+            // Add data (excluding status bytes)
+            val sw = statusWord(response)
+            fullResponse.addAll(response.dropLast(2))
+
+            if (fullResponse.size > 0xFFFF) {
+                throw TransportError.ProtocolViolation(
+                    "Response exceeds the APDU limit of 65535 bytes"
+                )
+            }
+
+            // Success - the response is complete
+            if (sw == SW_NO_ERROR) break
+
+            if ((sw and 0xFF00) != SW1_MORE_DATA) {
+                throw TransportError.ApduError(sw)
+            }
+
+            // More data available - send GET RESPONSE
+            response = try {
+                isoDep.transceive(GET_RESPONSE_HEADER + (sw and 0xFF).toByte())
+            } catch (e: Exception) {
+                close()
+                throw e as? TagLostException
+                    ?: TagLostException("NFC transfer failed").apply { initCause(e) }
+            }
         }
+
+        fullResponse.toByteArray()
     }
 
     override fun close() {
@@ -122,19 +192,27 @@ class NfcTransport private constructor(private val isoDep: IsoDep) : FidoTranspo
         return apdu.toByteArray()
     }
 
-    private fun isSuccess(response: ByteArray): Boolean {
-        return response.size >= 2 &&
-                response[response.size - 2] == 0x90.toByte() &&
-                response[response.size - 1] == 0x00.toByte()
-    }
+    private fun statusWord(response: ByteArray): Int =
+        ((response[response.size - 2].toInt() and 0xFF) shl 8) or
+                (response[response.size - 1].toInt() and 0xFF)
 
     companion object {
+        private const val SW_NO_ERROR = 0x9000
+        private const val SW_FILE_NOT_FOUND = 0x6A82
+        private const val SW_APPLET_SELECT_FAILED = 0x6999
+        private const val SW1_MORE_DATA = 0x6100
+
         // FIDO Alliance AID
         private val SELECT_FIDO_APPLET = byteArrayOf(
             0x00, 0xA4.toByte(), 0x04, 0x00,  // SELECT command
             0x08,                              // Length of AID
             0xA0.toByte(), 0x00, 0x00, 0x06, 0x47, 0x2F, 0x00, 0x01,  // FIDO AID
             0x00                               // Le
+        )
+
+        // GET RESPONSE command, Le is appended for each call
+        private val GET_RESPONSE_HEADER = byteArrayOf(
+            0x00, 0xC0.toByte(), 0x00, 0x00
         )
 
         /**
@@ -144,15 +222,22 @@ class NfcTransport private constructor(private val isoDep: IsoDep) : FidoTranspo
         suspend fun connect(tag: Tag): NfcTransport {
             val isoDep = IsoDep.get(tag) ?: throw AuthnkeyError.NotIsoDepTag()
 
+            if (isoDep.maxTransceiveLength < SELECT_FIDO_APPLET.size) {
+                throw TransportError.UnsupportedTransceiveLength(isoDep.maxTransceiveLength)
+            }
+
             if (!isoDep.isConnected) {
                 isoDep.connect()
             }
             isoDep.timeout = 5000
 
             val transport = NfcTransport(isoDep)
-            if (!transport.selectFidoApplet()) {
+
+            try {
+                transport.selectFidoApplet()
+            } catch (e: Exception) {
                 transport.close()
-                throw AuthnkeyError.FidoAppletNotFound()
+                throw e
             }
             return transport
         }
