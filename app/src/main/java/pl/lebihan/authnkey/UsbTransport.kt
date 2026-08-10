@@ -58,6 +58,7 @@ class UsbTransport private constructor(
     override val transportType = TransportType.USB
 
     private var channelId: Int = CID_BROADCAST
+    @Volatile
     private var _isConnected = true
 
     override val isConnected: Boolean
@@ -129,8 +130,7 @@ class UsbTransport private constructor(
         offset = initDataLen
 
         // Send init packet
-        val sent = connection.bulkTransfer(outEndpoint, initPacket, outPacketSize, TIMEOUT_MS)
-        if (sent < 0) throw TransportError.TransferFailed("Failed to send init packet")
+        sendPacket(initPacket)
 
         // Send continuation packets if needed
         var seq = 0
@@ -152,8 +152,7 @@ class UsbTransport private constructor(
             System.arraycopy(data, offset, contPacket, 5, contDataLen)
             offset += contDataLen
 
-            val contSent = connection.bulkTransfer(outEndpoint, contPacket, outPacketSize, TIMEOUT_MS)
-            if (contSent < 0) throw TransportError.TransferFailed("Failed to send continuation packet")
+            sendPacket(contPacket)
         }
 
         // Receive response
@@ -177,13 +176,9 @@ class UsbTransport private constructor(
                 throw TransportError.ResponseTimeout()
             }
 
-            val packet = ByteArray(inPacketSize)
-            val received = connection.bulkTransfer(inEndpoint, packet, inPacketSize, TIMEOUT_MS)
-
-            if (received <= 0) {
-                // Timeout on this read, but keep trying if within max wait time
-                continue
-            }
+            // Timeout on this read, but keep trying if within max wait time
+            val packet = receivePacket() ?: continue
+            val received = packet.size
 
             if (received < 5) {
                 throw TransportError.ProtocolViolation("Received packet of $received bytes")
@@ -259,6 +254,35 @@ class UsbTransport private constructor(
         }
 
         return responseData.toByteArray()
+    }
+
+    /**
+     * Write a single HID packet to the out endpoint. Partial writes are not
+     * supported by CTAPHID, so anything short of the full packet is an error.
+     */
+    private fun sendPacket(packet: ByteArray) {
+        if (!_isConnected) throw AuthnkeyError.NotConnected()
+
+        val sent = connection.bulkTransfer(outEndpoint, packet, packet.size, TIMEOUT_MS)
+        if (sent < 0) {
+            throw TransportError.TransferFailed("Failed to write packet to the out endpoint")
+        }
+        if (sent != packet.size) {
+            throw TransportError.TransferFailed("Wrote $sent of ${packet.size} bytes")
+        }
+    }
+
+    /**
+     * Read a single HID packet from the in endpoint, trimmed to its actual
+     * length, or null if the read failed or nothing arrived within [TIMEOUT_MS].
+     */
+    private fun receivePacket(): ByteArray? {
+        if (!_isConnected) throw AuthnkeyError.NotConnected()
+
+        val packet = ByteArray(inPacketSize)
+        val received = connection.bulkTransfer(inEndpoint, packet, packet.size, TIMEOUT_MS)
+        if (received <= 0) return null
+        return packet.copyOf(received)
     }
 
     override fun close() {
