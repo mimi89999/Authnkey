@@ -848,27 +848,27 @@ class MainActivity : AppCompatActivity() {
                 credMgmt.enumerateCredentials(rp.rpIdHash)
             }
 
-            if (credsResult.isFailure) {
+            val credentials = credsResult.getOrElse {
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
-                    return
+                } else {
+                    resultText.text = getString(
+                        R.string.error_enumerate_credentials,
+                        rp.rpId ?: rp.rpIdHash.toHex(),
+                        it.toUserMessage(this@MainActivity)
+                    )
+                    pendingAction = null
                 }
-                rpsWithCredentials.add(
-                    OutputFormatter.RelyingPartyWithCredentials(
-                        relyingParty = rp,
-                        credentials = null,
-                        error = credsResult.exceptionOrNull()?.toUserMessage(this@MainActivity)
-                    )
-                )
-            } else {
-                rpsWithCredentials.add(
-                    OutputFormatter.RelyingPartyWithCredentials(
-                        relyingParty = rp,
-                        credentials = credsResult.getOrThrow(),
-                        error = null
-                    )
-                )
+                return
             }
+
+            rpsWithCredentials.add(
+                OutputFormatter.RelyingPartyWithCredentials(
+                    relyingParty = rp,
+                    credentials = credentials,
+                    error = null
+                )
+            )
         }
 
         val credentialItems = withContext(Dispatchers.IO) {

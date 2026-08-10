@@ -69,6 +69,7 @@
     <string name="error_generic">Error: %1$s</string>
     <string name="error_generic_with_trace">Error: %1$s\n\n%2$s</string>
     <string name="error_metadata">Error getting metadata: %1$s</string>
+    <string name="error_enumerate_credentials">Failed to load credentials for %1$s: %2$s</string>
     <string name="error_pins_dont_match">New PINs don\'t match</string>
     <string name="error_uv_required_no_pin">Verification required but no PIN is set on your security key</string>
     <string name="error_pin_not_supported_for_operation">Verification required but PIN cannot be used for this operation</string>
