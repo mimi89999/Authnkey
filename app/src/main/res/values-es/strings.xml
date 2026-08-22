@@ -222,4 +222,14 @@
     <string name="device_info_option_bioEnroll">Registro biometrico</string>
     <string name="error_pin_auth_invalid">La autenticación por PIN falló</string>
     <string name="sign_in">Iniciar sesión</string>
+    <string name="instruction_connect_key_usb_only">Conecta tu llave de seguridad en el puerto USB de tu teléfono</string>
+    <string name="instruction_connect_key_nfc_only">Sostén tu llave de seguridad en la parte posterior de tu teléfono</string>
+    <string name="instruction_usb_permission_denied_no_nfc">Permiso de puerto USB denegado. Intenta otra vez.</string>
+    <string name="action_turn_on_nfc">Encender</string>
+    <string name="hint_nfc_off">NFC apagado</string>
+    <string name="instruction_no_transport">No hay un método de conexión para usar</string>
+    <string name="error_enumerate_credentials">No se pudieron cargar las credenciales para %1$s: %2$s</string>
+    <string name="credential_progress_title">Leyendo credenciales</string>
+    <string name="credential_progress_rp_count">Sitio %1$d de %2$d</string>
+    <string name="credential_progress_hold_key">Sostén tu llave de seguridad en la parte posterior de tu teléfono.</string>
 </resources>
