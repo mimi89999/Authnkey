@@ -62,7 +62,7 @@ class OutputFormatter(private val context: Context) {
         }
 
         info.aaguid?.let {
-            appendLine(context.getString(R.string.device_info_aaguid, it.toHex()))
+            appendLine(context.getString(R.string.device_info_aaguid, it.bytes.toHex()))
         }
 
         if (info.options.isNotEmpty()) {

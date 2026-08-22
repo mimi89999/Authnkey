@@ -82,7 +82,7 @@ class DeviceInfoDialogContent(
             aaguidLabel.visibility = View.GONE
             aaguidValue.visibility = View.GONE
         } else {
-            aaguidValue.text = formatAaguid(aaguid)
+            aaguidValue.text = aaguid.toString()
             aaguidValue.setOnLongClickListener { v ->
                 activeActionMode = v.startActionMode(object : ActionMode.Callback {
                     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -244,12 +244,5 @@ class DeviceInfoDialogContent(
             else -> return key
         }
         return context.getString(resId)
-    }
-
-    private fun formatAaguid(aaguid: ByteArray): String {
-        if (aaguid.size != 16) return aaguid.joinToString("") { "%02x".format(it) }
-
-        val hex = aaguid.joinToString("") { "%02x".format(it) }
-        return "${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}"
     }
 }
