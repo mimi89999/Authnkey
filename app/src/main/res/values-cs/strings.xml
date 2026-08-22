@@ -228,4 +228,8 @@
     <string name="instruction_usb_permission_denied_no_nfc">Oprávnění k USB zamítnuto. Zkuste to znovu.</string>
     <string name="hint_nfc_off">NFC je vypnuto</string>
     <string name="action_turn_on_nfc">Zapnout</string>
+    <string name="error_enumerate_credentials">Nepodařilo se načíst údaje pro %1$s: %2$s</string>
+    <string name="credential_progress_title">Čtení údajů</string>
+    <string name="credential_progress_rp_count">Web %1$d z %2$d</string>
+    <string name="credential_progress_hold_key">Podržte svůj bezpečnostní klíč na zadní straně vašeho telefonu.</string>
 </resources>
