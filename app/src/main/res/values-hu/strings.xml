@@ -221,4 +221,11 @@
     <string name="pin_too_long_title">A PIN-kód túl hosszú</string>
     <string name="device_info_section_uv_modality">Támogatott felhasználói hitelesítési módok</string>
     <string name="pin_too_long_message">A PIN-kód elérte a megengedett hosszt</string>
+    <string name="instruction_connect_key_usb_only">Csatlakoztassa a biztonsági kulcsot USB-n keresztül</string>
+    <string name="instruction_connect_key_nfc_only">Tartsa a biztonsági kulcsot a telefon hátuljához</string>
+    <string name="instruction_usb_permission_denied_no_nfc">Az USB-engedély megtagadva. Próbálja újra!</string>
+    <string name="action_turn_on_nfc">Bekapcsolás</string>
+    <string name="error_pin_not_supported_for_operation">Ellenőrzés szükséges, de a PIN-kód nem használható ehhez a művelethez</string>
+    <string name="hint_nfc_off">Az NFC ki van kapcsolva</string>
+    <string name="instruction_no_transport">Nincs használható csatlakozási mód</string>
 </resources>
