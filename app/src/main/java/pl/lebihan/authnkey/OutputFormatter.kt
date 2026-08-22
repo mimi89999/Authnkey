@@ -98,7 +98,7 @@ class OutputFormatter(private val context: Context) {
             appendLine()
             appendLine(context.getString(R.string.device_info_algorithms))
             info.algorithms.forEach { alg ->
-                appendLine(context.getString(R.string.device_info_algorithm_item, alg.type ?: "?", alg.alg?.toString() ?: "?"))
+                appendLine(context.getString(R.string.device_info_algorithm_item, alg.type ?: "?", alg.alg?.id?.toString() ?: "?"))
             }
         }
 

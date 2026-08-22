@@ -154,8 +154,8 @@ class DeviceInfoDialogContent(
             algorithmsChipGroup.visibility = View.GONE
         } else {
             deviceInfo.algorithms.forEach { alg ->
-                alg.alg?.let { 
-                    algorithmsChipGroup.addView(createChip(getAlgorithmName(it)))
+                alg.alg?.let {
+                    algorithmsChipGroup.addView(createChip(it.name ?: it.id.toString()))
                 }
             }
         }
@@ -244,22 +244,6 @@ class DeviceInfoDialogContent(
             else -> return key
         }
         return context.getString(resId)
-    }
-
-    private fun getAlgorithmName(alg: Int): String {
-        return when (alg) {
-            -7 -> "ES256"
-            -8 -> "EdDSA"
-            -35 -> "ES384"
-            -36 -> "ES512"
-            -37 -> "PS256"
-            -38 -> "PS384"
-            -39 -> "PS512"
-            -257 -> "RS256"
-            -258 -> "RS384"
-            -259 -> "RS512"
-            else -> alg.toString()
-        }
     }
 
     private fun formatAaguid(aaguid: ByteArray): String {
