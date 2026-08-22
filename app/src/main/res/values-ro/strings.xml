@@ -228,4 +228,8 @@
     <string name="instruction_usb_permission_denied_no_nfc">Permisiunea pentru USB a fost refuzată. Încercați din nou.</string>
     <string name="hint_nfc_off">NFC este oprit</string>
     <string name="action_turn_on_nfc">Activează</string>
+    <string name="error_enumerate_credentials">Nu s-au putut încărca datele de autentificare pentru %1$s: %2$s</string>
+    <string name="credential_progress_title">Citirea datelor de autentificare</string>
+    <string name="credential_progress_rp_count">Site-ul %1$d din %2$d</string>
+    <string name="credential_progress_hold_key">Țineți cheia de securitate lipită de partea din spate a telefonului</string>
 </resources>
