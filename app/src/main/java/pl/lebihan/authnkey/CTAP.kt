@@ -2,7 +2,7 @@ package pl.lebihan.authnkey
 
 data class AlgorithmInfo(
     val type: String?,
-    val alg: Int?
+    val alg: CoseAlgorithm?
 )
 
 data class AttestedCredentialData(
@@ -301,7 +301,7 @@ object CTAP {
             val algorithms = parsed.mapList(10)?.mapNotNull { alg ->
                 AlgorithmInfo(
                     type = alg.string("type"),
-                    alg = alg.int("alg")
+                    alg = alg.int("alg")?.let(::CoseAlgorithm)
                 )
             } ?: emptyList()
 
