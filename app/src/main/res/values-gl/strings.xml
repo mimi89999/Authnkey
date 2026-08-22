@@ -228,4 +228,8 @@
     <string name="instruction_usb_permission_denied_no_nfc">Denegouse o permiso USB. Volve a intentalo.</string>
     <string name="hint_nfc_off">NFC está apagado</string>
     <string name="action_turn_on_nfc">Acender</string>
+    <string name="error_enumerate_credentials">Fallou a carga das credenciais para %1$s: %2$s</string>
+    <string name="credential_progress_title">Lendo as credenciais</string>
+    <string name="credential_progress_rp_count">Sitio %1$d de %2$d</string>
+    <string name="credential_progress_hold_key">Mantén a chave de seguridade pegada á parte posterior do móbil.</string>
 </resources>
