@@ -1,4 +1,4 @@
-Authnkey 是一个凭证提供程序，可让您在 Android 上使用 FIDO2 安全密钥（如 YubiKey，SoloKey，Nitrokey 或 Token2）进行通行密钥身份验证。
+Authnkey 是一个凭据提供程序，可让您在 Android 上使用 FIDO2 安全密钥（如 YubiKey，SoloKey，Nitrokey 或 Token2）进行通行密钥身份验证。
 
 许多安全密钥在 Android 上功能不全：没有 PIN 条目，没有通行密钥，只有基础的点按认证。
 
