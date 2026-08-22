@@ -1,10 +1,10 @@
 Authnkey es un proveedor de credenciales que te permite usar llaves de seguridad físicas (como YubiKey, SoloKey, Nitrokey o Token2) para autenticar llaves de acceso (passkeys) en Android.
 
-Muchas llaves de seguridad no funcionan bien en Android ya que no te dejan  ingresar el PIN ni usar llaves de acceso, y solo existe la función básica de "presionar para autentificar".
+Muchas llaves de seguridad no funcionan bien en Android ya que no te dejan ingresar el PIN ni usar llaves de acceso, y solo existe la función básica de "presionar para autentificar".
 
 Authnkey soluciona esto
 
-Instala la aplicación, activala en los ajustes de tu teléfono, y tus llaves de seguridad FIDO2 o tarjetas inteligentes obtendrán soporte completo para llaves de seguridad físicas con NFC y USB, incluyendo verificación con PIN, biometría y  llaves de acceso guardadas.
+Instala la aplicación, activala en los ajustes de tu teléfono, y tus llaves de seguridad FIDO2 o tarjetas inteligentes obtendrán soporte completo para llaves de seguridad físicas con NFC y USB, incluyendo verificación con PIN, biometría y llaves de acceso guardadas.
 
 También puedes administrar tu llave física desde la aplicación, ver y borrar llaves de acceso guardadas, y configurar o cambiar el PIN.
 
