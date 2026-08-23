@@ -194,22 +194,7 @@
     <string name="credential_error_loading">Error: %1$s</string>
     
     <!-- Device Info -->
-    <string name="device_info_title">Device Info</string>
     <string name="device_info_error">Error: %1$s</string>
-    <string name="device_info_versions">Versions: %1$s</string>
-    <string name="device_info_extensions">Extensions: %1$s</string>
-    <string name="device_info_aaguid">AAGUID: %1$s</string>
-    <string name="device_info_options">Options:</string>
-    <string name="device_info_option_item">  %1$s: %2$s</string>
-    <string name="device_info_max_msg_size">Max Message Size: %1$d</string>
-    <string name="device_info_pin_protocols">PIN/UV Auth Protocols: %1$s</string>
-    <string name="device_info_max_creds_in_list">Max Credentials in List: %1$d</string>
-    <string name="device_info_max_cred_id_length">Max Credential ID Length: %1$d</string>
-    <string name="device_info_transports">Transports: %1$s</string>
-    <string name="device_info_algorithms">Supported Algorithms:</string>
-    <string name="device_info_algorithm_item">  Type: %1$s, Algorithm: %2$s</string>
-    <string name="device_info_min_pin_length">Min PIN Length: %1$d</string>
-    <string name="device_info_firmware">Firmware Version: %1$d</string>
 
     <!-- Device Info Dialog Sections -->
     <string name="device_info_section_versions">Versions</string>

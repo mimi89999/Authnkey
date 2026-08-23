@@ -27,9 +27,7 @@
     <string name="error_pins_dont_match">Los nuevos PINs no coinciden</string>
     <string name="error_connection_failed">No se pudo conectar a la llave de seguridad</string>
     <string name="device_info_limit_max_cred_id_length">Longitud máxima de ID de credencial</string>
-    <string name="device_info_extensions">Extensiones: %1$s</string>
     <string name="btn_show_device_status">Mostrar estado del dispositivo</string>
-    <string name="device_info_option_item">%1$s: %2$s</string>
     <string name="instruction_verifying_pin">Verificando PIN…</string>
     <string name="device_info_limit_firmware">Versión del firmware</string>
     <string name="unknown_account">Cuenta desconocida</string>
@@ -69,7 +67,6 @@
     <string name="device_info_option_setMinPINLength">Establecer longitud de PIN mínima</string>
     <string name="instruction_waiting_biometric">Toca el sensor de huella de tu llave de seguridad…</string>
     <string name="toggle_keyboard_type">Alternar tipo de teclado</string>
-    <string name="device_info_min_pin_length">Longitud mínima del PIN: %1$d</string>
     <string name="usb_permission_denied">Permiso de USB denegado</string>
     <string name="credential_no_rps">No se encontraron entidades de confianza.</string>
     <string name="error_uv_failed">Error al verificar datos biométricos</string>
@@ -99,10 +96,7 @@
     <string name="credential_delete">Eliminar credencial</string>
     <string name="device_info_option_alwaysUv">Siempre requerir verificación de usuario</string>
     <string name="pin_hint">Introducir PIN</string>
-    <string name="device_info_aaguid">AAGUID: %1$s</string>
-    <string name="device_info_algorithms">Algoritmos compatibles:</string>
     <string name="ok">OK</string>
-    <string name="device_info_max_cred_id_length">Longitud máxima de credenciales de ID: %1$d</string>
     <string name="device_info_option_up">Presencia de usuario</string>
     <string name="device_info_error">Error: %1$s</string>
     <string name="security_key">Llave de seguridad</string>
@@ -112,7 +106,6 @@
     <string name="waiting_reconnection">Esperando reconexión…</string>
     <string name="error_pin_not_set">No se ha configurado ningún PIN en esta llave de seguridad</string>
     <string name="device_info_limit_max_msg_size">Tamaño de mensaje máximo</string>
-    <string name="device_info_max_msg_size">Tamaño de mensaje máximo: %1$d</string>
     <string name="device_info_option_credMgmt">Gestión de credenciales</string>
     <string name="error_init_pin_protocol">No se pudo establecer una conexión segura</string>
     <string name="instruction_initializing">Inicializando…</string>
@@ -124,7 +117,6 @@
     <string name="no_pin_set_message">Este autenticador no tiene ningún PIN configurado</string>
     <string name="device_info_limit_min_pin_length">Longitud mínima del PIN</string>
     <string name="btn_enable">Activar</string>
-    <string name="device_info_options">Opciones:</string>
     <string name="using_nfc">Usando NFC</string>
     <string name="pin_too_long_message">El PIN supera la longitud máxima permitida</string>
     <string name="usb_error">Error de USB: %1$s</string>
@@ -137,24 +129,20 @@
     <string name="error_retry_format">%1$s\n\nIntenta otra vez</string>
     <string name="pin_retries_remaining">Ingresa el PIN (%1$d intentos restantes)</string>
     <string name="getting_metadata">Obteniendo metadatos de la credencial…</string>
-    <string name="device_info_max_creds_in_list">Lista de credenciales máxima: %1$d</string>
     <string name="error_tag_lost">Se perdió contacto con la llave de seguridad</string>
     <string name="credential_detail_protection">Protección</string>
     <string name="cancel">Cancelar</string>
     <string name="instruction_authenticating">Autenticando…</string>
     <string name="provider_enabled">Proveedor de llaves de acceso activado ✓</string>
     <string name="credential_deleted">Credencial eliminada</string>
-    <string name="device_info_pin_protocols">Protocolos de autenticación PIN/UV: %1$s</string>
     <string name="device_info_section_limits">Límites</string>
     <string name="device_info_section_aaguid">AAGUID</string>
-    <string name="device_info_algorithm_item">Tipo: %1$s, Algoritmo: %2$s</string>
     <string name="credential_rp_header">Entidades de confianza %1$d: %2$s</string>
     <string name="device_info_limit_pin_protocols">Protocolos de autenticación PIN/UV</string>
     <string name="connection_lost_title">Se perdió la conexión</string>
     <string name="nfc_error">Error de NFC: %1$s</string>
     <string name="credentials_dialog_title">Credenciales guardadas</string>
     <string name="provider_not_supported">El Administrador de credenciales no es compatible con este dispositivo</string>
-    <string name="device_info_transports">Transportes: %1$s</string>
     <string name="credential_management_not_supported">Este autenticador no es compatible con la administración de credenciales.</string>
     <string name="provider_not_enabled">Proveedor de llaves de acceso desactivado ✕</string>
     <string name="pin_set_failed_title">Error al configurar el PIN</string>
@@ -177,9 +165,7 @@
     <string name="pin_set_success_message">Tu PIN de autenticador se configuró correctamente.\nUsa este PIN para futuras operaciones.</string>
     <string name="credential_display_name">Nombre mostrado: %1$s</string>
     <string name="create_passkey">Crear llave de acceso</string>
-    <string name="device_info_firmware">Versión del firmware: %1$d</string>
     <string name="error_not_connected">No hay ninguna llave de seguridad conectada</string>
-    <string name="device_info_title">Información del dispositivo</string>
     <string name="credential_no_credentials">No hay credenciales guardadas en este dispositivo.</string>
     <string name="instruction_enter_pin">Introduce el PIN de tu llave de seguridad</string>
     <string name="credential_get_description">Usa tu llave de seguridad para %1$s</string>
@@ -190,7 +176,6 @@
     <string name="error_credential_excluded">Esta llave de acceso ya existe</string>
     <string name="pin_not_set_message">Tu autenticador no tiene un PIN configurado.\n\nUsa Configurar PIN en lugar de Cambiar PIN.</string>
     <string name="error_pin_incorrect">PIN incorrecto</string>
-    <string name="device_info_versions">Versiones: %1$s</string>
     <string name="pin_blocked_title">PIN bloqueado</string>
     <string name="security_key_icon_desc">Llave de seguridad</string>
     <string name="device_info_option_noMcGaPermissionsWithClientPin">El PIN de cliente no otorga permisos de creación/obtención de credenciales</string>

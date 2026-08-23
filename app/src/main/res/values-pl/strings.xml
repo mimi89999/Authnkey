@@ -26,7 +26,6 @@
     <string name="credential_username">Nazwa użytkownika: %1$s</string>
     <string name="credential_display_name">Nazwa wyświetlana: %1$s</string>
     <string name="credential_user_id">Identyfikator użytkownika: %1$s</string>
-    <string name="device_info_firmware">Wersja oprogramowania układowego: %1$d</string>
     <string name="device_info_section_interfaces">Obsługiwane interfejsy</string>
     <string name="device_info_section_algorithms">Obsługiwane algorytmy</string>
     <string name="device_info_section_limits">Limity</string>
@@ -34,9 +33,6 @@
     <string name="credential_create_description">Utwórz klucz dostępu na kluczu bezpieczeństwa dla %1$s</string>
     <string name="credential_get_description">Użyj klucza bezpieczeństwa dla %1$s</string>
     <string name="pin_too_long_title">PIN zbyt długi</string>
-    <string name="device_info_extensions">Rozszerzenia: %1$s</string>
-    <string name="device_info_aaguid">AAGUID: %1$s</string>
-    <string name="device_info_options">Opcje:</string>
     <string name="enumerating_rps">Wyszukiwanie stron ufających…</string>
     <string name="setting_pin">Ustawianie kodu PIN…</string>
     <string name="pin_blocked_message">PIN klucza bezpieczeństwa został zablokowany z powodu zbyt wielu nieudanych prób.\n\nKonieczne będzie zresetowanie klucza.</string>
@@ -61,7 +57,6 @@
     <string name="error_unsupported_algorithm">Nieobsługiwany algorytm zabezpieczeń</string>
     <string name="create_passkey">Tworzenie klucza dostępu</string>
     <string name="error_pin_incorrect">Nieprawidłowy PIN</string>
-    <string name="device_info_versions">Wersje: %1$s</string>
     <string name="security_key_icon_desc">Klucz bezpieczeństwa</string>
     <string name="error_operation_cancelled">Operacja anulowana</string>
     <string name="instruction_usb_permission_denied">Odmowa dostępu do USB. Spróbuj ponownie lub użyj NFC.</string>
@@ -167,17 +162,7 @@
     <string name="credential_protection">Ochrona: %1$s</string>
     <string name="credential_error_enumerate_rps">Błąd podczas wyszukiwania stron ufających: %1$s</string>
     <string name="credential_error_loading">Błąd: %1$s</string>
-    <string name="device_info_title">Informacje o urządzeniu</string>
     <string name="device_info_error">Błąd: %1$s</string>
-    <string name="device_info_option_item">%1$s: %2$s</string>
-    <string name="device_info_max_msg_size">Maksymalny rozmiar wiadomości: %1$d</string>
-    <string name="device_info_pin_protocols">Protokoły uwierzytelniania PIN/UV: %1$s</string>
-    <string name="device_info_max_creds_in_list">Maksymalna liczba poświadczeń na liście: %1$d</string>
-    <string name="device_info_max_cred_id_length">Maksymalna długość identyfikatora poświadczenia: %1$d</string>
-    <string name="device_info_transports">Metody przesyłu: %1$s</string>
-    <string name="device_info_algorithms">Obsługiwane algorytmy:</string>
-    <string name="device_info_algorithm_item">Typ: %1$s, algorytm: %2$s</string>
-    <string name="device_info_min_pin_length">Minimalna długość kodu PIN: %1$d</string>
     <string name="device_info_section_versions">Wersje</string>
     <string name="device_info_section_extensions">Rozszerzenia</string>
     <string name="device_info_section_aaguid">AAGUID</string>
