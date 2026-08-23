@@ -900,23 +900,20 @@ class CredentialProviderActivity : AppCompatActivity() {
             Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
         )
 
-        val pubKeyCredParams = mutableListOf<Pair<String, Int>>()
         val paramsArray = requestJson.getJSONArray("pubKeyCredParams")
-        for (i in 0 until paramsArray.length()) {
+        val pubKeyCredParams = List(paramsArray.length()) { i ->
             val param = paramsArray.getJSONObject(i)
-            pubKeyCredParams.add(Pair(param.getString("type"), param.getInt("alg")))
+            Pair(param.getString("type"), param.getInt("alg"))
         }
 
         // Parse excludeCredentials if present
-        val excludeList = mutableListOf<ByteArray>()
-        if (requestJson.has("excludeCredentials")) {
+        val excludeList = if (requestJson.has("excludeCredentials")) {
             val excludeArray = requestJson.getJSONArray("excludeCredentials")
-            for (i in 0 until excludeArray.length()) {
+            List(excludeArray.length()) { i ->
                 val cred = excludeArray.getJSONObject(i)
-                val id = Base64.decode(cred.getString("id"), Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-                excludeList.add(id)
+                Base64.decode(cred.getString("id"), Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
             }
-        }
+        } else emptyList()
 
         // Parse authenticatorSelection for residentKey requirement
         val authSelection = requestJson.optJSONObject("authenticatorSelection")
@@ -1086,15 +1083,13 @@ class CredentialProviderActivity : AppCompatActivity() {
         )
 
         // Parse allowCredentials if present
-        val allowList = mutableListOf<ByteArray>()
-        if (requestJson.has("allowCredentials")) {
+        val allowList = if (requestJson.has("allowCredentials")) {
             val allowArray = requestJson.getJSONArray("allowCredentials")
-            for (i in 0 until allowArray.length()) {
+            List(allowArray.length()) { i ->
                 val cred = allowArray.getJSONObject(i)
-                val id = Base64.decode(cred.getString("id"), Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-                allowList.add(id)
+                Base64.decode(cred.getString("id"), Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
             }
-        }
+        } else emptyList()
 
         // Parse PRF extension
         val extensions = requestJson.optJSONObject("extensions")
