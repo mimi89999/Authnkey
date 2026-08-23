@@ -3,6 +3,8 @@ package pl.lebihan.authnkey
 import android.animation.ObjectAnimator
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -569,11 +571,22 @@ class MainActivity : AppCompatActivity() {
     private fun showDeviceInfoDialog(deviceInfo: DeviceInfo) {
         val content = DeviceInfoDialogContent(this, deviceInfo)
 
-        MaterialAlertDialogBuilder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.device_info_dialog_title)
             .setView(content.view)
+            .setNeutralButton(android.R.string.copy, null)
             .setPositiveButton(R.string.close, null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                val clipboard = getSystemService(ClipboardManager::class.java)
+                val label = getString(R.string.device_info_dialog_title)
+                clipboard.setPrimaryClip(ClipData.newPlainText(label, deviceInfo.dump()))
+            }
+        }
+
+        dialog.show()
     }
 
     private fun listCredentials() {
