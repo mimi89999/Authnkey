@@ -213,4 +213,8 @@
     <string name="credential_detail_username">Nazwa użytkownika</string>
     <string name="no">Nie</string>
     <string name="app_name">Authnkey</string>
+    <string name="error_enumerate_credentials">Nie udało się wczytać poświadczeń dla %1$s: %2$s</string>
+    <string name="credential_progress_title">Odczytywanie poświadczeń</string>
+    <string name="credential_progress_rp_count">Witryna %1$d z %2$d</string>
+    <string name="credential_progress_hold_key">Trzymaj klucz bezpieczeństwa przyłożony do tyłu telefonu.</string>
 </resources>
