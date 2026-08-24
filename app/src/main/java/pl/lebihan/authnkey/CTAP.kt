@@ -110,7 +110,7 @@ data class DeviceInfo(
     val pinUvAuthProtocols: List<Int> = emptyList(),
     val maxCredentialCountInList: Int? = null,
     val maxCredentialIdLength: Int? = null,
-    val transports: List<String> = emptyList(),
+    val transports: Set<TransportType> = emptySet(),
     val algorithms: List<AlgorithmInfo> = emptyList(),
     val firmwareVersion: Int? = null,
     val minPinLength: Int? = null,
@@ -310,7 +310,10 @@ object CTAP {
             val pinUvAuthProtocols = parsed.list<Long>(6)?.map { it.toInt() } ?: emptyList()
             val maxCredentialCountInList = parsed.int(7)
             val maxCredentialIdLength = parsed.int(8)
-            val transports = parsed.list<String>(9) ?: emptyList()
+            val transports = parsed.list<Any?>(9).orEmpty()
+                .filterIsInstance<String>()
+                .map(TransportType::of)
+                .toSet()
 
             val algorithms = parsed.mapList(10)?.mapNotNull { alg ->
                 AlgorithmInfo(

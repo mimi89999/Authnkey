@@ -11,7 +11,7 @@ fun DeviceInfo.dump(): String = buildDump {
         options.forEach { (option, supported) -> field(option, supported) }
     }
 
-    list("transports", transports)
+    list("transports", transports.map { it.value })
     list("pinUvAuthProtocols", pinUvAuthProtocols)
 
     section("algorithms") {

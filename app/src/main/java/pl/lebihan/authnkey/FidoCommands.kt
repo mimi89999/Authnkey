@@ -180,27 +180,8 @@ object FidoCommands {
     data class CredentialDescriptor(
         val type: String,
         val id: ByteArray,
-        val transports: Set<Transport> = emptySet(),
+        val transports: Set<TransportType> = emptySet(),
     )
-
-    /**
-     * A WebAuthn AuthenticatorTransport. Not an enum: the spec types these as plain
-     * strings so that values outside the registry can be used without updating every
-     * implementation, and it expects unknown ones to be carried rather than rejected.
-     */
-    @JvmInline
-    value class Transport private constructor(val value: String) {
-        companion object {
-            fun of(raw: String) = Transport(raw.lowercase())
-
-            val USB = of("usb")
-            val NFC = of("nfc")
-            val BLE = of("ble")
-            val SMART_CARD = of("smart-card")
-            val HYBRID = of("hybrid")
-            val INTERNAL = of("internal")
-        }
-    }
 
     data class UserEntity(
         val id: ByteArray,

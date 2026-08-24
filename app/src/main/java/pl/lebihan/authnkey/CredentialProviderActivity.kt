@@ -920,7 +920,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     transports = cred.optJSONArray("transports")?.let { transports ->
                         List(transports.length()) { transports.optString(it) }
                             .filter(String::isNotEmpty)
-                            .map { FidoCommands.Transport.of(it) }
+                            .map(TransportType::of)
                             .toSet()
                     } ?: emptySet(),
                 )
@@ -1045,7 +1045,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 ))
                 // Add transports array based on current transport
                 put("transports", org.json.JSONArray().apply {
-                    put(transport.transportType.webauthnName)
+                    put(transport.transportType.value)
                 })
                 put("authenticatorData", Base64.encodeToString(
                     makeCredResult.authData,
@@ -1108,7 +1108,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     transports = cred.optJSONArray("transports")?.let { transports ->
                         List(transports.length()) { transports.optString(it) }
                             .filter(String::isNotEmpty)
-                            .map { FidoCommands.Transport.of(it) }
+                            .map(TransportType::of)
                             .toSet()
                     } ?: emptySet(),
                 )

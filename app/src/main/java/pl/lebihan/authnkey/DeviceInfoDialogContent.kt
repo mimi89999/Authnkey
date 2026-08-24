@@ -143,7 +143,7 @@ class DeviceInfoDialogContent(
             interfacesChipGroup.visibility = View.GONE
         } else {
             deviceInfo.transports.forEach { transport ->
-                interfacesChipGroup.addView(createChip(transport.uppercase()))
+                interfacesChipGroup.addView(createChip(transport.value.uppercase()))
             }
         }
     }
