@@ -1026,6 +1026,10 @@ class CredentialProviderActivity : AppCompatActivity() {
             extData?.bool("hmac-secret") ?: true // null means it was accepted without explicit confirmation
         } else false
 
+        // Transports the key advertises, including the one currently in use
+        val transports = setOf(transport.transportType) +
+            ctapSession?.deviceInfo?.transports.orEmpty()
+
         // Build response JSON
         val responseJson = JSONObject().apply {
             put("id", Base64.encodeToString(credentialId, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP))
@@ -1043,10 +1047,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     attestationObject,
                     Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
                 ))
-                // Add transports array based on current transport
-                put("transports", org.json.JSONArray().apply {
-                    put(transport.transportType.value)
-                })
+                put("transports", org.json.JSONArray(transports.map { it.value }))
                 put("authenticatorData", Base64.encodeToString(
                     makeCredResult.authData,
                     Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
