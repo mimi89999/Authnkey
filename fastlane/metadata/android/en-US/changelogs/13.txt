@@ -1,0 +1,6 @@
+- Show progress and errors while loading passkeys in credential management
+- Add a button to copy device info to the clipboard
+- Show clearer errors when NFC or USB communication fails
+- Report the transports advertised by the key when creating a passkey
+- Detect when the security key is unplugged
+- Fix sign-in on accounts with many passkeys
