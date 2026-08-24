@@ -213,4 +213,8 @@
     <string name="error_pin_not_supported_for_operation">Ellenőrzés szükséges, de a PIN-kód nem használható ehhez a művelethez</string>
     <string name="hint_nfc_off">Az NFC ki van kapcsolva</string>
     <string name="instruction_no_transport">Nincs használható csatlakozási mód</string>
+    <string name="error_enumerate_credentials"></string>
+    <string name="credential_progress_rp_count"></string>
+    <string name="credential_progress_title"></string>
+    <string name="credential_progress_hold_key"></string>
 </resources>
