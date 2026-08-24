@@ -21,7 +21,7 @@ object FidoCommands {
         userName: String?,
         userDisplayName: String?,
         pubKeyCredParams: List<Pair<String, Int>>,
-        excludeList: List<ByteArray>? = null,
+        excludeList: List<CredentialDescriptor>? = null,
         requireResidentKey: Boolean = true,
         uvMode: UvMode = UvMode.None,
         extensions: Map<String, Any>? = null,
@@ -52,10 +52,10 @@ object FidoCommands {
 
                 if (excludeList != null && excludeList.isNotEmpty()) {
                     5 to array {
-                        for (credId in excludeList) {
+                        for (cred in excludeList) {
                             map {
-                                "type" to "public-key"
-                                "id" to bytes(credId)
+                                "type" to cred.type
+                                "id" to bytes(cred.id)
                             }
                         }
                     }
@@ -87,7 +87,7 @@ object FidoCommands {
     fun buildGetAssertion(
         rpId: String,
         clientDataHash: ByteArray,
-        allowList: List<ByteArray>? = null,
+        allowList: List<CredentialDescriptor>? = null,
         uvMode: UvMode = UvMode.None,
         extensions: CborRaw? = null,
     ): ByteArray {
@@ -98,10 +98,10 @@ object FidoCommands {
 
                 if (allowList != null && allowList.isNotEmpty()) {
                     3 to array {
-                        for (credId in allowList) {
+                        for (cred in allowList) {
                             map {
-                                "type" to "public-key"
-                                "id" to bytes(credId)
+                                "type" to cred.type
+                                "id" to bytes(cred.id)
                             }
                         }
                     }
@@ -173,10 +173,34 @@ object FidoCommands {
         val rawResponse: ByteArray
     )
 
+    /**
+     * A WebAuthn PublicKeyCredentialDescriptor. `transports` is a hint only, and per the
+     * spec may hold values we don't know.
+     */
     data class CredentialDescriptor(
         val type: String,
-        val id: ByteArray
+        val id: ByteArray,
+        val transports: Set<Transport> = emptySet(),
     )
+
+    /**
+     * A WebAuthn AuthenticatorTransport. Not an enum: the spec types these as plain
+     * strings so that values outside the registry can be used without updating every
+     * implementation, and it expects unknown ones to be carried rather than rejected.
+     */
+    @JvmInline
+    value class Transport private constructor(val value: String) {
+        companion object {
+            fun of(raw: String) = Transport(raw.lowercase())
+
+            val USB = of("usb")
+            val NFC = of("nfc")
+            val BLE = of("ble")
+            val SMART_CARD = of("smart-card")
+            val HYBRID = of("hybrid")
+            val INTERNAL = of("internal")
+        }
+    }
 
     data class UserEntity(
         val id: ByteArray,
