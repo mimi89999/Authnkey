@@ -1214,11 +1214,22 @@ class CredentialProviderActivity : AppCompatActivity() {
             )
         }
 
+        val maxCredentialCountInList =
+            ctapSession?.deviceInfo?.maxCredentialCountInList ?: Int.MAX_VALUE
+
+        val effectiveAllowList = if (allowList.size > maxCredentialCountInList) {
+            allowList.filterNot { cred ->
+                TransportType.INTERNAL in cred.transports &&
+                        TransportType.USB !in cred.transports &&
+                        TransportType.NFC !in cred.transports
+            }.ifEmpty { allowList }
+        } else allowList
+
         // Build and send command
         val command = FidoCommands.buildGetAssertion(
             rpId = rpId,
             clientDataHash = clientData.hash,
-            allowList = allowList.ifEmpty { null },
+            allowList = effectiveAllowList.ifEmpty { null },
             uvMode = fidoUvMode,
             extensions = hmacSecretExtensions,
         )
@@ -1256,9 +1267,9 @@ class CredentialProviderActivity : AppCompatActivity() {
             firstAssertion
         }
 
-        // Get credential ID from response or allowList
+        // Get credential ID from response or effectiveAllowList
         val credentialId = selectedAssertion.credential?.id
-            ?: if (allowList.isNotEmpty()) allowList[0].id else ByteArray(0)
+            ?: if (effectiveAllowList.isNotEmpty()) effectiveAllowList[0].id else ByteArray(0)
 
         // Parse PRF results from authenticator data extensions
         var prfResults: JSONObject? = null
