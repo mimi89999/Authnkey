@@ -62,6 +62,7 @@
     <string name="error_generic">Erreur : %1$s</string>
     <string name="error_generic_with_trace">Erreur : %1$s\n\n%2$s</string>
     <string name="error_metadata">Erreur lors de la récupération des métadonnées : %1$s</string>
+    <string name="error_enumerate_credentials">Échec du chargement des identifiants pour %1$s : %2$s</string>
     <string name="error_pins_dont_match">Les nouveaux codes PIN ne correspondent pas</string>
     <string name="error_uv_required_no_pin">Vérification requise mais aucun code PIN n\'est défini sur votre clé de sécurité</string>
     <string name="error_pin_not_supported_for_operation">Une vérification est requise, mais le code PIN ne peut pas être utilisé pour cette opération</string>
@@ -124,6 +125,9 @@
     <string name="getting_metadata">Obtention des métadonnées d\'identifiants…</string>
     <string name="enumerating_rps">Énumération des tiers de confiance…</string>
     <string name="loading_credentials_for">Chargement des identifiants pour %1$s…</string>
+    <string name="credential_progress_title">Lecture des identifiants</string>
+    <string name="credential_progress_rp_count">Site %1$d sur %2$d</string>
+    <string name="credential_progress_hold_key">Maintenez votre clé de sécurité contre l\'arrière de votre téléphone.</string>
     <string name="checking_pin_status">Vérification de l\'état du code PIN…</string>
     <string name="pin_retries_status">Tentatives de code PIN restantes : %1$d</string>
     <string name="change_pin_title">Modifier le code PIN</string>
