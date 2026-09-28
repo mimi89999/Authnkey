@@ -936,7 +936,14 @@ class CredentialProviderActivity : AppCompatActivity() {
         // Parse extensions
         val extensions = requestJson.optJSONObject("extensions")
         val credPropsRequested = extensions?.optBoolean("credProps", false) ?: false
-        val prfRequested = extensions?.has("prf") == true
+        val prfPresent = extensions?.has("prf") == true
+        val prfAlreadyHashedPresent = extensions?.has("prfAlreadyHashed") == true
+
+        if (prfPresent && prfAlreadyHashedPresent) {
+            throw IllegalArgumentException("Both prf and prfAlreadyHashed extensions are present")
+        }
+
+        val prfRequested = prfPresent || prfAlreadyHashedPresent
 
         // Check if authenticator supports hmac-secret (CTAP2 backing for PRF)
         val authenticatorSupportsHmacSecret = ctapSession?.deviceInfo?.extensions?.contains("hmac-secret") == true
@@ -1116,10 +1123,20 @@ class CredentialProviderActivity : AppCompatActivity() {
             }
         } else emptyList()
 
-        // Parse PRF extension
+        // Parse PRF extension.
+        // Android hybrid/cross-device requests use the synthetic
+        // "prfAlreadyHashed" extension. Its values are already the 32-byte
+        // CTAP2 hmac-secret salts and must not be hashed again.
         val extensions = requestJson.optJSONObject("extensions")
         val prfExtension = extensions?.optJSONObject("prf")
-        val prfEval = prfExtension?.optJSONObject("eval")
+        val prfAlreadyHashedExtension = extensions?.optJSONObject("prfAlreadyHashed")
+
+        if (prfExtension != null && prfAlreadyHashedExtension != null) {
+            throw IllegalArgumentException("Both prf and prfAlreadyHashed extensions are present")
+        }
+
+        val prfInputsAlreadyHashed = prfAlreadyHashedExtension != null
+        val prfEval = (prfExtension ?: prfAlreadyHashedExtension)?.optJSONObject("eval")
         val authenticatorSupportsHmacSecret = ctapSession?.deviceInfo?.extensions?.contains("hmac-secret") == true
         val prfRequested = prfEval != null && authenticatorSupportsHmacSecret
 
@@ -1144,30 +1161,36 @@ class CredentialProviderActivity : AppCompatActivity() {
             }
             val prfState = prfKeyAgreement
 
-            // Extract and convert PRF salts to hmac-secret salts
-            // PRF salt → hmac-secret salt: SHA-256("WebAuthn PRF" || 0x00 || salt)
+            // Convert PRF inputs to CTAP2 hmac-secret salts.
+            // Normal WebAuthn PRF inputs require the WebAuthn prefix/hash.
+            // prfAlreadyHashed inputs have already undergone that transform.
             val sha256 = MessageDigest.getInstance("SHA-256")
             val prfPrefix = "WebAuthn PRF".toByteArray(Charsets.UTF_8)
 
-            val firstSaltRaw = Base64.decode(
-                prfEval.getString("first"),
-                Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
-            )
-            sha256.reset()
-            sha256.update(prfPrefix)
-            sha256.update(0x00.toByte())
-            val salt1 = sha256.digest(firstSaltRaw)
-
-            var salt2: ByteArray? = null
-            if (prfEval.has("second")) {
-                val secondSaltRaw = Base64.decode(
-                    prfEval.getString("second"),
+            fun toHmacSecretSalt(encodedInput: String): ByteArray {
+                val raw = Base64.decode(
+                    encodedInput,
                     Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
                 )
+
+                if (prfInputsAlreadyHashed) {
+                    require(raw.size == 32) {
+                        "prfAlreadyHashed input must be exactly 32 bytes"
+                    }
+                    return raw
+                }
+
                 sha256.reset()
                 sha256.update(prfPrefix)
                 sha256.update(0x00.toByte())
-                salt2 = sha256.digest(secondSaltRaw)
+                return sha256.digest(raw)
+            }
+
+            val salt1 = toHmacSecretSalt(prfEval.getString("first"))
+
+            var salt2: ByteArray? = null
+            if (prfEval.has("second")) {
+                salt2 = toHmacSecretSalt(prfEval.getString("second"))
                 prfHasTwoSalts = true
             }
 
