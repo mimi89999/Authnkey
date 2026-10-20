@@ -213,4 +213,8 @@
     <string name="instruction_usb_permission_denied_no_nfc">USB-tilladelse nægtet. Prøv igen.</string>
     <string name="hint_nfc_off">NFC er slukket</string>
     <string name="action_turn_on_nfc">Tænd</string>
+    <string name="error_enumerate_credentials"></string>
+    <string name="credential_progress_rp_count"></string>
+    <string name="credential_progress_title"></string>
+    <string name="credential_progress_hold_key"></string>
 </resources>

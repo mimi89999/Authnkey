@@ -28,7 +28,7 @@
     <string name="pin_too_short">ПИН-код должен быть не менее %1$d символов</string>
     <string name="pin_retries_remaining">Введите ПИН-код (осталось %1$d попыток)</string>
     <string name="error_format">%1$s\n\nПовторите попытку или отмените</string>
-    <string name="error_retry_format">%1$s\n\nПопробуй ещё раз</string>
+    <string name="error_retry_format">%1$s\n\nПопробуйте ещё раз</string>
     <string name="error_user_cancelled">Прервано пользователем</string>
     <string name="error_no_request">Не найдено правильного запроса</string>
     <string name="error_generic">Ошибка: %1$s</string>
@@ -213,4 +213,8 @@
     <string name="action_turn_on_nfc">Включить</string>
     <string name="hint_nfc_off">NFC выключен</string>
     <string name="instruction_no_transport">Нет доступного способа подключения</string>
+    <string name="error_enumerate_credentials">Не удалось загрузить учетные данные для %1$s: %2$s</string>
+    <string name="credential_progress_rp_count"/>
+    <string name="credential_progress_title"/>
+    <string name="credential_progress_hold_key"/>
 </resources>
