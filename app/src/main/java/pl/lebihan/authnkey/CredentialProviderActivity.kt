@@ -1121,14 +1121,14 @@ class CredentialProviderActivity : AppCompatActivity() {
         val prfExtension = extensions?.optJSONObject("prf")
         val prfEval = prfExtension?.optJSONObject("eval")
         val authenticatorSupportsHmacSecret = ctapSession?.deviceInfo?.extensions?.contains("hmac-secret") == true
-        val prfRequested = prfEval != null && authenticatorSupportsHmacSecret
+        val prfRequested = prfEval != null
 
         // Prepare hmac-secret extension for getAssertion if PRF is requested
         var hmacSecretExtensions: CborRaw? = null
         var prfHasTwoSalts = false
         var prfKeyAgreement: PinProtocol.Initialized? = null
 
-        if (prfRequested) {
+        if (prfRequested && authenticatorSupportsHmacSecret) {
             // Get Initialized state: from Authenticated if available, or fresh key agreement
             val initState = (uvMode as? UvMode.WithToken)?.authToken?.keyAgreement
             prfKeyAgreement = if (initState != null) {
