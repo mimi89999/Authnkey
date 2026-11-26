@@ -751,6 +751,9 @@ class CredentialProviderActivity : AppCompatActivity() {
                         keyAgreement.requestPinToken(pin)
                     }
                 }.getOrElse { e ->
+                    if (e is CTAP.Exception) {
+                        pendingPin = null
+                    }
                     if (e is CTAP.Exception && e.error == CTAP.Error.PIN_INVALID) {
                         val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrThrow()
                         if (retries > 0) {
