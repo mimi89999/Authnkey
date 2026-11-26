@@ -196,6 +196,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        dismissBiometricDialog()
+        dismissCredentialProgress()
+        reconnectDialog?.dismiss()
+        reconnectDialog = null
+        credentialsDialog?.dismiss()
+        credentialsDialog = null
         super.onDestroy()
         try {
             unregisterReceiver(usbPermissionReceiver)
