@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     private var credentialProgress: CredentialProgressDialog? = null
 
     // On-device UV state for credential listing flow
-    private var credListDeviceSupportsUv: Boolean = false
+    private var credListCanUseUv: Boolean = false
     private var credListDeviceHasPin: Boolean = false
     private var biometricDialog: AlertDialog? = null
 
@@ -628,20 +628,20 @@ class MainActivity : AppCompatActivity() {
 
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
                 val deviceHasPin = deviceInfo.clientPinSet
-                val deviceSupportsUv = deviceInfo.supportsBuiltInUv
+                val canListWithUv = deviceInfo.supportsBuiltInUv && deviceInfo.supportsPinUvAuthToken
 
-                credListDeviceSupportsUv = deviceSupportsUv
+                credListCanUseUv = canListWithUv
                 credListDeviceHasPin = deviceHasPin
 
                 pendingAction = null
 
                 when {
                     // Device supports UV but no PIN set -> go straight to UV
-                    deviceSupportsUv && !deviceHasPin -> {
+                    canListWithUv && !deviceHasPin -> {
                         authenticateWithUvAndListCredentials(deviceInfo.usePreviewCommand)
                     }
                     // Device supports both UV and PIN -> show PIN dialog with biometric option
-                    deviceSupportsUv && deviceHasPin -> {
+                    canListWithUv && deviceHasPin -> {
                         val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrElse { e ->
                             if (e is java.io.IOException) throw e
                             resultText.text = e.toUserMessage(this@MainActivity)
@@ -1031,7 +1031,7 @@ class MainActivity : AppCompatActivity() {
                                     showPinDialogForCredentialsFallback(
                                         usePreviewCommand,
                                         getString(R.string.error_operation_denied),
-                                        showBiometric = credListDeviceSupportsUv
+                                        showBiometric = credListCanUseUv
                                     )
                                 } else {
                                     resultText.text = getString(R.string.error_operation_denied)
@@ -1042,7 +1042,7 @@ class MainActivity : AppCompatActivity() {
                             CTAP.Error.INVALID_SUBCOMMAND,
                             CTAP.Error.INVALID_COMMAND,
                             CTAP.Error.INVALID_PARAMETER -> {
-                                credListDeviceSupportsUv = false
+                                credListCanUseUv = false
                                 fallbackToPinAfterUvFailureForCredentials(usePreviewCommand)
                                 return@launch
                             }
