@@ -200,7 +200,7 @@ class CredentialBottomSheet : BottomSheetDialogFragment() {
             State.WAITING, State.TOUCH, State.BIOMETRIC -> startPulse()
             State.TAG_LOST -> {
                 iconBackground.backgroundTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.warning_container)
+                    ContextCompat.getColor(iconBackground.context, R.color.warning_container)
                 )
                 startPulse(750)
             }
