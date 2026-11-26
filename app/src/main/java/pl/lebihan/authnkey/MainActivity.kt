@@ -352,6 +352,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
+                ensureActive()
                 statusText.text = getString(R.string.nfc_error, e.toUserMessage(this@MainActivity))
                 updateConnectionStatus()
             }
@@ -450,6 +451,7 @@ class MainActivity : AppCompatActivity() {
                 statusText.text = getString(R.string.security_key_detected)
 
             } catch (e: Exception) {
+                ensureActive()
                 statusText.text = getString(R.string.usb_error, e.toUserMessage(this@MainActivity))
                 updateConnectionStatus()
             } finally {
@@ -563,6 +565,7 @@ class MainActivity : AppCompatActivity() {
                 pendingAction = null
 
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
@@ -671,6 +674,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
@@ -801,6 +805,7 @@ class MainActivity : AppCompatActivity() {
                 enumerateAndShowCredentials(authToken, usePreviewCommand)
 
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
@@ -1053,6 +1058,7 @@ class MainActivity : AppCompatActivity() {
                 enumerateAndShowCredentials(authToken, usePreviewCommand)
 
             } catch (e: Exception) {
+                ensureActive()
                 dismissBiometricDialog()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
@@ -1087,6 +1093,7 @@ class MainActivity : AppCompatActivity() {
                     showPinDialogForCredentials(retries, usePreviewCommand)
                 }
             } catch (e: Exception) {
+                ensureActive()
                 resultText.text = e.toUserMessage(this@MainActivity)
                 pendingAction = null
             }
@@ -1142,6 +1149,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
@@ -1305,6 +1313,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
@@ -1359,6 +1368,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     showNfcReconnectDialog()
                 } else {
@@ -1431,6 +1441,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 )
             } catch (e: Exception) {
+                ensureActive()
                 if (isNfcDisconnected()) {
                     credentialsDialog?.dismiss()
                     showNfcReconnectDialog()

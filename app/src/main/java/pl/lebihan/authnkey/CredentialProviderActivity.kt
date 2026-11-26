@@ -568,6 +568,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 processRequest()
 
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "NFC error", e)
                 showProgress(false)
                 if (e is android.nfc.TagLostException) {
@@ -607,6 +608,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 processRequest()
 
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "USB error", e)
                 setInstruction(getString(R.string.error_retry_format, e.toUserMessage(this@CredentialProviderActivity)))
                 setState(CredentialBottomSheet.State.ERROR)
@@ -672,6 +674,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "Error processing request", e)
                 handleError(e)
             }
@@ -699,6 +702,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     handleError(e)
                 }
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "Execute error", e)
                 handleError(e)
             }
@@ -772,6 +776,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 executeRequest(requestJson, UvMode.WithToken(authToken))
 
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "Authentication error", e)
                 handleError(e)
             }
@@ -795,6 +800,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 executeRequest(requestJson, UvMode.BuiltIn)
 
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "Built-in UV error", e)
                 handleError(e)
             }
@@ -897,6 +903,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 executeRequest(requestJson, UvMode.WithToken(authToken))
 
             } catch (e: Exception) {
+                ensureActive()
                 Log.e(TAG, "UV authentication error", e)
                 handleError(e)
             }
@@ -1497,6 +1504,8 @@ class CredentialProviderActivity : AppCompatActivity() {
             )
             setResult(RESULT_CANCELED, resultData)
         }
+        // The sheet goes away before onDestroy, so stop running operations now
+        scope.cancel()
         finish()
     }
 
