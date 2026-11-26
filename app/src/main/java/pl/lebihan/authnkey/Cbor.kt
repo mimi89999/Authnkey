@@ -100,6 +100,10 @@ private fun encodeValue(value: Any?): List<Byte> = when (value) {
         val items = value.map { encodeValue(it) }
         encodeHeader(4, items.size) + items.flatten()
     }
+    is Map<*, *> -> {
+        val entries = value.map { (k, v) -> encodeValue(k) to encodeValue(v) }
+        encodeHeader(5, entries.size) + sortCanonical(entries).flatMap { (k, v) -> k + v }
+    }
     else -> throw IllegalArgumentException("Unsupported: ${value::class}")
 }
 
