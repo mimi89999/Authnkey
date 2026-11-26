@@ -4,6 +4,7 @@ import java.math.BigInteger
 import java.security.*
 import java.security.interfaces.ECPublicKey
 import java.security.spec.*
+import java.text.Normalizer
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.Mac
@@ -130,7 +131,7 @@ class PinProtocol(private val transport: FidoTransport) {
         suspend fun requestPinToken(pin: String): Result<Authenticated> {
             return try {
                 val sha256 = MessageDigest.getInstance("SHA-256")
-                val pinHash = sha256.digest(pin.toByteArray(Charsets.UTF_8))
+                val pinHash = sha256.digest(encodePin(pin))
                 val pinHashLeft16 = pinHash.copyOf(16)
 
                 val encryptedPinHash = aesEncrypt(sharedSecret, pinHashLeft16)
@@ -158,7 +159,7 @@ class PinProtocol(private val transport: FidoTransport) {
         ): Result<Authenticated> {
             return try {
                 val sha256 = MessageDigest.getInstance("SHA-256")
-                val pinHash = sha256.digest(pin.toByteArray(Charsets.UTF_8))
+                val pinHash = sha256.digest(encodePin(pin))
                 val pinHashLeft16 = pinHash.copyOf(16)
 
                 val encryptedPinHash = aesEncrypt(sharedSecret, pinHashLeft16)
@@ -231,7 +232,7 @@ class PinProtocol(private val transport: FidoTransport) {
 
         suspend fun setPin(newPin: String): Result<Unit> {
             try {
-                val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
+                val newPinBytes = encodePin(newPin)
                 if (newPinBytes.size > 63) {
                     return Result.failure(PinSetError.PinTooLong())
                 }
@@ -273,10 +274,10 @@ class PinProtocol(private val transport: FidoTransport) {
             try {
                 val sha256 = MessageDigest.getInstance("SHA-256")
 
-                val currentPinHash = sha256.digest(currentPin.toByteArray(Charsets.UTF_8))
+                val currentPinHash = sha256.digest(encodePin(currentPin))
                 val currentPinHashLeft16 = currentPinHash.copyOf(16)
 
-                val newPinBytes = newPin.toByteArray(Charsets.UTF_8)
+                val newPinBytes = encodePin(newPin)
                 if (newPinBytes.size > 63) {
                     return Result.failure(PinChangeError.PinTooLong())
                 }
@@ -565,6 +566,10 @@ class PinProtocol(private val transport: FidoTransport) {
         val keyFactory = KeyFactory.getInstance("EC")
         return keyFactory.generatePublic(pubKeySpec) as ECPublicKey
     }
+
+    /** CTAP requires PINs as the UTF-8 encoding of their Unicode Normalization Form C. */
+    private fun encodePin(pin: String): ByteArray =
+        Normalizer.normalize(pin, Normalizer.Form.NFC).toByteArray(Charsets.UTF_8)
 
     private fun bigIntegerToBytes(value: BigInteger, length: Int): ByteArray {
         val bytes = value.toByteArray()
