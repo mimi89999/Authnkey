@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 
@@ -27,13 +28,19 @@ class CredentialsAdapter(
     private val onDeleteClick: (CredentialItem) -> Unit
 ) : RecyclerView.Adapter<CredentialsAdapter.ViewHolder>() {
 
+    private val allCredentials = credentials.toMutableList()
     private val credentials = credentials.toMutableList()
     private var expandedPosition: Int = RecyclerView.NO_POSITION
 
-    val count: Int get() = credentials.size
+    /** Number of credentials, ignoring the search filter. */
+    val count: Int get() = allCredentials.size
+
+    /** Number of credentials matching the search filter. */
+    val visibleCount: Int get() = credentials.size
 
     companion object {
         private val STRIP_PREFIXES = listOf("www.", "m.", "login.", "accounts.", "account.", "auth.")
+        private val WHITESPACE = Regex("\\s+")
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -137,7 +144,42 @@ class CredentialsAdapter(
 
     override fun getItemCount() = credentials.size
 
+    /**
+     * Shows only the credentials matching [query].
+     *
+     * The query is split on whitespace and every term has to appear, ignoring case, in the rpId, the
+     * user name or the display name. Display names are not reliable (some RPs leave them out or prefix
+     * them), so all three fields are searched, and "github john" finds john@example.com on github.com.
+     */
+    fun setQuery(query: String) {
+        val terms = query.split(WHITESPACE).filter { it.isNotEmpty() }
+        val oldList = credentials.toList()
+        val newList = allCredentials.filter { item ->
+            val fields = listOfNotNull(item.rpId, item.credential.userName, item.credential.userDisplayName)
+            terms.all { term -> fields.any { it.contains(term, ignoreCase = true) } }
+        }
+
+        // Items are shared with allCredentials and never change, so identity is enough.
+        // Filtering keeps the order, so there are no moves to detect.
+        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = oldList.size
+            override fun getNewListSize() = newList.size
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) = oldList[oldPos] === newList[newPos]
+            override fun areContentsTheSame(oldPos: Int, newPos: Int) = true
+        }, false)
+
+        val expandedItem = credentials.getOrNull(expandedPosition)
+        credentials.clear()
+        credentials.addAll(newList)
+        // indexOf gives -1 (NO_POSITION) when the expanded credential got filtered out
+        expandedPosition = expandedItem?.let(credentials::indexOf) ?: RecyclerView.NO_POSITION
+
+        diff.dispatchUpdatesTo(this)
+    }
+
     fun removeItem(item: CredentialItem) {
+        allCredentials.remove(item)
+
         val position = credentials.indexOf(item)
         if (position == -1) return
 

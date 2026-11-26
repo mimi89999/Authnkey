@@ -252,6 +252,8 @@
     <!-- Credentials Dialog -->
     <string name="credentials_dialog_title">Stored Credentials</string>
     <string name="credentials_stats">%1$d credentials • %2$d slots remaining</string>
+    <string name="credentials_search_hint">Search site or account</string>
+    <string name="credentials_search_no_results">No matching credentials</string>
     <string name="credential_detail_display_name">Display name</string>
     <string name="credential_detail_username">Username</string>
     <string name="credential_detail_user_id">User ID</string>
