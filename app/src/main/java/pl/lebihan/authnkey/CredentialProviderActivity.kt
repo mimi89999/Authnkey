@@ -262,12 +262,11 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private fun handlePinEntered(pin: String) {
         if (ctapSession?.isConnected == true) {
-            val json = request.json
             showProgress(true)
             setInstruction(getString(R.string.instruction_verifying))
             setState(CredentialBottomSheet.State.PROCESSING)
             bottomSheet?.showPinInput(false)
-            authenticateAndExecute(pin, json)
+            authenticateAndExecute(pin)
         } else {
             pendingPin = pin
             showConnectPrompt()
@@ -278,14 +277,13 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private fun handleBiometricSelected() {
         if (ctapSession?.isConnected == true) {
-            val json = request.json
             bottomSheet?.showBiometricWaiting()
             setInstruction(getString(R.string.instruction_waiting_biometric))
             showProgress(true)
             if (ctapSession?.deviceInfo?.supportsPinUvAuthToken == true) {
-                authenticateWithUvAndExecute(json)
+                authenticateWithUvAndExecute()
             } else {
-                executeWithBuiltInUv(json)
+                executeWithBuiltInUv()
             }
         } else {
             // Key not connected yet — show waiting state
@@ -327,7 +325,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         bottomSheet?.showPinInput(true)
     }
 
-    private fun showPinDialogWithBiometric(retries: Int, requestJson: JSONObject) {
+    private fun showPinDialogWithBiometric(retries: Int) {
         runOnUiThread {
             showProgress(false)
             bottomSheet?.hideAccounts()
@@ -558,7 +556,6 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun processRequest() {
         scope.launch {
             try {
-                val json = request.json
                 val currentSession = ctapSession ?: throw AuthnkeyError.NotConnected()
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
@@ -574,7 +571,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     // We already have PIN from pre-prompt
                     canUsePinForMcGa && pendingPin != null -> {
                         setInstruction(getString(R.string.instruction_authenticating))
-                        authenticateAndExecute(pendingPin!!, json)
+                        authenticateAndExecute(pendingPin!!)
                     }
                     // Verification needed (required/preferred, or forced by alwaysUv)
                     request.userVerification != UserVerification.DISCOURAGED || alwaysUv -> when {
@@ -583,30 +580,30 @@ class CredentialProviderActivity : AppCompatActivity() {
                             val retries = withContext(Dispatchers.IO) {
                                 protocol.getPinRetries()
                             }.getOrDefault(8)
-                            showPinDialogWithBiometric(retries, json)
+                            showPinDialogWithBiometric(retries)
                         }
                         // Device has usable PIN only -> need to get PIN
                         canUsePinForMcGa -> {
                             val retries = withContext(Dispatchers.IO) {
                                 protocol.getPinRetries()
                             }.getOrDefault(8)
-                            showPinDialog(retries, json)
+                            showPinDialog(retries)
                         }
                         // Device supports built-in UV but PIN not usable
                         // -> go directly to biometric (use token flow if supported, otherwise built-in)
                         deviceSupportsUv -> {
-                            if (supportsPinUvAuthToken) authenticateWithUvAndExecute(json)
-                            else executeWithBuiltInUv(json)
+                            if (supportsPinUvAuthToken) authenticateWithUvAndExecute()
+                            else executeWithBuiltInUv()
                         }
                         // No verification method available
                         request.userVerification == UserVerification.REQUIRED || alwaysUv ->
                             throw if (noMcGaWithClientPin)
                                 AuthnkeyError.PinNotSupportedForOperation()
                             else AuthnkeyError.UserVerificationRequiredNoPin()
-                        else -> tryExecuteWithoutPin(json)
+                        else -> tryExecuteWithoutPin()
                     }
                     // UV discouraged, no alwaysUv -> try without
-                    else -> tryExecuteWithoutPin(json)
+                    else -> tryExecuteWithoutPin()
                 }
 
             } catch (e: Exception) {
@@ -617,10 +614,10 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
-    private fun tryExecuteWithoutPin(json: JSONObject) {
+    private fun tryExecuteWithoutPin() {
         scope.launch {
             try {
-                executeRequest(json, UvMode.None)
+                executeRequest(UvMode.None)
             } catch (e: CTAP.Exception) {
                 // Check if authenticator requires PIN despite UV=discouraged
                 if (e.error == CTAP.Error.PIN_REQUIRED ||
@@ -629,9 +626,9 @@ class CredentialProviderActivity : AppCompatActivity() {
                     val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
                     val retries = withContext(Dispatchers.IO) { protocol.getPinRetries() }.getOrDefault(8)
                     if (deviceSupportsUv) {
-                        showPinDialogWithBiometric(retries, json)
+                        showPinDialogWithBiometric(retries)
                     } else {
-                        showPinDialog(retries, json)
+                        showPinDialog(retries)
                     }
                 } else {
                     Log.e(TAG, "Execute error", e)
@@ -645,7 +642,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
-    private fun showPinDialog(retries: Int, requestJson: JSONObject) {
+    private fun showPinDialog(retries: Int) {
         runOnUiThread {
             showProgress(false)
             bottomSheet?.hideAccounts()
@@ -655,7 +652,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
-    private fun authenticateAndExecute(pin: String, requestJson: JSONObject) {
+    private fun authenticateAndExecute(pin: String) {
         scope.launch {
             try {
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
@@ -703,7 +700,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                executeRequest(requestJson, UvMode.WithToken(authToken))
+                executeRequest(UvMode.WithToken(authToken))
 
             } catch (e: Exception) {
                 ensureActive()
@@ -718,7 +715,7 @@ class CredentialProviderActivity : AppCompatActivity() {
      * Sets the "uv" option in the CTAP command and lets the authenticator handle
      * user verification internally (e.g., on-device fingerprint prompt).
      */
-    private fun executeWithBuiltInUv(requestJson: JSONObject) {
+    private fun executeWithBuiltInUv() {
         scope.launch {
             try {
                 runOnUiThread {
@@ -727,7 +724,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                     showProgress(true)
                 }
 
-                executeRequest(requestJson, UvMode.BuiltIn)
+                executeRequest(UvMode.BuiltIn)
 
             } catch (e: Exception) {
                 ensureActive()
@@ -742,7 +739,7 @@ class CredentialProviderActivity : AppCompatActivity() {
      * Obtains a UV token via the authenticator's built-in verification
      * (e.g., fingerprint) and uses it as a pinUvAuth parameter.
      */
-    private fun authenticateWithUvAndExecute(requestJson: JSONObject) {
+    private fun authenticateWithUvAndExecute() {
         scope.launch {
             try {
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
@@ -782,13 +779,13 @@ class CredentialProviderActivity : AppCompatActivity() {
                                     }
                                 } else {
                                     // UV exhausted, fall back to PIN
-                                    fallbackToPinAfterUvFailure(requestJson)
+                                    fallbackToPinAfterUvFailure()
                                 }
                                 return@launch
                             }
                             CTAP.Error.UV_BLOCKED -> {
                                 Log.d(TAG, "UV_BLOCKED: falling back to PIN")
-                                fallbackToPinAfterUvFailure(requestJson)
+                                fallbackToPinAfterUvFailure()
                                 return@launch
                             }
                             CTAP.Error.INVALID_SUBCOMMAND,
@@ -798,7 +795,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                                 // fall back to PIN silently
                                 Log.d(TAG, "UV subcommand not supported, falling back to PIN")
                                 deviceSupportsUv = false
-                                fallbackToPinAfterUvFailure(requestJson)
+                                fallbackToPinAfterUvFailure()
                                 return@launch
                             }
                             CTAP.Error.OPERATION_DENIED -> {
@@ -821,7 +818,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                 }
 
                 // UV succeeded — proceed with the request
-                executeRequest(requestJson, UvMode.WithToken(authToken))
+                executeRequest(UvMode.WithToken(authToken))
 
             } catch (e: Exception) {
                 ensureActive()
@@ -831,7 +828,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun fallbackToPinAfterUvFailure(requestJson: JSONObject) {
+    private suspend fun fallbackToPinAfterUvFailure() {
         val deviceHasPin = ctapSession?.deviceInfo?.clientPinSet == true
         if (deviceHasPin) {
             val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
@@ -848,46 +845,45 @@ class CredentialProviderActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun executeRequest(requestJson: JSONObject, uvMode: UvMode) {
+    private suspend fun executeRequest(uvMode: UvMode) {
         val transport = ctapSession?.transport ?: throw AuthnkeyError.NotConnected()
 
         when (request) {
-            is PasskeyRequest.Create -> executeCreateCredential(transport, requestJson, uvMode)
-            is PasskeyRequest.Get -> executeGetAssertion(transport, requestJson, uvMode)
+            is PasskeyRequest.Create -> executeCreateCredential(transport, uvMode)
+            is PasskeyRequest.Get -> executeGetAssertion(transport, uvMode)
         }
     }
 
     private suspend fun executeCreateCredential(
         transport: FidoTransport,
-        requestJson: JSONObject,
         uvMode: UvMode
     ) {
         setInstruction(getString(R.string.instruction_creating))
 
         // Parse request
-        val rp = requestJson.getJSONObject("rp")
+        val rp = request.json.getJSONObject("rp")
         val rpId = rp.getString("id")
         val rpName = rp.optString("name", rpId)
 
-        val user = requestJson.getJSONObject("user")
+        val user = request.json.getJSONObject("user")
         val userId = Base64.decode(user.getString("id"), Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
         val userName = user.optString("name", "")
         val userDisplayName = user.optString("displayName", userName)
 
         val challenge = Base64.decode(
-            requestJson.getString("challenge"),
+            request.json.getString("challenge"),
             Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
         )
 
-        val paramsArray = requestJson.getJSONArray("pubKeyCredParams")
+        val paramsArray = request.json.getJSONArray("pubKeyCredParams")
         val pubKeyCredParams = List(paramsArray.length()) { i ->
             val param = paramsArray.getJSONObject(i)
             Pair(param.getString("type"), param.getInt("alg"))
         }
 
         // Parse excludeCredentials if present
-        val excludeList = if (requestJson.has("excludeCredentials")) {
-            val excludeArray = requestJson.getJSONArray("excludeCredentials")
+        val excludeList = if (request.json.has("excludeCredentials")) {
+            val excludeArray = request.json.getJSONArray("excludeCredentials")
             List(excludeArray.length()) { i ->
                 val cred = excludeArray.getJSONObject(i)
                 FidoCommands.CredentialDescriptor(
@@ -907,13 +903,13 @@ class CredentialProviderActivity : AppCompatActivity() {
         } else emptyList()
 
         // Parse authenticatorSelection for residentKey requirement
-        val authSelection = requestJson.optJSONObject("authenticatorSelection")
+        val authSelection = request.json.optJSONObject("authenticatorSelection")
         val residentKey = ResidentKeyRequirement.fromString(
             authSelection?.optString("residentKey", "preferred")
         )
 
         // Parse extensions
-        val extensions = requestJson.optJSONObject("extensions")
+        val extensions = request.json.optJSONObject("extensions")
         val credPropsRequested = extensions?.optBoolean("credProps", false) ?: false
         val prfRequested = extensions?.prfInput() != null
 
@@ -934,7 +930,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             } else {
                 val json = JSONObject().apply {
                     put("type", "webauthn.create")
-                    put("challenge", requestJson.getString("challenge"))
+                    put("challenge", request.json.getString("challenge"))
                     put("origin", origin)
                     put("crossOrigin", false)
                 }.toString().replace("\\/", "/") // Android JSONObject escapes slashes
@@ -1062,21 +1058,20 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private suspend fun executeGetAssertion(
         transport: FidoTransport,
-        requestJson: JSONObject,
         uvMode: UvMode
     ) {
         setInstruction(getString(R.string.instruction_signing_in))
 
         // Parse request
-        val rpId = requestJson.getString("rpId")
+        val rpId = request.json.getString("rpId")
         val challenge = Base64.decode(
-            requestJson.getString("challenge"),
+            request.json.getString("challenge"),
             Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
         )
 
         // Parse allowCredentials if present
-        val allowList = if (requestJson.has("allowCredentials")) {
-            val allowArray = requestJson.getJSONArray("allowCredentials")
+        val allowList = if (request.json.has("allowCredentials")) {
+            val allowArray = request.json.getJSONArray("allowCredentials")
             List(allowArray.length()) { i ->
                 val cred = allowArray.getJSONObject(i)
                 FidoCommands.CredentialDescriptor(
@@ -1096,7 +1091,7 @@ class CredentialProviderActivity : AppCompatActivity() {
         } else emptyList()
 
         // Parse PRF extension
-        val extensions = requestJson.optJSONObject("extensions")
+        val extensions = request.json.optJSONObject("extensions")
         val prfInput = extensions?.prfInput()
         val authenticatorSupportsHmacSecret = ctapSession?.deviceInfo?.extensions?.contains("hmac-secret") == true
         val prfRequested = prfInput?.hasEval == true
@@ -1150,7 +1145,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             } else {
                 val json = JSONObject().apply {
                     put("type", "webauthn.get")
-                    put("challenge", requestJson.getString("challenge"))
+                    put("challenge", request.json.getString("challenge"))
                     put("origin", origin)
                     put("crossOrigin", false)
                 }.toString().replace("\\/", "/") // Android JSONObject escapes slashes
