@@ -245,6 +245,8 @@
     <!-- Credentials Dialog -->
     <string name="credentials_dialog_title">Identifiants stockés</string>
     <string name="credentials_stats">%1$d identifiants • %2$d emplacements restants</string>
+    <string name="credentials_search_hint">Rechercher un site ou un compte</string>
+    <string name="credentials_search_no_results">Aucun identifiant correspondant</string>
     <string name="credential_detail_display_name">Nom d\'affichage</string>
     <string name="credential_detail_username">Nom d\'utilisateur</string>
     <string name="credential_detail_user_id">ID utilisateur</string>
