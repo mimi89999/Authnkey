@@ -117,6 +117,9 @@ class CredentialProviderActivity : AppCompatActivity() {
         require(prf == null || prfAlreadyHashed == null) {
             "Both prf and prfAlreadyHashed extensions are present"
         }
+        require(prfAlreadyHashed == null || isCallerHybridClient()) {
+            "prfAlreadyHashed is only accepted from hybrid clients"
+        }
         return when {
             prf != null -> PrfInput.Prf(prf)
             prfAlreadyHashed != null -> PrfInput.AlreadyHashed(prfAlreadyHashed)
@@ -1393,6 +1396,16 @@ class CredentialProviderActivity : AppCompatActivity() {
         scope.cancel()
         finish()
     }
+
+    /**
+     * Whether the caller is a known hybrid client.
+     *
+     * Only the package name is checked. On devices with Google Play services, the package
+     * can only be Play services itself. On devices without it, the package may belong to an
+     * alternative implementation.
+     */
+    private fun isCallerHybridClient(): Boolean =
+        request.callingAppInfo.packageName == "com.google.android.gms"
 
     /**
      * Compute the origin for clientDataJSON.
