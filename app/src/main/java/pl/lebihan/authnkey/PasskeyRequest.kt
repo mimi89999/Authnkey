@@ -6,8 +6,8 @@ import androidx.credentials.CreatePublicKeyCredentialResponse
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.GetPublicKeyCredentialOption
 import androidx.credentials.PublicKeyCredential
-import androidx.credentials.exceptions.CreateCredentialUnknownException
-import androidx.credentials.exceptions.GetCredentialUnknownException
+import androidx.credentials.exceptions.CreateCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.provider.CallingAppInfo
 import androidx.credentials.provider.PendingIntentHandler
 import androidx.credentials.provider.ProviderCreateCredentialRequest
@@ -47,7 +47,7 @@ internal sealed class PasskeyRequest(
         }
 
         override fun cancelledResult() = Intent().also {
-            PendingIntentHandler.setCreateCredentialException(it, CreateCredentialUnknownException("User cancelled"))
+            PendingIntentHandler.setCreateCredentialException(it, CreateCredentialCancellationException("User cancelled"))
         }
     }
 
@@ -65,7 +65,7 @@ internal sealed class PasskeyRequest(
         }
 
         override fun cancelledResult() = Intent().also {
-            PendingIntentHandler.setGetCredentialException(it, GetCredentialUnknownException("User cancelled"))
+            PendingIntentHandler.setGetCredentialException(it, GetCredentialCancellationException("User cancelled"))
         }
 
         /** Discoverable credential requests come without allowCredentials. */
