@@ -18,17 +18,7 @@ import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.credentials.CreatePublicKeyCredentialRequest
-import androidx.credentials.CreatePublicKeyCredentialResponse
-import androidx.credentials.GetCredentialResponse
-import androidx.credentials.GetPublicKeyCredentialOption
-import androidx.credentials.PublicKeyCredential
-import androidx.credentials.exceptions.CreateCredentialUnknownException
-import androidx.credentials.exceptions.GetCredentialUnknownException
-import androidx.credentials.provider.CallingAppInfo
 import androidx.credentials.provider.PendingIntentHandler
-import androidx.credentials.provider.ProviderCreateCredentialRequest
-import androidx.credentials.provider.ProviderGetCredentialRequest
 import kotlinx.coroutines.*
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
@@ -58,33 +48,13 @@ class CredentialProviderActivity : AppCompatActivity() {
     private var ctapSession: CtapSession? = null
     private var pinProtocol: PinProtocol? = null
 
-    private var createRequest: ProviderCreateCredentialRequest? = null
-    private var getRequest: ProviderGetCredentialRequest? = null
-    private var callingAppInfo: CallingAppInfo? = null
-    private var requestJson: String? = null
-    private var providedClientDataHash: ByteArray? = null
-    private var isCreateRequest: Boolean = false
+    private lateinit var request: PasskeyRequest
     private var pendingPin: String? = null  // PIN entered before key connection
-    private var userVerification: UserVerification = UserVerification.PREFERRED
 
     private var deviceSupportsUv: Boolean = false
 
     private var usbPermissionRequested = false
     private val connectMutex = Mutex()
-
-    private enum class UserVerification {
-        REQUIRED,
-        PREFERRED,
-        DISCOURAGED;
-
-        companion object {
-            fun fromString(value: String?): UserVerification = when (value) {
-                "required" -> REQUIRED
-                "discouraged" -> DISCOURAGED
-                else -> PREFERRED
-            }
-        }
-    }
 
     private enum class ResidentKeyRequirement {
         REQUIRED,
@@ -231,41 +201,29 @@ class CredentialProviderActivity : AppCompatActivity() {
             registerReceiver(usbPermissionReceiver, filter)
         }
 
-        // Use PendingIntentHandler to retrieve the proper request objects
-        // This is the correct way per Android documentation
-        createRequest = PendingIntentHandler.retrieveProviderCreateCredentialRequest(intent)
-        getRequest = PendingIntentHandler.retrieveProviderGetCredentialRequest(intent)
-
-        when {
-            createRequest != null -> {
-                isCreateRequest = true
-                callingAppInfo = createRequest!!.callingAppInfo
-                val publicKeyRequest = createRequest!!.callingRequest as? CreatePublicKeyCredentialRequest
-                requestJson = publicKeyRequest?.requestJson
-                providedClientDataHash = publicKeyRequest?.clientDataHash
-                showBottomSheet(getString(R.string.create_passkey))
+        val createRequest = PendingIntentHandler.retrieveProviderCreateCredentialRequest(intent)
+        val getRequest = PendingIntentHandler.retrieveProviderGetCredentialRequest(intent)
+        request = try {
+            when {
+                createRequest != null -> PasskeyRequest.from(createRequest)
+                getRequest != null -> PasskeyRequest.from(getRequest)
+                else -> throw IllegalArgumentException("No passkey request in the intent")
             }
-            getRequest != null -> {
-                isCreateRequest = false
-                callingAppInfo = getRequest!!.callingAppInfo
-                val options = getRequest!!.credentialOptions
-                val publicKeyOption = options.firstOrNull { it is GetPublicKeyCredentialOption } as? GetPublicKeyCredentialOption
-                requestJson = publicKeyOption?.requestJson
-                providedClientDataHash = publicKeyOption?.clientDataHash
-                showBottomSheet(getString(R.string.sign_in))
-            }
-            else -> {
-                Log.e(TAG, "No valid request found in intent")
-                cancelOperation()
-                return
-            }
-        }
-
-        if (requestJson == null) {
-            Log.e(TAG, "No request JSON")
-            cancelOperation()
+        } catch (e: Exception) {
+            Log.e(TAG, "Invalid request", e)
+            setResult(RESULT_CANCELED)
+            finish()
             return
         }
+
+        showBottomSheet(
+            getString(
+                when (request) {
+                    is PasskeyRequest.Create -> R.string.create_passkey
+                    is PasskeyRequest.Get -> R.string.sign_in
+                }
+            )
+        )
 
         // Check if PIN is likely required based on userVerification preference
         checkPinRequirement()
@@ -304,7 +262,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private fun handlePinEntered(pin: String) {
         if (ctapSession?.isConnected == true) {
-            val json = JSONObject(requestJson!!)
+            val json = request.json
             showProgress(true)
             setInstruction(getString(R.string.instruction_verifying))
             setState(CredentialBottomSheet.State.PROCESSING)
@@ -320,7 +278,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
     private fun handleBiometricSelected() {
         if (ctapSession?.isConnected == true) {
-            val json = JSONObject(requestJson!!)
+            val json = request.json
             bottomSheet?.showBiometricWaiting()
             setInstruction(getString(R.string.instruction_waiting_biometric))
             showProgress(true)
@@ -355,34 +313,12 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private fun checkPinRequirement() {
-        try {
-            val json = JSONObject(requestJson!!)
-
-            // Check userVerification in authenticatorSelection (create) or directly (get)
-            val uvString = if (isCreateRequest) {
-                json.optJSONObject("authenticatorSelection")?.optString("userVerification", "preferred")
-            } else {
-                json.optString("userVerification", "preferred")
-            }
-            userVerification = UserVerification.fromString(uvString)
-
-            // Check if allowCredentials is empty (discoverable credential flow needs PIN)
-            val allowCredentialsEmpty = if (!isCreateRequest) {
-                !json.has("allowCredentials") || json.getJSONArray("allowCredentials").length() == 0
-            } else false
-
-            // For required/preferred, or discoverable flow, ask for PIN upfront to minimize NFC taps
-            if (userVerification != UserVerification.DISCOURAGED || allowCredentialsEmpty) {
-                showPinDialogFirst()
-            }
-            // If discouraged with allowCredentials, just wait for key connection
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking PIN requirement", e)
-            // Assume preferred
-            userVerification = UserVerification.PREFERRED
+        // For required/preferred, or discoverable flow, ask for PIN upfront to minimize NFC taps
+        val isDiscoverable = (request as? PasskeyRequest.Get)?.isDiscoverable == true
+        if (request.userVerification != UserVerification.DISCOURAGED || isDiscoverable) {
             showPinDialogFirst()
         }
+        // If discouraged with allowCredentials, just wait for key connection
     }
 
     private fun showPinDialogFirst() {
@@ -622,7 +558,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     private fun processRequest() {
         scope.launch {
             try {
-                val json = JSONObject(requestJson!!)
+                val json = request.json
                 val currentSession = ctapSession ?: throw AuthnkeyError.NotConnected()
                 val protocol = pinProtocol ?: throw AuthnkeyError.PinProtocolNotInitialized()
 
@@ -641,7 +577,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                         authenticateAndExecute(pendingPin!!, json)
                     }
                     // Verification needed (required/preferred, or forced by alwaysUv)
-                    userVerification != UserVerification.DISCOURAGED || alwaysUv -> when {
+                    request.userVerification != UserVerification.DISCOURAGED || alwaysUv -> when {
                         // Device has both usable PIN and built-in UV -> show PIN input with biometric option
                         canUsePinForMcGa && deviceSupportsUv -> {
                             val retries = withContext(Dispatchers.IO) {
@@ -663,7 +599,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                             else executeWithBuiltInUv(json)
                         }
                         // No verification method available
-                        userVerification == UserVerification.REQUIRED || alwaysUv ->
+                        request.userVerification == UserVerification.REQUIRED || alwaysUv ->
                             throw if (noMcGaWithClientPin)
                                 AuthnkeyError.PinNotSupportedForOperation()
                             else AuthnkeyError.UserVerificationRequiredNoPin()
@@ -729,17 +665,8 @@ class CredentialProviderActivity : AppCompatActivity() {
                     protocol.initialize()
                 }.getOrElse { throw AuthnkeyError.PinProtocolInitFailed() }
 
-                // Determine permissions and rpId based on operation type
-                val permissions: Int
-                val rpId: String?
-
-                if (isCreateRequest) {
-                    permissions = PinProtocol.PERMISSION_MC
-                    rpId = requestJson.getJSONObject("rp").getString("id")
-                } else {
-                    permissions = PinProtocol.PERMISSION_GA
-                    rpId = requestJson.getString("rpId")
-                }
+                val permissions = request.pinPermission
+                val rpId = request.rpId
 
                 setInstruction(getString(R.string.instruction_verifying_pin))
                 val supportsPinUvAuthToken =
@@ -830,17 +757,8 @@ class CredentialProviderActivity : AppCompatActivity() {
                     protocol.initialize()
                 }.getOrElse { throw AuthnkeyError.PinProtocolInitFailed() }
 
-                // Determine permissions and rpId
-                val permissions: Int
-                val rpId: String?
-
-                if (isCreateRequest) {
-                    permissions = PinProtocol.PERMISSION_MC
-                    rpId = requestJson.getJSONObject("rp").getString("id")
-                } else {
-                    permissions = PinProtocol.PERMISSION_GA
-                    rpId = requestJson.getString("rpId")
-                }
+                val permissions = request.pinPermission
+                val rpId = request.rpId
 
                 val authToken = withContext(Dispatchers.IO) {
                     keyAgreement.requestUvToken(permissions, rpId)
@@ -933,10 +851,9 @@ class CredentialProviderActivity : AppCompatActivity() {
     private suspend fun executeRequest(requestJson: JSONObject, uvMode: UvMode) {
         val transport = ctapSession?.transport ?: throw AuthnkeyError.NotConnected()
 
-        if (isCreateRequest) {
-            executeCreateCredential(transport, requestJson, uvMode)
-        } else {
-            executeGetAssertion(transport, requestJson, uvMode)
+        when (request) {
+            is PasskeyRequest.Create -> executeCreateCredential(transport, requestJson, uvMode)
+            is PasskeyRequest.Get -> executeGetAssertion(transport, requestJson, uvMode)
         }
     }
 
@@ -1011,7 +928,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
         // Build clientDataJSON with proper origin
         val origin = computeOrigin()
-        val clientData = providedClientDataHash.let { hash ->
+        val clientData = request.clientDataHash.let { hash ->
             if (hash != null && origin.startsWith("https://")) {
                 ClientData(null, hash)
             } else {
@@ -1140,7 +1057,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             })
         }
 
-        returnCreateResult(responseJson.toString())
+        returnResult(responseJson.toString())
     }
 
     private suspend fun executeGetAssertion(
@@ -1227,7 +1144,7 @@ class CredentialProviderActivity : AppCompatActivity() {
 
         // Build clientDataJSON with proper origin
         val origin = computeOrigin()
-        val clientData = providedClientDataHash.let { hash ->
+        val clientData = request.clientDataHash.let { hash ->
             if (hash != null && origin.startsWith("https://")) {
                 ClientData(null, hash)
             } else {
@@ -1370,7 +1287,7 @@ class CredentialProviderActivity : AppCompatActivity() {
             })
         }
 
-        returnGetResult(responseJson.toString())
+        returnResult(responseJson.toString())
     }
 
     private suspend fun showCredentialPicker(
@@ -1447,20 +1364,8 @@ class CredentialProviderActivity : AppCompatActivity() {
         return byteArrayOf(0x30, content.size.toByte()) + content
     }
 
-    private fun returnCreateResult(responseJson: String) {
-        val response = CreatePublicKeyCredentialResponse(responseJson)
-        val resultData = Intent()
-        PendingIntentHandler.setCreateCredentialResponse(resultData, response)
-        setResult(RESULT_OK, resultData)
-        finish()
-    }
-
-    private fun returnGetResult(responseJson: String) {
-        val credential = PublicKeyCredential(responseJson)
-        val response = GetCredentialResponse(credential)
-        val resultData = Intent()
-        PendingIntentHandler.setGetCredentialResponse(resultData, response)
-        setResult(RESULT_OK, resultData)
+    private fun returnResult(responseJson: String) {
+        setResult(RESULT_OK, request.responseResult(responseJson))
         finish()
     }
 
@@ -1492,21 +1397,7 @@ class CredentialProviderActivity : AppCompatActivity() {
     }
 
     private fun cancelOperation() {
-        if (isCreateRequest) {
-            val resultData = Intent()
-            PendingIntentHandler.setCreateCredentialException(
-                resultData,
-                CreateCredentialUnknownException("User cancelled")
-            )
-            setResult(RESULT_CANCELED, resultData)
-        } else {
-            val resultData = Intent()
-            PendingIntentHandler.setGetCredentialException(
-                resultData,
-                GetCredentialUnknownException("User cancelled")
-            )
-            setResult(RESULT_CANCELED, resultData)
-        }
+        setResult(RESULT_CANCELED, request.cancelledResult())
         // The sheet goes away before onDestroy, so stop running operations now
         scope.cancel()
         finish()
@@ -1518,7 +1409,7 @@ class CredentialProviderActivity : AppCompatActivity() {
      * For regular Android apps, compute from the signing certificate.
      */
     private fun computeOrigin(): String {
-        val appInfo = callingAppInfo ?: return "android:apk-key-hash:unknown"
+        val appInfo = request.callingAppInfo
 
         // Try to get origin using the privileged apps allowlist (for browsers)
         try {
