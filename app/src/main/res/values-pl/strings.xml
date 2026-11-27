@@ -201,6 +201,8 @@
     <string name="btn_change_pin">Zmień PIN</string>
     <string name="credentials_dialog_title">Zapisane poświadczenia</string>
     <string name="credentials_stats">Poświadczenia: %1$d • wolne miejsca: %2$d</string>
+    <string name="credentials_search_hint">Szukaj witryny lub konta</string>
+    <string name="credentials_search_no_results">Brak pasujących poświadczeń</string>
     <string name="credential_detail_display_name">Nazwa wyświetlana</string>
     <string name="credential_detail_user_id">Identyfikator użytkownika</string>
     <string name="credential_detail_credential_id">Identyfikator poświadczenia</string>
