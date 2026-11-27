@@ -993,13 +993,9 @@ class CredentialProviderActivity : AppCompatActivity() {
         val supportsResidentKey = ctapSession?.deviceInfo?.options?.get("rk") ?: true
         val isDiscoverable = residentKey.requiresResidentKey() && supportsResidentKey
 
-        // Check if hmac-secret was confirmed in the authenticator's authData extensions
-        val hmacSecretEnabled = if (prfRequested && authenticatorSupportsHmacSecret) {
-            // If the authenticator supports hmac-secret and we requested it,
-            // check if the authData extensions confirm it
-            val extData = authData?.extensions
-            extData?.bool("hmac-secret") ?: true // null means it was accepted without explicit confirmation
-        } else false
+        // The authenticator confirms hmac-secret with a true output in the authData extensions
+        val hmacSecretEnabled = prfRequested && authenticatorSupportsHmacSecret &&
+            authData?.extensions?.bool("hmac-secret") == true
 
         // Transports the key advertises, including the one currently in use
         val transports = setOf(transport.transportType) +
