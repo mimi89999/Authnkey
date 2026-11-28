@@ -1133,7 +1133,7 @@ class CredentialProviderActivity : AppCompatActivity() {
                         3 to bytes(hmacInput.saltAuth)
                     }
                 }
-            }.let { CborRaw(it.toList()) }
+            }.let(::CborRaw)
         }
 
         // Build clientDataJSON with proper origin

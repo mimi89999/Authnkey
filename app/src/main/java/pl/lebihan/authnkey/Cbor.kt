@@ -1,172 +1,120 @@
 package pl.lebihan.authnkey
 
-fun cbor(block: CborEncoder.() -> Unit): ByteArray {
-    val encoder = CborEncoder()
-    encoder.block()
-    return encoder.toByteArray()
-}
+import java.io.ByteArrayOutputStream
+
+fun cbor(block: CborEncoder.() -> Unit): ByteArray = CborEncoder().apply(block).toByteArray()
 
 class CborEncoder {
-    private val out = mutableListOf<Byte>()
+    private val out = ByteArrayOutputStream()
 
     fun map(block: CborMapEncoder.() -> Unit) {
-        val map = CborMapEncoder()
-        map.block()
-        writeHeader(5, map.entries.size)
-        sortCanonical(map.entries).forEach { (k, v) -> out.addAll(k); out.addAll(v) }
+        out.writeMap(CborMapEncoder().apply(block).entries)
     }
 
     fun toByteArray(): ByteArray = out.toByteArray()
-
-    private fun writeHeader(major: Int, value: Int) {
-        out.addAll(encodeHeader(major, value))
-    }
 }
 
 class CborMapEncoder {
-    internal val entries = mutableListOf<RawMapEntry>()
+    internal val entries = mutableListOf<Pair<ByteArray, ByteArray>>()
 
-    infix fun Int.to(value: Any?) {
-        entries.add(encodeInt(this) to encodeValue(value))
+    infix fun Int.to(value: Any?) = put(this, value)
+    infix fun String.to(value: Any?) = put(this, value)
+
+    fun map(block: CborMapEncoder.() -> Unit): CborRaw = encodeMap(block)
+    fun array(block: CborArrayEncoder.() -> Unit): CborRaw = encodeArray(block)
+    fun bytes(data: ByteArray) = CborRaw(encodeValue(data))
+
+    private fun put(key: Any, value: Any?) {
+        entries += Pair(encodeValue(key), encodeValue(value))
     }
-
-    infix fun String.to(value: Any?) {
-        entries.add(encodeText(this) to encodeValue(value))
-    }
-
-    fun map(block: CborMapEncoder.() -> Unit): CborRaw {
-        val nested = CborMapEncoder()
-        nested.block()
-        val bytes = mutableListOf<Byte>()
-        bytes.addAll(encodeHeader(5, nested.entries.size))
-        sortCanonical(nested.entries).forEach { (k, v) -> bytes.addAll(k); bytes.addAll(v) }
-        return CborRaw(bytes)
-    }
-
-    fun array(block: CborArrayEncoder.() -> Unit): CborRaw {
-        val nested = CborArrayEncoder()
-        nested.block()
-        val bytes = mutableListOf<Byte>()
-        bytes.addAll(encodeHeader(4, nested.items.size))
-        nested.items.forEach { bytes.addAll(it) }
-        return CborRaw(bytes)
-    }
-
-    fun bytes(data: ByteArray) = CborRaw(encodeBytes(data))
 }
 
 class CborArrayEncoder {
-    internal val items = mutableListOf<List<Byte>>()
+    internal val items = mutableListOf<Any?>()
 
     fun add(value: Any?) {
-        items.add(encodeValue(value))
+        items += value
     }
 
     fun map(block: CborMapEncoder.() -> Unit) {
-        val nested = CborMapEncoder()
-        nested.block()
-        val bytes = mutableListOf<Byte>()
-        bytes.addAll(encodeHeader(5, nested.entries.size))
-        sortCanonical(nested.entries).forEach { (k, v) -> bytes.addAll(k); bytes.addAll(v) }
-        items.add(bytes)
+        items += encodeMap(block)
     }
 }
 
+/** Already encoded CBOR, written as is. */
 @JvmInline
-value class CborRaw(val bytes: List<Byte>)
+value class CborRaw(val bytes: ByteArray)
 
-private typealias RawMapEntry = Pair<List<Byte>, List<Byte>>
+private fun encodeMap(block: CborMapEncoder.() -> Unit) =
+    CborRaw(bytesOf { writeMap(CborMapEncoder().apply(block).entries) })
 
-private fun sortCanonical(entries: List<RawMapEntry>): List<RawMapEntry> {
-    return entries.sortedWith { a, b ->
-        val ka = a.first
-        val kb = b.first
-        if (ka.size != kb.size) ka.size - kb.size
-        else ka.indices.map {
-            (ka[it].toInt() and 0xFF) - (kb[it].toInt() and 0xFF)
-        }.firstOrNull { it != 0 } ?: 0
+private fun encodeArray(block: CborArrayEncoder.() -> Unit) =
+    CborRaw(encodeValue(CborArrayEncoder().apply(block).items))
+
+private fun encodeValue(value: Any?): ByteArray = bytesOf { writeValue(value) }
+
+private inline fun bytesOf(block: ByteArrayOutputStream.() -> Unit): ByteArray =
+    ByteArrayOutputStream().apply(block).toByteArray()
+
+private fun ByteArrayOutputStream.writeValue(value: Any?) {
+    when (value) {
+        null -> write(0xF6)
+        is Boolean -> write(if (value) 0xF5 else 0xF4)
+        is Int -> writeInteger(value.toLong())
+        is Long -> writeInteger(value)
+        is String -> writeBytes(3, value.toByteArray(Charsets.UTF_8))
+        is ByteArray -> writeBytes(2, value)
+        is CborRaw -> write(value.bytes)
+        is List<*> -> {
+            writeHeader(4, value.size.toLong())
+            value.forEach { writeValue(it) }
+        }
+        is Map<*, *> -> writeMap(value.map { (k, v) -> Pair(encodeValue(k), encodeValue(v)) })
+        else -> throw IllegalArgumentException("Unsupported: ${value::class}")
     }
 }
 
-private fun encodeValue(value: Any?): List<Byte> = when (value) {
-    null -> listOf(0xF6.toByte())
-    is Boolean -> listOf(if (value) 0xF5.toByte() else 0xF4.toByte())
-    is Int -> encodeInt(value)
-    is Long -> encodeLong(value)
-    is String -> encodeText(value)
-    is ByteArray -> encodeBytes(value)
-    is CborRaw -> value.bytes
-    is List<*> -> {
-        val items = value.map { encodeValue(it) }
-        encodeHeader(4, items.size) + items.flatten()
+private fun ByteArrayOutputStream.writeInteger(value: Long) {
+    if (value >= 0) writeHeader(0, value) else writeHeader(1, -1 - value)
+}
+
+private fun ByteArrayOutputStream.writeBytes(major: Int, bytes: ByteArray) {
+    writeHeader(major, bytes.size.toLong())
+    write(bytes)
+}
+
+/** Writes a map with its keys in CTAP2 canonical order. */
+private fun ByteArrayOutputStream.writeMap(entries: List<Pair<ByteArray, ByteArray>>) {
+    writeHeader(5, entries.size.toLong())
+    entries.sortedWith(compareBy(canonicalKeyOrder) { it.first }).forEach { (k, v) ->
+        write(k)
+        write(v)
     }
-    is Map<*, *> -> {
-        val entries = value.map { (k, v) -> encodeValue(k) to encodeValue(v) }
-        encodeHeader(5, entries.size) + sortCanonical(entries).flatMap { (k, v) -> k + v }
+}
+
+/** Shorter keys first, then bytewise lexicographic. */
+private val canonicalKeyOrder = Comparator<ByteArray> { a, b ->
+    if (a.size != b.size) return@Comparator a.size - b.size
+    for (i in a.indices) {
+        val d = (a[i].toInt() and 0xFF) - (b[i].toInt() and 0xFF)
+        if (d != 0) return@Comparator d
     }
-    else -> throw IllegalArgumentException("Unsupported: ${value::class}")
+    0
 }
 
-private fun encodeHeader(major: Int, value: Int): List<Byte> = when {
-    value < 24 -> listOf(((major shl 5) or value).toByte())
-    value < 0x100 -> listOf(((major shl 5) or 24).toByte(), value.toByte())
-    value < 0x10000 -> listOf(
-        ((major shl 5) or 25).toByte(),
-        (value shr 8).toByte(),
-        value.toByte()
-    )
-    else -> listOf(
-        ((major shl 5) or 26).toByte(),
-        (value shr 24).toByte(),
-        (value shr 16).toByte(),
-        (value shr 8).toByte(),
-        value.toByte()
-    )
+/** [value] must not be negative. */
+private fun ByteArrayOutputStream.writeHeader(major: Int, value: Long) {
+    val type = major shl 5
+    if (value < 24) return write(type or value.toInt())
+    val (info, size) = when {
+        value < 0x100 -> 24 to 1
+        value < 0x10000 -> 25 to 2
+        value < 0x100000000 -> 26 to 4
+        else -> 27 to 8
+    }
+    write(type or info)
+    for (i in size - 1 downTo 0) write((value shr (8 * i)).toInt())
 }
-
-private fun encodeHeaderLong(major: Int, value: Long): List<Byte> = when {
-    value < 24 -> listOf(((major shl 5) or value.toInt()).toByte())
-    value < 0x100 -> listOf(((major shl 5) or 24).toByte(), value.toByte())
-    value < 0x10000 -> listOf(
-        ((major shl 5) or 25).toByte(),
-        (value shr 8).toByte(),
-        value.toByte()
-    )
-    value < 0x100000000 -> listOf(
-        ((major shl 5) or 26).toByte(),
-        (value shr 24).toByte(),
-        (value shr 16).toByte(),
-        (value shr 8).toByte(),
-        value.toByte()
-    )
-    else -> listOf(
-        ((major shl 5) or 27).toByte(),
-        (value shr 56).toByte(),
-        (value shr 48).toByte(),
-        (value shr 40).toByte(),
-        (value shr 32).toByte(),
-        (value shr 24).toByte(),
-        (value shr 16).toByte(),
-        (value shr 8).toByte(),
-        value.toByte()
-    )
-}
-
-private fun encodeInt(value: Int): List<Byte> =
-    if (value >= 0) encodeHeader(0, value)
-    else encodeHeader(1, -1 - value)
-
-private fun encodeLong(value: Long): List<Byte> =
-    if (value >= 0) encodeHeaderLong(0, value)
-    else encodeHeaderLong(1, -1 - value)
-
-private fun encodeText(s: String): List<Byte> {
-    val bytes = s.toByteArray(Charsets.UTF_8)
-    return encodeHeader(3, bytes.size) + bytes.toList()
-}
-
-private fun encodeBytes(b: ByteArray): List<Byte> =
-    encodeHeader(2, b.size) + b.toList()
 
 // ============================================================
 

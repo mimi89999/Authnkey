@@ -185,7 +185,7 @@ class CredentialManagement(
                 1 to subCommand
 
                 if (subCommandParams != null) {
-                    2 to CborRaw(subCommandParams.toList())
+                    2 to CborRaw(subCommandParams)
                 }
 
                 if (includeAuth && authParam != null) {

@@ -370,7 +370,7 @@ class PinProtocol(private val transport: FidoTransport) {
                     -3 to bytes(y)
                 }
             }
-            return CborRaw(bytes.toList())
+            return CborRaw(bytes)
         }
     }
 
