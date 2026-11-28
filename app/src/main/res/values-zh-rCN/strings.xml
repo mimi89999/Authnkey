@@ -217,4 +217,6 @@
     <string name="credential_progress_rp_count">第 %1$d 个站点，共 %2$d 个</string>
     <string name="credential_progress_title">正在读取凭据</string>
     <string name="credential_progress_hold_key">请将您的安全密钥贴在手机背面。</string>
+    <string name="credentials_search_no_results"></string>
+    <string name="credentials_search_hint"></string>
 </resources>
