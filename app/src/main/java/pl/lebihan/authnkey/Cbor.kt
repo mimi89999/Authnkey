@@ -213,14 +213,14 @@ class CborDecoder private constructor(private val data: ByteArray) {
         val len = readUnsigned(info)
             .also { require(it in 0..remaining) { "CBOR array of ${it.toULong()} items doesn't fit in $remaining bytes" } }
             .toInt()
-        return (0 until len).map { readValue() }
+        return List(len) { readValue() }
     }
 
     private fun readMap(info: Int): Map<Any?, Any?> {
         val len = readUnsigned(info)
             .also { require(it in 0..remaining / 2) { "CBOR map of ${it.toULong()} entries doesn't fit in $remaining bytes" } }
             .toInt()
-        val result = linkedMapOf<Any?, Any?>()
+        val result = LinkedHashMap<Any?, Any?>(len)
         repeat(len) {
             val key = readValue()
             val value = readValue()
