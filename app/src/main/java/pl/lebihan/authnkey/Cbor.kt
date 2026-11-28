@@ -147,21 +147,24 @@ class CborDecoder private constructor(private val data: ByteArray) {
         val major = initial shr 5
         val info = initial and 0x1F
 
+        if (major == 7) return readSimpleValue(info)
+
+        val argument = readUnsigned(info)
         return when (major) {
-            0 -> readUnsigned(info)
-            1 -> -1L - readUnsigned(info)
-            2 -> readByteString(info)
-            3 -> readTextString(info)
-            4 -> readArray(info)
-            5 -> readMap(info)
-            7 -> when (info) {
-                20 -> false
-                21 -> true
-                22, 23 -> null
-                else -> null
-            }
+            0 -> argument
+            1 -> -1L - argument
+            2 -> readByteString(argument)
+            3 -> readTextString(argument)
+            4 -> readArray(argument)
+            5 -> readMap(argument)
             else -> null
         }
+    }
+
+    private fun readSimpleValue(info: Int): Any? = when (info) {
+        20 -> false
+        21 -> true
+        else -> null
     }
 
     private fun readUnsigned(info: Int): Long = when {
@@ -197,35 +200,31 @@ class CborDecoder private constructor(private val data: ByteArray) {
 
     private val remaining get() = data.size - pos
 
-    private fun readByteString(info: Int): ByteArray {
-        val len = readUnsigned(info)
-            .also { require(it in 0..remaining) { "CBOR byte string of ${it.toULong()} bytes doesn't fit in $remaining bytes" } }
-            .toInt()
+    private fun readByteString(length: Long): ByteArray {
+        require(length in 0..remaining) { "CBOR byte string of ${length.toULong()} bytes doesn't fit in $remaining bytes" }
+        val len = length.toInt()
         val result = data.sliceArray(pos until pos + len)
         pos += len
         return result
     }
 
-    private fun readTextString(info: Int): String {
-        val len = readUnsigned(info)
-            .also { require(it in 0..remaining) { "CBOR text string of ${it.toULong()} bytes doesn't fit in $remaining bytes" } }
-            .toInt()
+    private fun readTextString(length: Long): String {
+        require(length in 0..remaining) { "CBOR text string of ${length.toULong()} bytes doesn't fit in $remaining bytes" }
+        val len = length.toInt()
         val result = String(data, pos, len, Charsets.UTF_8)
         pos += len
         return result
     }
 
-    private fun readArray(info: Int): List<Any?> {
-        val len = readUnsigned(info)
-            .also { require(it in 0..remaining) { "CBOR array of ${it.toULong()} items doesn't fit in $remaining bytes" } }
-            .toInt()
+    private fun readArray(length: Long): List<Any?> {
+        require(length in 0..remaining) { "CBOR array of ${length.toULong()} items doesn't fit in $remaining bytes" }
+        val len = length.toInt()
         return List(len) { readValue() }
     }
 
-    private fun readMap(info: Int): Map<Any?, Any?> {
-        val len = readUnsigned(info)
-            .also { require(it in 0..remaining / 2) { "CBOR map of ${it.toULong()} entries doesn't fit in $remaining bytes" } }
-            .toInt()
+    private fun readMap(length: Long): Map<Any?, Any?> {
+        require(length in 0..remaining / 2) { "CBOR map of ${length.toULong()} entries doesn't fit in $remaining bytes" }
+        val len = length.toInt()
         val result = LinkedHashMap<Any?, Any?>(len)
         repeat(len) {
             val key = readValue()
