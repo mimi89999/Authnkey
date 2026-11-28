@@ -217,4 +217,6 @@
     <string name="credential_progress_title">Citirea datelor de autentificare</string>
     <string name="credential_progress_rp_count">Site-ul %1$d din %2$d</string>
     <string name="credential_progress_hold_key">Țineți cheia de securitate lipită de partea din spate a telefonului</string>
+    <string name="credentials_search_hint">Caută pe site sau în cont</string>
+    <string name="credentials_search_no_results">Nu au fost găsite date de autentificare corespunzătoare</string>
 </resources>
