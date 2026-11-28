@@ -189,27 +189,37 @@ class CborDecoder private constructor(private val data: ByteArray) {
         else -> 0L
     }
 
+    private val remaining get() = data.size - pos
+
     private fun readByteString(info: Int): ByteArray {
-        val len = readUnsigned(info).toInt()
+        val len = readUnsigned(info)
+            .also { require(it in 0..remaining) { "CBOR byte string of ${it.toULong()} bytes doesn't fit in $remaining bytes" } }
+            .toInt()
         val result = data.sliceArray(pos until pos + len)
         pos += len
         return result
     }
 
     private fun readTextString(info: Int): String {
-        val len = readUnsigned(info).toInt()
+        val len = readUnsigned(info)
+            .also { require(it in 0..remaining) { "CBOR text string of ${it.toULong()} bytes doesn't fit in $remaining bytes" } }
+            .toInt()
         val result = String(data, pos, len, Charsets.UTF_8)
         pos += len
         return result
     }
 
     private fun readArray(info: Int): List<Any?> {
-        val len = readUnsigned(info).toInt()
+        val len = readUnsigned(info)
+            .also { require(it in 0..remaining) { "CBOR array of ${it.toULong()} items doesn't fit in $remaining bytes" } }
+            .toInt()
         return (0 until len).map { readValue() }
     }
 
     private fun readMap(info: Int): Map<Any?, Any?> {
-        val len = readUnsigned(info).toInt()
+        val len = readUnsigned(info)
+            .also { require(it in 0..remaining / 2) { "CBOR map of ${it.toULong()} entries doesn't fit in $remaining bytes" } }
+            .toInt()
         val result = linkedMapOf<Any?, Any?>()
         repeat(len) {
             val key = readValue()
