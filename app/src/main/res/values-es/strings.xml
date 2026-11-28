@@ -217,4 +217,6 @@
     <string name="credential_progress_title">Leyendo credenciales</string>
     <string name="credential_progress_rp_count">Sitio %1$d de %2$d</string>
     <string name="credential_progress_hold_key">Sostén tu llave de seguridad en la parte posterior de tu teléfono.</string>
+    <string name="credentials_search_hint">Buscar sitio web o cuenta</string>
+    <string name="credentials_search_no_results">No hay coincidencias de credenciales</string>
 </resources>
