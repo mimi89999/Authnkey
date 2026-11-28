@@ -36,15 +36,20 @@ class CborMapEncoder {
 
 @CborDsl
 class CborArrayEncoder {
-    internal val items = mutableListOf<Any?>()
+    private val out = ByteArrayOutputStream()
+    private var size = 0
 
     fun add(value: Any?) {
-        items += value
+        out.write(encodeValue(value))
+        size++
     }
 
-    fun map(block: CborMapEncoder.() -> Unit) {
-        items += encodeMap(block)
-    }
+    fun map(block: CborMapEncoder.() -> Unit) = add(encodeMap(block))
+
+    internal fun encode() = CborRaw(bytesOf {
+        writeHeader(4, size.toLong())
+        out.writeTo(this)
+    })
 }
 
 /** Already encoded CBOR, written as is. */
@@ -54,8 +59,7 @@ value class CborRaw(val bytes: ByteArray)
 private fun encodeMap(block: CborMapEncoder.() -> Unit) =
     CborRaw(bytesOf { writeMap(CborMapEncoder().apply(block).entries) })
 
-private fun encodeArray(block: CborArrayEncoder.() -> Unit) =
-    CborRaw(encodeValue(CborArrayEncoder().apply(block).items))
+private fun encodeArray(block: CborArrayEncoder.() -> Unit) = CborArrayEncoder().apply(block).encode()
 
 private fun encodeValue(value: Any?): ByteArray = bytesOf { writeValue(value) }
 
