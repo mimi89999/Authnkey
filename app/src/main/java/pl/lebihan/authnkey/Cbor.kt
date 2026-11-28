@@ -141,7 +141,7 @@ class CborDecoder private constructor(private val data: ByteArray) {
     }
 
     private fun readValue(): Any? {
-        if (pos >= data.size) return null
+        require(remaining > 0) { "Unexpected end of CBOR input" }
 
         val initial = data[pos++].toInt() and 0xFF
         val major = initial shr 5
@@ -176,6 +176,7 @@ class CborDecoder private constructor(private val data: ByteArray) {
             27 -> 8
             else -> return 0L
         }
+        require(size <= remaining) { "CBOR argument of $size bytes doesn't fit in $remaining bytes" }
         val value = (pos until pos + size).fold(0L) { acc, i -> (acc shl 8) or (data[i].toLong() and 0xFF) }
         pos += size
         return value
