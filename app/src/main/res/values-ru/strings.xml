@@ -214,4 +214,9 @@
     <string name="hint_nfc_off">NFC выключен</string>
     <string name="instruction_no_transport">Нет доступного способа подключения</string>
     <string name="error_enumerate_credentials">Не удалось загрузить учетные данные для %1$s: %2$s</string>
+    <string name="credentials_search_no_results"></string>
+    <string name="credential_progress_rp_count"></string>
+    <string name="credential_progress_title"></string>
+    <string name="credential_progress_hold_key"></string>
+    <string name="credentials_search_hint"></string>
 </resources>
