@@ -4,6 +4,10 @@ import java.io.ByteArrayOutputStream
 
 fun cbor(block: CborEncoder.() -> Unit): ByteArray = CborEncoder().apply(block).toByteArray()
 
+@DslMarker
+annotation class CborDsl
+
+@CborDsl
 class CborEncoder {
     private val out = ByteArrayOutputStream()
 
@@ -14,6 +18,7 @@ class CborEncoder {
     fun toByteArray(): ByteArray = out.toByteArray()
 }
 
+@CborDsl
 class CborMapEncoder {
     internal val entries = mutableListOf<Pair<ByteArray, ByteArray>>()
 
@@ -29,6 +34,7 @@ class CborMapEncoder {
     }
 }
 
+@CborDsl
 class CborArrayEncoder {
     internal val items = mutableListOf<Any?>()
 
