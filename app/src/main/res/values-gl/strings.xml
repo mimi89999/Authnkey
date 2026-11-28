@@ -217,4 +217,6 @@
     <string name="credential_progress_title">Lendo as credenciais</string>
     <string name="credential_progress_rp_count">Sitio %1$d de %2$d</string>
     <string name="credential_progress_hold_key">Mantén a chave de seguridade pegada á parte posterior do móbil.</string>
+    <string name="credentials_search_no_results"></string>
+    <string name="credentials_search_hint"></string>
 </resources>
