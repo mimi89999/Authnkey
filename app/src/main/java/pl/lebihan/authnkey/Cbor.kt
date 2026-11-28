@@ -149,7 +149,7 @@ class CborDecoder private constructor(private val data: ByteArray) {
 
         if (major == 7) return readSimpleValue(info)
 
-        val argument = readUnsigned(info)
+        val argument = readArgument(info)
         return when (major) {
             0 -> argument
             1 -> -1L - argument
@@ -167,35 +167,18 @@ class CborDecoder private constructor(private val data: ByteArray) {
         else -> null
     }
 
-    private fun readUnsigned(info: Int): Long = when {
-        info < 24 -> info.toLong()
-        info == 24 -> (data[pos++].toInt() and 0xFF).toLong()
-        info == 25 -> {
-            val r = ((data[pos].toInt() and 0xFF) shl 8) or (data[pos + 1].toInt() and 0xFF)
-            pos += 2
-            r.toLong()
+    private fun readArgument(info: Int): Long {
+        val size = when (info) {
+            in 0..23 -> return info.toLong()
+            24 -> 1
+            25 -> 2
+            26 -> 4
+            27 -> 8
+            else -> return 0L
         }
-        info == 26 -> {
-            val r = ((data[pos].toLong() and 0xFF) shl 24) or
-                    ((data[pos + 1].toLong() and 0xFF) shl 16) or
-                    ((data[pos + 2].toLong() and 0xFF) shl 8) or
-                    (data[pos + 3].toLong() and 0xFF)
-            pos += 4
-            r
-        }
-        info == 27 -> {
-            val r = ((data[pos].toLong() and 0xFF) shl 56) or
-                    ((data[pos + 1].toLong() and 0xFF) shl 48) or
-                    ((data[pos + 2].toLong() and 0xFF) shl 40) or
-                    ((data[pos + 3].toLong() and 0xFF) shl 32) or
-                    ((data[pos + 4].toLong() and 0xFF) shl 24) or
-                    ((data[pos + 5].toLong() and 0xFF) shl 16) or
-                    ((data[pos + 6].toLong() and 0xFF) shl 8) or
-                    (data[pos + 7].toLong() and 0xFF)
-            pos += 8
-            r
-        }
-        else -> 0L
+        val value = (pos until pos + size).fold(0L) { acc, i -> (acc shl 8) or (data[i].toLong() and 0xFF) }
+        pos += size
+        return value
     }
 
     private val remaining get() = data.size - pos
